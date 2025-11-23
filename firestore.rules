@@ -2,10 +2,86 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 🚨 개발용 테스트 규칙 - 모든 읽기/쓰기 허용
-    // ⚠️ 프로덕션 배포 전 반드시 보안 규칙 강화 필요!
+    
+    // 헬퍼 함수
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // users 컬렉션
+    match /users/{userId} {
+      // 자신의 문서만 읽기 가능
+      allow read: if isOwner(userId);
+      
+      // 회원가입 시 생성 가능 (자신의 UID로만)
+      allow create: if isSignedIn() && isOwner(userId);
+      
+      // 자신의 문서만 수정 가능
+      allow update: if isOwner(userId);
+      
+      // 자신의 계정만 삭제 가능
+      allow delete: if isOwner(userId);
+    }
+    
+    // imageGenerations 컬렉션
+    match /imageGenerations/{generationId} {
+      // 자신의 생성 작업만 읽기
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid);
+      
+      // 생성 작업 생성 가능 (자신의 userId로만)
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // 자신의 생성 작업만 업데이트 가능
+      allow update: if isSignedIn() && 
+        resource.data.userId == request.auth.uid;
+      
+      // 자신의 생성 작업만 삭제
+      allow delete: if isSignedIn() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // pointTransactions 컬렉션
+    match /pointTransactions/{transactionId} {
+      // 자신의 거래 내역만 읽기
+      allow read: if isSignedIn() && 
+        resource.data.userId == request.auth.uid;
+      
+      // 생성은 허용 (본인 userId로만)
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // 수정/삭제는 불가
+      allow update, delete: if false;
+    }
+    
+    // payments 컬렉션
+    match /payments/{paymentId} {
+      // 자신의 결제 내역만 읽기
+      allow read: if isSignedIn() && 
+        resource.data.userId == request.auth.uid;
+      
+      // 결제 생성 가능 (본인 userId로만)
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // 업데이트는 본인만 가능
+      allow update: if isSignedIn() && 
+        resource.data.userId == request.auth.uid;
+      
+      // 삭제는 불가
+      allow delete: if false;
+    }
+    
+    // 기타 컬렉션은 모두 차단
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
+

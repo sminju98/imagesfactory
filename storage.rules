@@ -2,11 +2,47 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // 🚨 개발용 임시 규칙 - 모든 읽기/쓰기 허용
-    // ⚠️ 프로덕션 배포 전 반드시 보안 규칙 강화 필요!
+    
+    // 헬퍼 함수
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isUnderSizeLimit() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB
+    }
+    
+    // 참고 이미지 (사용자가 업로드)
+    match /reference-images/{userId}/{imageFile} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) && isImageFile() && isUnderSizeLimit();
+    }
+    
+    // 생성된 이미지 (서버에서 업로드, 모두 읽기 가능)
+    match /generations/{generationId}/{imageFile} {
+      allow read: if true; // 모든 사용자가 읽기 가능
+      allow write: if isSignedIn(); // 인증된 사용자만 쓰기
+    }
+    
+    // ZIP 파일 (서버에서 생성)
+    match /zips/{zipFile} {
+      allow read: if true; // 모든 사용자가 읽기 가능
+      allow write: if isSignedIn(); // 인증된 사용자만 쓰기
+    }
+    
+    // 기타 모든 경로는 차단
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
+
 
