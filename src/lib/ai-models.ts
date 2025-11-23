@@ -63,14 +63,17 @@ export async function generateWithDALLE3(params: GenerateImageParams): Promise<G
 
 /**
  * xAI Grok (Aurora)로 이미지 생성
+ * 문서: https://docs.x.ai/docs/guides/image-generations
  */
 export async function generateWithGrok(params: GenerateImageParams): Promise<GeneratedImage> {
-  const { prompt } = params;
+  const { prompt, width = 1024, height = 1024 } = params;
 
   // 한글이면 번역
   const finalPrompt = isKorean(prompt) 
     ? await translatePromptToEnglish(prompt) 
     : prompt;
+
+  console.log('🌟 [Aurora] 이미지 생성 시작:', finalPrompt.substring(0, 50));
 
   const response = await fetch('https://api.x.ai/v1/images/generations', {
     method: 'POST',
@@ -79,18 +82,23 @@ export async function generateWithGrok(params: GenerateImageParams): Promise<Gen
       'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'aurora',
+      model: 'grok-2-vision-1212', // 공식 모델명
       prompt: finalPrompt,
       n: 1,
-      size: '1024x1024',
+      response_format: 'url',
+      size: `${width}x${height}`,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Grok API error: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error('❌ [Aurora] API 에러:', response.status, errorText);
+    throw new Error(`Grok API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
+  console.log('✅ [Aurora] 생성 완료');
+  
   return {
     url: data.data[0].url,
     modelId: 'aurora',
