@@ -145,14 +145,10 @@ export default function AdminPage() {
     if (!confirmed) return;
 
     try {
-      const { auth: firebaseAuth } = await import('@/lib/firebase');
-      const idToken = await firebaseAuth.currentUser?.getIdToken();
-
       const response = await fetch('/api/admin/approve-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           paymentId: payment.id,
@@ -162,8 +158,9 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert('✅ 입금 승인 완료!');
-        fetchPendingPayments();
+        alert('✅ 입금 승인 완료! 포인트가 충전되었습니다.');
+        // 목록 새로고침
+        await fetchPendingPayments();
       } else {
         alert('승인 실패: ' + data.error);
       }
