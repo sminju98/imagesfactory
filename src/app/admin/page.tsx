@@ -204,7 +204,7 @@ export default function AdminPage() {
               <Shield className="w-8 h-8 text-red-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">관리자 페이지</h1>
-                <p className="text-sm text-gray-600">imagesfactory 관리 시스템</p>
+                <p className="text-sm text-gray-600">ImageFactory 관리 시스템</p>
               </div>
             </div>
             <button

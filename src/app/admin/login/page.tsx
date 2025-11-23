@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">관리자 로그인</h1>
-          <p className="text-gray-600">imagesfactory 관리 페이지</p>
+          <p className="text-gray-600">ImageFactory 관리 페이지</p>
         </div>
 
         {/* Form Card */}

@@ -190,7 +190,7 @@ export default function MyPage() {
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">imagesfactory</h1>
+                <h1 className="text-2xl font-bold text-gray-900">ImageFactory</h1>
                 <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
               </div>
             </Link>
@@ -901,7 +901,7 @@ export default function MyPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">imagesfactory</h3>
+              <h3 className="text-xl font-bold mb-4">ImageFactory</h3>
               <p className="text-gray-400 text-sm">
                 여러 AI 모델로 한 번에<br />
                 수십 장의 이미지를 생성하세요
