@@ -317,8 +317,8 @@ export default function Home() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Prompt Input */}
@@ -430,7 +430,7 @@ export default function Home() {
                 여러 모델을 동시에 선택하여 다양한 스타일의 이미지를 한 번에 생성하세요 (병렬 처리로 빠른 생성!)
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {AI_MODELS.map((model) => {
                   const isSelected = selectedModels[model.id] !== undefined;
                   const count = selectedModels[model.id] || 0;
