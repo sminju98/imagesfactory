@@ -203,9 +203,15 @@ export default function MyPage() {
               </div>
               <Link
                 href="/points"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors hidden sm:block"
               >
                 포인트 충전
+              </Link>
+              <Link
+                href="/points"
+                className="px-2 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs leading-tight block sm:hidden"
+              >
+                포인트<br/>충전
               </Link>
             </div>
           </div>
@@ -401,9 +407,9 @@ export default function MyPage() {
                               )}
                             </>
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <ImageIcon className="w-12 h-12" />
-                            </div>
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <ImageIcon className="w-12 h-12" />
+                          </div>
                           )}
                         </Link>
                       ))}
@@ -435,7 +441,7 @@ export default function MyPage() {
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-gray-900">💸 총 사용</h3>
                       <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">지출</span>
-                    </div>
+                          </div>
                     <p className="text-4xl font-bold text-red-600 mb-2">
                       {pointStats.totalUsed.toLocaleString()}
                     </p>
@@ -466,8 +472,8 @@ export default function MyPage() {
                       총 {transactions.length}건의 포인트 거래 내역
                       {transactions.length > itemsPerPage && ` (${currentPage}/${Math.ceil(transactions.length / itemsPerPage)} 페이지)`}
                     </p>
-                  </div>
-
+                    </div>
+                    
                   <div className="divide-y divide-gray-100">
                     {transactions.length === 0 ? (
                       <div className="text-center py-12 text-gray-500">
@@ -680,7 +686,7 @@ export default function MyPage() {
             {/* History Tab */}
             {activeTab === 'history' && (
               <div className="space-y-6">
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">생성 히스토리</h3>
                   
                   {loadingData ? (
