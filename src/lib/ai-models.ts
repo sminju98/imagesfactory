@@ -87,7 +87,7 @@ export async function generateWithGrok(params: GenerateImageParams): Promise<Gen
 }
 
 /**
- * Stable Diffusion XL (via Stability AI)
+ * Stable Diffusion XL (via Replicate - Stability AI 대신)
  */
 export async function generateWithSDXL(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024 } = params;
@@ -97,33 +97,22 @@ export async function generateWithSDXL(params: GenerateImageParams): Promise<Gen
     ? await translatePromptToEnglish(prompt) 
     : prompt;
 
-  const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
-    },
-    body: JSON.stringify({
-      text_prompts: [{ text: finalPrompt, weight: 1 }],
-      cfg_scale: 7,
-      height,
-      width,
-      steps: 30,
-      samples: 1,
-    }),
-  });
+  const output = await replicate.run(
+    "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+    {
+      input: {
+        prompt: finalPrompt,
+        width,
+        height,
+        num_outputs: 1,
+        scheduler: "K_EULER",
+        num_inference_steps: 25,
+      },
+    }
+  ) as any;
 
-  if (!response.ok) {
-    throw new Error(`Stability AI error: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  
-  // Base64 이미지를 URL로 변환 (실제로는 Storage에 업로드 필요)
-  const base64Image = data.artifacts[0].base64;
-  
   return {
-    url: `data:image/png;base64,${base64Image}`,
+    url: output[0],
     modelId: 'sdxl',
   };
 }
