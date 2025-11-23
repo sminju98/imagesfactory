@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /mypage
+
+Sitemap: https://imagesfactory.vercel.app/sitemap.xml
+
