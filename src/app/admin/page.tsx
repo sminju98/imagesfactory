@@ -338,7 +338,12 @@ export default function AdminPage() {
         {activeTab === 'payments' && (
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">입금 대기 목록</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                입금 관리 
+                <span className="ml-2 text-sm text-yellow-600">
+                  (대기: {pendingPayments.filter(p => p.status === 'pending').length}건)
+                </span>
+              </h2>
               <button
                 onClick={fetchPendingPayments}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
@@ -349,21 +354,37 @@ export default function AdminPage() {
 
             {pendingPayments.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                입금 대기 중인 요청이 없습니다
+                입금 요청이 없습니다
               </div>
             ) : (
               <div className="space-y-4">
                 {pendingPayments.map((payment) => {
                   const createdAt = payment.createdAt?.toDate ? new Date(payment.createdAt.toDate()) : new Date();
+                  const isPending = payment.status === 'pending';
+                  const isCompleted = payment.status === 'completed';
 
                   return (
-                    <div key={payment.id} className="border border-gray-200 rounded-xl p-6 hover:border-red-300 transition-colors">
+                    <div key={payment.id} className={`border rounded-xl p-6 transition-colors ${
+                      isPending ? 'border-yellow-300 bg-yellow-50' : 
+                      isCompleted ? 'border-green-300 bg-green-50' : 
+                      'border-gray-200'
+                    }`}>
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                              입금 대기
-                            </span>
+                            {isPending ? (
+                              <span className="px-3 py-1 bg-yellow-200 text-yellow-900 text-xs font-semibold rounded-full">
+                                ⏳ 입금 대기
+                              </span>
+                            ) : isCompleted ? (
+                              <span className="px-3 py-1 bg-green-200 text-green-900 text-xs font-semibold rounded-full">
+                                ✅ 처리 완료
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 bg-gray-200 text-gray-900 text-xs font-semibold rounded-full">
+                                {payment.status}
+                              </span>
+                            )}
                             <span className="text-sm text-gray-500">
                               {createdAt.toLocaleString('ko-KR')}
                             </span>
