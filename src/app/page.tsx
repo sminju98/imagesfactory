@@ -13,6 +13,8 @@ interface AIModel {
   pointsPerImage: number;
   badge?: string;
   color: string;
+  company: string;
+  logo?: string;
 }
 
 // AI 모델 데이터
@@ -24,6 +26,8 @@ const AI_MODELS: AIModel[] = [
     pointsPerImage: 50,
     badge: '초저가',
     color: 'bg-emerald-50 border-emerald-200',
+    company: 'Huawei Noah\'s Ark Lab',
+    logo: '🎨',
   },
   {
     id: 'realistic-vision',
@@ -32,6 +36,8 @@ const AI_MODELS: AIModel[] = [
     pointsPerImage: 60,
     badge: '인물특화',
     color: 'bg-cyan-50 border-cyan-200',
+    company: 'SG_161222 (Civitai)',
+    logo: '📸',
   },
   {
     id: 'flux',
@@ -40,6 +46,8 @@ const AI_MODELS: AIModel[] = [
     pointsPerImage: 80,
     badge: '초고속',
     color: 'bg-green-50 border-green-200',
+    company: 'Black Forest Labs',
+    logo: '⚡',
   },
   {
     id: 'sdxl',
@@ -48,6 +56,8 @@ const AI_MODELS: AIModel[] = [
     pointsPerImage: 100,
     badge: '추천',
     color: 'bg-blue-50 border-blue-200',
+    company: 'Stability AI',
+    logo: '🎯',
   },
   {
     id: 'leonardo',
@@ -55,22 +65,28 @@ const AI_MODELS: AIModel[] = [
     description: '일러스트 & 게임 아트 특화',
     pointsPerImage: 120,
     color: 'bg-orange-50 border-orange-200',
+    company: 'Leonardo.ai',
+    logo: '🎮',
   },
   {
     id: 'dall-e-3',
     name: 'DALL-E 3',
-    description: '최고 품질의 정교한 이미지',
+    description: 'ChatGPT의 이미지 생성 AI',
     pointsPerImage: 200,
     badge: '최고품질',
     color: 'bg-purple-50 border-purple-200',
+    company: 'OpenAI (ChatGPT)',
+    logo: '🤖',
   },
   {
     id: 'aurora',
-    name: 'Aurora (xAI Grok)',
-    description: '일론 머스크의 최신 AI, 초고품질',
+    name: 'Aurora',
+    description: 'Grok의 이미지 생성 모델',
     pointsPerImage: 250,
     badge: 'NEW',
     color: 'bg-pink-50 border-pink-200',
+    company: 'xAI (Grok)',
+    logo: '🌟',
   },
   {
     id: 'ideogram',
@@ -79,6 +95,8 @@ const AI_MODELS: AIModel[] = [
     pointsPerImage: 280,
     badge: '텍스트특화',
     color: 'bg-rose-50 border-rose-200',
+    company: 'Ideogram AI',
+    logo: '✍️',
   },
 ];
 
@@ -299,7 +317,11 @@ export default function Home() {
                           onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1">
-                          <h3 className="font-bold text-gray-900">{model.name}</h3>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-xl">{model.logo}</span>
+                            <h3 className="font-bold text-gray-900">{model.name}</h3>
+                          </div>
+                          <p className="text-xs text-gray-500 mb-1">by {model.company}</p>
                           <p className="text-sm text-gray-600">{model.description}</p>
                           <p className="text-sm font-semibold text-indigo-600 mt-1">
                             {model.pointsPerImage}pt / 장
