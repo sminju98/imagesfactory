@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2 } from 'lucide-react';
+import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2, AlertCircle } from 'lucide-react';
 
 export default function MyPage() {
   const router = useRouter();
@@ -15,6 +15,15 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [recentGenerations, setRecentGenerations] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [pointStats, setPointStats] = useState({
+    totalUsed: 0,
+    totalPurchased: 0,
+  });
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paymentPage, setPaymentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -25,30 +34,131 @@ export default function MyPage() {
   useEffect(() => {
     if (user) {
       fetchRecentGenerations();
+      fetchPointStats();
+      fetchTransactions();
+      fetchPayments();
     }
   }, [user]);
+
+  // 결제 내역 조회
+  const fetchPayments = async () => {
+    if (!user) return;
+
+    try {
+      console.log('💳 결제 내역 조회 시작');
+      const paymentsRef = collection(db, 'payments');
+      const q = query(
+        paymentsRef,
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const pmts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      setPayments(pmts);
+      console.log('✅ 결제 내역 조회 완료:', pmts.length, '건');
+    } catch (error) {
+      console.error('결제 내역 조회 에러:', error);
+    }
+  };
+
+  // 거래 내역 조회 (전체)
+  const fetchTransactions = async () => {
+    if (!user) return;
+
+    try {
+      console.log('💰 거래 내역 조회 시작');
+      const transactionsRef = collection(db, 'pointTransactions');
+      const q = query(
+        transactionsRef,
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc')
+        // limit 제거 - 전체 조회
+      );
+      
+      const snapshot = await getDocs(q);
+      const txs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      setTransactions(txs);
+      console.log('✅ 거래 내역 조회 완료:', txs.length, '건');
+    } catch (error) {
+      console.error('거래 내역 조회 에러:', error);
+    }
+  };
+
+  // 포인트 통계 조회
+  const fetchPointStats = async () => {
+    if (!user) return;
+
+    try {
+      console.log('💰 포인트 통계 조회 시작');
+      const transactionsRef = collection(db, 'pointTransactions');
+      const q = query(
+        transactionsRef,
+        where('userId', '==', user.uid)
+      );
+      
+      const snapshot = await getDocs(q);
+      console.log('✅ 거래 내역 조회:', snapshot.size, '건');
+      
+      let totalUsed = 0;
+      let totalPurchased = 0;
+      
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.type === 'usage') {
+          totalUsed += Math.abs(data.amount);
+        } else if (data.type === 'purchase') {
+          totalPurchased += data.amount;
+        }
+      });
+      
+      setPointStats({ totalUsed, totalPurchased });
+      console.log('📊 통계:', { totalUsed, totalPurchased });
+    } catch (error) {
+      console.error('포인트 통계 조회 에러:', error);
+    }
+  };
 
   const fetchRecentGenerations = async () => {
     if (!user) return;
 
     try {
+      console.log('🔍 히스토리 조회 시작:', user.uid);
       const generationsRef = collection(db, 'imageGenerations');
       const q = query(
         generationsRef,
         where('userId', '==', user.uid),
         orderBy('createdAt', 'desc'),
-        limit(6)
+        firestoreLimit(6)
       );
       
       const snapshot = await getDocs(q);
+      console.log('✅ 히스토리 조회 완료:', snapshot.size, '개');
+      
       const generations = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
       
+      console.log('📝 히스토리 데이터:', generations);
       setRecentGenerations(generations);
-    } catch (error) {
-      console.error('Error fetching generations:', error);
+    } catch (error: any) {
+      console.error('🔴 히스토리 조회 에러:', error);
+      console.error('🔴 에러 코드:', error.code);
+      console.error('🔴 에러 메시지:', error.message);
+      
+      if (error.code === 'failed-precondition') {
+        console.error('⚠️ Firestore 복합 인덱스가 필요합니다!');
+        console.error('⚠️ Firebase Console에서 인덱스를 생성해주세요');
+      }
     } finally {
       setLoadingData(false);
     }
@@ -110,11 +220,8 @@ export default function MyPage() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 sticky top-24">
               {/* Profile */}
               <div className="text-center mb-6 pb-6 border-b border-gray-200">
-                <div className="w-20 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">
-                  {user.displayName.charAt(0).toUpperCase()}
-                </div>
-                <h3 className="font-bold text-gray-900">{user.displayName}</h3>
-                <p className="text-sm text-gray-500">{user.email}</p>
+                <h3 className="font-bold text-gray-900 text-lg">{user.displayName}</h3>
+                <p className="text-sm text-gray-500 mt-1">{user.email}</p>
               </div>
 
               {/* Menu */}
@@ -292,83 +399,145 @@ export default function MyPage() {
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
                   <h2 className="text-2xl font-bold mb-2">현재 포인트</h2>
                   <p className="text-5xl font-bold mb-4">{user.points.toLocaleString()}</p>
-                  <p className="text-indigo-100">약 {Math.floor(user.points / 100)}장의 이미지 생성 가능</p>
+                  <p className="text-indigo-100 mb-6">약 {Math.floor(user.points / 100)}장의 이미지 생성 가능</p>
                   <Link
                     href="/points"
-                    className="inline-block mt-6 px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-colors"
+                    className="inline-block px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-colors shadow-lg"
                   >
-                    포인트 충전하기
+                    포인트 충전하기 →
                   </Link>
                 </div>
 
-                {/* 포인트 패키지 */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">포인트 패키지</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { name: '스타터', points: 1000, price: 5000, discount: 0 },
-                      { name: '베이직', points: 3000, price: 13500, discount: 10 },
-                      { name: '프로', points: 10000, price: 40000, discount: 20, popular: true },
-                      { name: '비즈니스', points: 30000, price: 105000, discount: 30 },
-                    ].map((pkg) => (
-                      <div
-                        key={pkg.name}
-                        className={`relative border-2 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer ${
-                          pkg.popular
-                            ? 'border-indigo-500 bg-indigo-50'
-                            : 'border-gray-200 hover:border-indigo-300'
-                        }`}
-                      >
-                        {pkg.popular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                            <span className="px-3 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">
-                              인기
-                            </span>
-                          </div>
-                        )}
-                        <h4 className="font-bold text-gray-900 text-lg mb-2">{pkg.name}</h4>
-                        <p className="text-3xl font-bold text-indigo-600 mb-1">
-                          {pkg.points.toLocaleString()}
-                          <span className="text-lg text-gray-600">pt</span>
-                        </p>
-                        <p className="text-2xl font-semibold text-gray-900 mb-3">
-                          ₩{pkg.price.toLocaleString()}
-                        </p>
-                        {pkg.discount > 0 && (
-                          <span className="inline-block px-2 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded mb-3">
-                            {pkg.discount}% 할인
-                          </span>
-                        )}
-                        <p className="text-sm text-gray-600 mb-4">
-                          약 {Math.floor(pkg.points / 100)}장 생성 가능
-                        </p>
-                        <button className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">
-                          구매하기
-                        </button>
-                      </div>
-                    ))}
+                {/* 포인트 통계 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-red-100 border-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">💸 총 사용</h3>
+                      <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">지출</span>
+                    </div>
+                    <p className="text-4xl font-bold text-red-600 mb-2">
+                      {pointStats.totalUsed.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      약 {Math.floor(pointStats.totalUsed / 100)}장 생성
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-green-100 border-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">💰 총 충전</h3>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">수입</span>
+                    </div>
+                    <p className="text-4xl font-bold text-green-600 mb-2">
+                      {pointStats.totalPurchased.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {(pointStats.totalPurchased).toLocaleString()}원 충전
+                    </p>
                   </div>
                 </div>
 
-                {/* 사용 내역 */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">최근 거래 내역</h3>
-                  <div className="space-y-3">
-                    {/* 예시 데이터 */}
-                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                      <div>
-                        <p className="font-medium text-gray-900">가입 보너스</p>
-                        <p className="text-sm text-gray-500">2025-11-23 10:00</p>
-                      </div>
-                      <span className="text-lg font-bold text-green-600">+1,000pt</span>
-                    </div>
-                    
-                    {recentGenerations.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
+                {/* 거래 내역 (충전/사용) */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">거래 내역</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      총 {transactions.length}건의 포인트 거래 내역
+                      {transactions.length > itemsPerPage && ` (${currentPage}/${Math.ceil(transactions.length / itemsPerPage)} 페이지)`}
+                    </p>
+                  </div>
+
+                  <div className="divide-y divide-gray-100">
+                    {transactions.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500">
                         거래 내역이 없습니다
                       </div>
+                    ) : (
+                      transactions
+                        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                        .map((tx) => {
+                        const createdAt = tx.createdAt?.toDate ? new Date(tx.createdAt.toDate()) : new Date();
+                        const isPositive = tx.amount > 0;
+                        const typeConfig: Record<string, { icon: string; label: string; color: string }> = {
+                          purchase: { icon: '💰', label: '포인트 충전', color: 'text-green-600' },
+                          usage: { icon: '🎨', label: '이미지 생성', color: 'text-red-600' },
+                          refund: { icon: '↩️', label: '환불', color: 'text-blue-600' },
+                          bonus: { icon: '🎁', label: '보너스', color: 'text-purple-600' },
+                        };
+                        const config = typeConfig[tx.type] || { icon: '📝', label: tx.type, color: 'text-gray-600' };
+
+                        return (
+                          <div key={tx.id} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="text-xl">{config.icon}</span>
+                                  <p className="font-semibold text-gray-900">{config.label}</p>
+                                </div>
+                                <p className="text-sm text-gray-500 mb-1">
+                                  {createdAt.toLocaleDateString('ko-KR')} {createdAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                                {tx.description && (
+                                  <p className="text-xs text-gray-400">{tx.description}</p>
+                                )}
+                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
+                                  <span>이전: {(tx.balanceBefore || 0).toLocaleString()}pt</span>
+                                  <span>→</span>
+                                  <span>이후: {(tx.balanceAfter || 0).toLocaleString()}pt</span>
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <p className={`text-2xl font-bold ${config.color}`}>
+                                  {isPositive ? '+' : ''}{tx.amount.toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-500">pt</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
+
+                  {/* 페이지네이션 */}
+                  {transactions.length > itemsPerPage && (
+                    <div className="p-6 bg-gray-50 border-t border-gray-200">
+                      <div className="flex items-center justify-center space-x-2">
+                        {/* 이전 버튼 */}
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          ←
+                        </button>
+
+                        {/* 페이지 번호 */}
+                        {Array.from({ length: Math.ceil(transactions.length / itemsPerPage) }, (_, i) => i + 1).map(page => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                              currentPage === page
+                                ? 'bg-indigo-600 text-white'
+                                : 'border border-gray-300 hover:bg-white text-gray-700'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+
+                        {/* 다음 버튼 */}
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(Math.ceil(transactions.length / itemsPerPage), prev + 1))}
+                          disabled={currentPage === Math.ceil(transactions.length / itemsPerPage)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          →
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -463,16 +632,22 @@ export default function MyPage() {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">총 사용 포인트</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {(user.stats?.totalPointsUsed || 0).toLocaleString()}
+                      <p className="text-2xl font-bold text-red-600">
+                        {pointStats.totalUsed.toLocaleString()}
                         <span className="text-sm text-gray-600 ml-1">pt</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        약 {Math.floor(pointStats.totalUsed / 100)}장 생성
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600 mb-1">총 구매 포인트</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {(user.stats?.totalPointsPurchased || 0).toLocaleString()}
+                      <p className="text-2xl font-bold text-green-600">
+                        {pointStats.totalPurchased.toLocaleString()}
                         <span className="text-sm text-gray-600 ml-1">pt</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {(pointStats.totalPurchased / 1).toLocaleString()}원 충전
                       </p>
                     </div>
                   </div>
@@ -480,39 +655,216 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* Points Tab */}
-            {activeTab === 'points' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">포인트 관리</h3>
-                <p className="text-gray-600">포인트 충전 기능은 곧 추가됩니다.</p>
-              </div>
-            )}
 
             {/* History Tab */}
             {activeTab === 'history' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">생성 히스토리</h3>
-                <p className="text-gray-600">히스토리 기능은 곧 추가됩니다.</p>
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">생성 히스토리</h3>
+                  
+                  {loadingData ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                    </div>
+                  ) : recentGenerations.length === 0 ? (
+                    <div className="text-center py-12">
+                      <ImageIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">아직 생성한 이미지가 없습니다</p>
+                      <Link
+                        href="/"
+                        className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                      >
+                        첫 이미지 생성하기
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentGenerations.map((gen) => {
+                        const createdAt = gen.createdAt?.toDate ? new Date(gen.createdAt.toDate()) : new Date();
+                        const statusColors = {
+                          pending: 'bg-yellow-100 text-yellow-800',
+                          processing: 'bg-blue-100 text-blue-800',
+                          completed: 'bg-green-100 text-green-800',
+                          failed: 'bg-red-100 text-red-800',
+                        };
+                        const statusLabels = {
+                          pending: '대기 중',
+                          processing: '생성 중',
+                          completed: '완료',
+                          failed: '실패',
+                        };
+
+                        return (
+                          <Link
+                            key={gen.id}
+                            href={`/generation/${gen.id}`}
+                            className="block border border-gray-200 rounded-xl p-6 hover:border-indigo-300 hover:shadow-lg transition-all"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[gen.status as keyof typeof statusColors]}`}>
+                                    {statusLabels[gen.status as keyof typeof statusLabels]}
+                                  </span>
+                                  {gen.status === 'processing' && (
+                                    <span className="text-sm text-gray-600">
+                                      {gen.progress || 0}% 완료
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-gray-900 font-medium line-clamp-2 mb-2">
+                                  {gen.prompt}
+                                </p>
+                                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                  <span>📅 {createdAt.toLocaleDateString('ko-KR')} {createdAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span>🖼️ {gen.totalImages || 0}장</span>
+                                  <span>💰 {(gen.totalPoints || 0).toLocaleString()}pt</span>
+                                </div>
+                              </div>
+                              {gen.status === 'completed' && gen.imageUrls && gen.imageUrls[0] && (
+                                <div className="ml-4 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                  <img
+                                    src={gen.imageUrls[0]}
+                                    alt="썸네일"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* 모델 정보 */}
+                            {gen.modelConfigs && Array.isArray(gen.modelConfigs) && gen.modelConfigs.length > 0 && (
+                              <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+                                {gen.modelConfigs.map((config: any, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                                  >
+                                    {config.modelId} ({config.count}장)
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Payment Tab */}
             {activeTab === 'payment' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">결제 내역</h3>
-                <p className="text-gray-600">결제 내역 기능은 곧 추가됩니다.</p>
-              </div>
-            )}
-
-            {/* Settings Tab Detail */}
-            {activeTab === 'settings' && (
               <div className="space-y-6">
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">설정</h3>
-                  <p className="text-gray-600">설정 기능은 곧 추가됩니다.</p>
+                {/* 결제 내역 목록 */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">결제 내역</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      총 {payments.length}건의 결제 내역
+                      {payments.length > itemsPerPage && ` (${paymentPage}/${Math.ceil(payments.length / itemsPerPage)} 페이지)`}
+                    </p>
+                  </div>
+
+                  <div className="divide-y divide-gray-100">
+                    {payments.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500">
+                        결제 내역이 없습니다
+                      </div>
+                    ) : (
+                      payments
+                        .slice((paymentPage - 1) * itemsPerPage, paymentPage * itemsPerPage)
+                        .map((payment) => {
+                          const createdAt = payment.createdAt?.toDate ? new Date(payment.createdAt.toDate()) : new Date();
+                          const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+                            completed: { label: '✅ 완료', color: 'text-green-700', bg: 'bg-green-100 border-green-200' },
+                            pending: { label: '⏳ 대기', color: 'text-yellow-700', bg: 'bg-yellow-100 border-yellow-200' },
+                            failed: { label: '❌ 실패', color: 'text-red-700', bg: 'bg-red-100 border-red-200' },
+                            cancelled: { label: '🚫 취소', color: 'text-gray-700', bg: 'bg-gray-100 border-gray-200' },
+                          };
+                          const config = statusConfig[payment.status] || statusConfig.pending;
+
+                          return (
+                            <div key={payment.id} className="p-6 hover:bg-gray-50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${config.bg}`}>
+                                      {config.label}
+                                    </span>
+                                    {payment.paymentMethod && (
+                                      <span className="text-xs text-gray-500">
+                                        {payment.paymentMethod}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="font-semibold text-gray-900 mb-1">
+                                    포인트 충전 ({(payment.points || 0).toLocaleString()}pt)
+                                  </p>
+                                  <p className="text-sm text-gray-500 mb-2">
+                                    {createdAt.toLocaleDateString('ko-KR')} {createdAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                  {payment.orderId && (
+                                    <p className="text-xs text-gray-400">주문번호: {payment.orderId}</p>
+                                  )}
+                                  {payment.failReason && (
+                                    <p className="text-xs text-red-500 mt-1">실패 사유: {payment.failReason}</p>
+                                  )}
+                                </div>
+                                <div className="text-right ml-4">
+                                  <p className="text-3xl font-bold text-gray-900">
+                                    {(payment.amount || 0).toLocaleString()}
+                                  </p>
+                                  <p className="text-sm text-gray-500">원</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+
+                  {/* 페이지네이션 */}
+                  {payments.length > itemsPerPage && (
+                    <div className="p-6 bg-gray-50 border-t border-gray-200">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => setPaymentPage(prev => Math.max(1, prev - 1))}
+                          disabled={paymentPage === 1}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          ←
+                        </button>
+
+                        {Array.from({ length: Math.ceil(payments.length / itemsPerPage) }, (_, i) => i + 1).map(page => (
+                          <button
+                            key={page}
+                            onClick={() => setPaymentPage(page)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                              paymentPage === page
+                                ? 'bg-indigo-600 text-white'
+                                : 'border border-gray-300 hover:bg-white text-gray-700'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+
+                        <button
+                          onClick={() => setPaymentPage(prev => Math.min(Math.ceil(payments.length / itemsPerPage), prev + 1))}
+                          disabled={paymentPage === Math.ceil(payments.length / itemsPerPage)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          →
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </main>
@@ -520,7 +872,7 @@ export default function MyPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">imagesfactory</h3>
               <p className="text-gray-400 text-sm">
@@ -531,8 +883,16 @@ export default function MyPage() {
             <div>
               <h4 className="font-bold mb-4">고객지원</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>이메일: support@imagesfactory.com</li>
-                <li>전화: 010-4882-9820</li>
+                <li>
+                  이메일: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">
+                    webmaster@geniuscat.co.kr
+                  </a>
+                </li>
+                <li>
+                  전화: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">
+                    010-8440-9820
+                  </a>
+                </li>
                 <li>평일 10:00 - 18:00</li>
               </ul>
             </div>
@@ -544,6 +904,21 @@ export default function MyPage() {
                 <li>사업자번호: 829-04-03406</li>
                 <li>통신판매업: 2025-서울강남-06359</li>
                 <li>주소: 서울특별시 강남구 봉은사로30길 68, 6층-S42호</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">약관 및 정책</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors">
+                    이용약관
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors">
+                    개인정보처리방침
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

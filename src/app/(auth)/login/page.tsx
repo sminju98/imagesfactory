@@ -36,7 +36,15 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // 이메일 인증 확인
+      if (!userCredential.user.emailVerified) {
+        // 로그아웃하지 않고 인증 페이지로 이동
+        router.push('/verify-email');
+        return;
+      }
+      
       router.push('/');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -61,7 +69,9 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // 구글은 기본적으로 이메일 인증됨
       router.push('/');
     } catch (error: any) {
       console.error('Google login error:', error);

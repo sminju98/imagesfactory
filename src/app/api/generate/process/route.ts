@@ -4,8 +4,54 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { generateImage } from '@/lib/ai-models';
 import { sendEmail, getGenerationCompleteEmailHTML } from '@/lib/email';
-import archiver from 'archiver';
-import { Readable } from 'stream';
+import JSZip from 'jszip';
+
+/**
+ * ZIP 파일 생성 및 Storage 업로드
+ */
+async function createZipAndUpload(generationId: string, imageUrls: string[]): Promise<string> {
+  const zip = new JSZip();
+
+  // 각 이미지를 다운로드하여 ZIP에 추가
+  for (let i = 0; i < imageUrls.length; i++) {
+    try {
+      const imageUrl = imageUrls[i];
+      const response = await fetch(imageUrl);
+      const imageBuffer = await response.arrayBuffer();
+      
+      // 파일명 생성 (image_001.png, image_002.png, ...)
+      const filename = `image_${String(i + 1).padStart(3, '0')}.png`;
+      zip.file(filename, imageBuffer);
+      
+      console.log(`📦 ZIP에 추가: ${filename} (${(imageBuffer.byteLength / 1024).toFixed(2)} KB)`);
+    } catch (error) {
+      console.error(`⚠️ 이미지 ${i + 1} 다운로드 실패:`, error);
+    }
+  }
+
+  // ZIP 파일 생성
+  console.log('📦 ZIP 압축 중...');
+  const zipBuffer = await zip.generateAsync({ 
+    type: 'arraybuffer',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
+  });
+  
+  const zipSizeMB = (zipBuffer.byteLength / 1024 / 1024).toFixed(2);
+  console.log(`✅ ZIP 파일 생성 완료 (${zipSizeMB} MB)`);
+
+  // Firebase Storage에 업로드
+  const zipFilename = `zips/${generationId}.zip`;
+  const storageRef = ref(storage, zipFilename);
+  await uploadBytes(storageRef, new Uint8Array(zipBuffer), {
+    contentType: 'application/zip',
+  });
+  
+  const downloadUrl = await getDownloadURL(storageRef);
+  console.log('✅ ZIP 파일 Storage 업로드 완료:', downloadUrl);
+  
+  return downloadUrl;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const generationData = generationDoc.data();
-    const { userId, prompt, email, modelConfigs, totalPoints } = generationData;
+    const { userId, prompt, email, modelConfigs, totalPoints, referenceImageUrl } = generationData;
 
     // 사용자 정보 가져오기
     const userRef = doc(db, 'users', userId);
@@ -92,6 +138,7 @@ export async function POST(request: NextRequest) {
             modelId,
             width: 1024,
             height: 1024,
+            referenceImageUrl: referenceImageUrl || undefined,
           });
 
           // 이미지 다운로드
@@ -126,8 +173,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ZIP 파일 생성은 건너뛰고 (복잡함) 단순히 URL 목록만 저장
-    const zipUrl = `Generated ${generatedImages.length} images`;
+    // ZIP 파일 생성 및 Storage 업로드
+    let zipUrl = '';
+    try {
+      console.log('📦 ZIP 파일 생성 중...');
+      zipUrl = await createZipAndUpload(generationId, generatedImages);
+      console.log('✅ ZIP 파일 생성 완료:', zipUrl);
+    } catch (zipError) {
+      console.error('⚠️ ZIP 생성 실패 (이미지 링크는 사용 가능):', zipError);
+      zipUrl = ''; // ZIP 실패해도 이미지 링크는 사용 가능
+    }
 
     // 완료 상태 업데이트
     await updateDoc(generationRef, {
@@ -136,6 +191,27 @@ export async function POST(request: NextRequest) {
       completedAt: new Date(),
       imageUrls: generatedImages,
       zipUrl,
+    });
+
+    // 사용자 통계 업데이트
+    const currentStats = userData.stats || {
+      totalGenerations: 0,
+      totalImages: 0,
+      totalPointsUsed: 0,
+      totalPointsPurchased: 0,
+    };
+
+    await updateDoc(userRef, {
+      'stats.totalGenerations': (currentStats.totalGenerations || 0) + 1,
+      'stats.totalImages': (currentStats.totalImages || 0) + generatedImages.length,
+      'stats.totalPointsUsed': (currentStats.totalPointsUsed || 0) + totalPoints,
+      updatedAt: new Date(),
+    });
+
+    console.log('📊 통계 업데이트 완료:', {
+      totalGenerations: (currentStats.totalGenerations || 0) + 1,
+      totalImages: (currentStats.totalImages || 0) + generatedImages.length,
+      totalPointsUsed: (currentStats.totalPointsUsed || 0) + totalPoints,
     });
 
     // 이메일 발송
@@ -148,6 +224,8 @@ export async function POST(request: NextRequest) {
           totalImages: generatedImages.length,
           prompt,
           downloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/generation/${generationId}`,
+          imageUrls: generatedImages,
+          zipUrl: zipUrl || undefined,
         }),
       });
     } catch (emailError) {

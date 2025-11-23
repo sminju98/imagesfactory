@@ -5,7 +5,7 @@ import { db } from '@/lib/firebase';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, prompt, email, selectedModels } = body;
+    const { userId, prompt, email, selectedModels, referenceImageUrl } = body;
 
     // 유효성 검사
     if (!userId || !prompt || !email || !selectedModels) {
@@ -14,6 +14,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    console.log('📝 이미지 생성 요청:', {
+      userId,
+      prompt: prompt.substring(0, 50) + '...',
+      hasReferenceImage: !!referenceImageUrl,
+      referenceImageUrl: referenceImageUrl || 'none',
+    });
 
     if (prompt.length < 10 || prompt.length > 1000) {
       return NextResponse.json(
@@ -50,6 +57,7 @@ export async function POST(request: NextRequest) {
       totalImages,
       totalPoints,
       modelConfigs,
+      referenceImageUrl: referenceImageUrl || null,
       status: 'pending',
       progress: 0,
       createdAt: serverTimestamp(),

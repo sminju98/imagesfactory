@@ -17,10 +17,23 @@ const firebaseConfig = {
 // Firebase 앱 초기화 (중복 방지)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
+// 초기화 디버그 로그
+console.log('🔵 [DEBUG] Firebase 초기화 완료');
+console.log('🔵 [DEBUG] Firebase Config:', {
+  apiKey: firebaseConfig.apiKey ? '✅ 설정됨' : '❌ 없음',
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+});
+
 // Firebase 서비스 초기화
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+console.log('🔵 [DEBUG] Firebase Auth 초기화:', {
+  currentUser: auth.currentUser?.email || '로그인 안됨',
+  authDomain: auth.config.authDomain,
+});
 
 export default app;
 

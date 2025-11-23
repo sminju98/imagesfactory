@@ -51,6 +51,8 @@ export function getGenerationCompleteEmailHTML(data: {
   totalImages: number;
   prompt: string;
   downloadUrl: string;
+  imageUrls?: string[];
+  zipUrl?: string;
 }) {
   return `
 <!DOCTYPE html>
@@ -93,19 +95,48 @@ export function getGenerationCompleteEmailHTML(data: {
                 </tr>
               </table>
               
-              <!-- Download Button -->
+              <!-- Image Links -->
+              ${data.imageUrls && data.imageUrls.length > 0 ? `
+              <div style="margin: 30px 0;">
+                <p style="margin: 0 0 15px 0; font-size: 16px; color: #111827; font-weight: bold;">
+                  🖼️ 생성된 이미지 링크
+                </p>
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F9FAFB; border-radius: 12px; padding: 20px;">
+                  ${data.imageUrls.map((url, index) => `
+                  <tr>
+                    <td style="padding: 8px 0;">
+                      <a href="${url}" style="color: #6366F1; text-decoration: none; font-size: 14px; word-break: break-all;" target="_blank">
+                        📷 이미지 ${index + 1}: ${url.split('/').pop()?.substring(0, 30)}...
+                      </a>
+                    </td>
+                  </tr>
+                  `).join('')}
+                </table>
+              </div>
+              ` : ''}
+              
+              <!-- Download Buttons -->
               <table width="100%" cellpadding="0" cellspacing="0">
+                ${data.zipUrl ? `
                 <tr>
-                  <td align="center" style="padding: 20px 0;">
+                  <td align="center" style="padding: 10px 0;">
+                    <a href="${data.zipUrl}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                      📦 ZIP 파일 다운로드 (전체)
+                    </a>
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td align="center" style="padding: 10px 0;">
                     <a href="${data.downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: bold;">
-                      📥 ZIP 다운로드
+                      🖼️ 결과 페이지 보기
                     </a>
                   </td>
                 </tr>
               </table>
               
               <p style="margin: 30px 0 0 0; font-size: 14px; color: #6B7280; line-height: 1.6;">
-                💡 다운로드 링크는 30일간 유효합니다.<br>
+                💡 이미지 링크는 30일간 유효합니다.<br>
                 웹사이트에서도 언제든지 확인하실 수 있습니다.
               </p>
             </td>

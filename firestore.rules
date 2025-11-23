@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 🚨 개발용 테스트 규칙 - 모든 읽기/쓰기 허용
+    // ⚠️ 프로덕션 배포 전 반드시 보안 규칙 강화 필요!
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

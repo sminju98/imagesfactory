@@ -103,8 +103,10 @@ export default function SignupPage() {
         console.error('Welcome email error:', emailError);
       }
 
-      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증 링크를 확인해주세요');
-      router.push('/');
+      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증이 필요합니다. 메일함을 확인해주세요.');
+      
+      // 인증 페이지로 이동
+      router.push('/verify-email');
     } catch (error: any) {
       console.error('Signup error:', error);
       
@@ -126,15 +128,32 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     try {
       setLoading(true);
+      console.log('🔵 [DEBUG] 구글 회원가입 시작');
+      console.log('🔵 [DEBUG] Firebase Auth 상태:', auth);
+      console.log('🔵 [DEBUG] Auth Domain:', auth.config.authDomain);
+      
       const provider = new GoogleAuthProvider();
+      console.log('🔵 [DEBUG] GoogleAuthProvider 생성 완료');
+      
       const userCredential = await signInWithPopup(auth, provider);
+      console.log('🔵 [DEBUG] signInWithPopup 성공:', userCredential);
+      
       const user = userCredential.user;
+      console.log('🔵 [DEBUG] 사용자 정보:', {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+      });
 
       // Firestore에 사용자 정보 저장 (신규 사용자인 경우)
+      console.log('🔵 [DEBUG] Firestore에서 기존 사용자 확인 중...');
       const userDoc = await getDoc(doc(db, 'users', user.uid));
+      console.log('🔵 [DEBUG] 기존 사용자 존재 여부:', userDoc.exists());
       
       if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', user.uid), {
+        console.log('🔵 [DEBUG] 신규 사용자! Firestore에 저장 시작...');
+        
+        const userData = {
           uid: user.uid,
           email: user.email,
           displayName: user.displayName || '사용자',
@@ -150,10 +169,17 @@ export default function SignupPage() {
             totalPointsUsed: 0,
             totalPointsPurchased: 0,
           },
-        });
+        };
+        
+        console.log('🔵 [DEBUG] 저장할 사용자 데이터:', userData);
+        
+        await setDoc(doc(db, 'users', user.uid), userData);
+        
+        console.log('✅ [DEBUG] Firestore 저장 완료!');
         
         // 환영 이메일 발송
         try {
+          console.log('🔵 [DEBUG] 환영 이메일 발송 시도...');
           await fetch('/api/email/welcome', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -163,28 +189,41 @@ export default function SignupPage() {
               points: 1000,
             }),
           });
+          console.log('✅ [DEBUG] 환영 이메일 발송 성공');
         } catch (emailError) {
-          console.error('Welcome email error:', emailError);
+          console.error('🔴 [ERROR] Welcome email error:', emailError);
         }
 
         alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급');
+      } else {
+        console.log('🔵 [DEBUG] 기존 사용자 로그인');
+        alert('로그인 성공! 👋');
       }
 
+      console.log('🔵 [DEBUG] 메인 페이지로 이동...');
       router.push('/');
     } catch (error: any) {
-      console.error('Google signup error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
+      console.error('🔴 [ERROR] Google signup error:', error);
+      console.error('🔴 [ERROR] Error code:', error.code);
+      console.error('🔴 [ERROR] Error message:', error.message);
+      console.error('🔴 [ERROR] Full error object:', JSON.stringify(error, null, 2));
       
+      // 에러 타입별 상세 로깅
       if (error.code === 'auth/popup-closed-by-user') {
+        console.log('🟡 [INFO] 사용자가 팝업을 닫았습니다');
         setError('팝업이 닫혔습니다. 다시 시도해주세요');
       } else if (error.code === 'auth/cancelled-popup-request') {
+        console.log('🟡 [INFO] 팝업 요청이 취소되었습니다');
         setError('로그인이 취소되었습니다');
       } else if (error.code === 'auth/popup-blocked') {
+        console.log('🟡 [INFO] 브라우저에서 팝업을 차단했습니다');
         setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
       } else if (error.code === 'auth/unauthorized-domain') {
+        console.error('🔴 [CRITICAL] 도메인이 승인되지 않았습니다!');
+        console.error('🔴 [CRITICAL] Firebase Console > Authentication > Settings > Authorized domains에서 localhost를 추가해주세요');
         setError('이 도메인은 승인되지 않았습니다. Firebase Console에서 localhost를 승인해주세요');
       } else {
+        console.error('🔴 [ERROR] 알 수 없는 에러:', error.code);
         setError(`구글 로그인 오류: ${error.code} - ${error.message}`);
       }
     } finally {
@@ -383,7 +422,7 @@ export default function SignupPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="text-gray-700">Google로 회원가입</span>
+            <span className="text-gray-700">Google로 로그인</span>
           </button>
 
           {/* 로그인 링크 */}

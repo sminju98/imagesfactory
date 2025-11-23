@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
+import Link from 'next/link';
 import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle } from 'lucide-react';
 
 // AI 모델 타입 정의
@@ -103,18 +104,54 @@ const AI_MODELS: AIModel[] = [
 export default function Home() {
   const { user, loading } = useAuth();
   const [prompt, setPrompt] = useState('');
-  const [email, setEmail] = useState(user?.email || 'user@example.com');
+  const [email, setEmail] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [selectedModels, setSelectedModels] = useState<Record<string, number>>({
     'sdxl': 10,
   });
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // 사용자 이메일 동기화
-  useState(() => {
+  useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
     }
-  });
+  }, [user]);
+
+  // 참고 이미지 업로드 처리
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 크기 체크 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('이미지 크기는 10MB 이하여야 합니다');
+        return;
+      }
+
+      // 이미지 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다');
+        return;
+      }
+
+      setReferenceImage(file);
+      
+      // 미리보기 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReferenceImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 참고 이미지 제거
+  const removeReferenceImage = () => {
+    setReferenceImage(null);
+    setReferenceImagePreview('');
+  };
 
   // 모델 선택/해제
   const toggleModel = (modelId: string) => {
@@ -189,6 +226,35 @@ export default function Home() {
     if (!confirmed) return;
 
     try {
+      let referenceImageUrl = '';
+
+      // 참고 이미지가 있으면 먼저 Storage에 업로드
+      if (referenceImage) {
+        setUploadingImage(true);
+        try {
+          const { ref: storageRef, uploadBytes: uploadBytesFunc, getDownloadURL: getDownloadURLFunc } = await import('firebase/storage');
+          const { storage } = await import('@/lib/firebase');
+          
+          const timestamp = Date.now();
+          const filename = `reference-images/${user.uid}/${timestamp}_${referenceImage.name}`;
+          const imageRef = storageRef(storage, filename);
+          
+          await uploadBytesFunc(imageRef, referenceImage);
+          referenceImageUrl = await getDownloadURLFunc(imageRef);
+          
+          console.log('✅ 참고 이미지 업로드 완료:', referenceImageUrl);
+        } catch (uploadError) {
+          console.error('❌ 참고 이미지 업로드 실패:', uploadError);
+          alert('참고 이미지 업로드에 실패했습니다. 이미지 없이 생성하시겠습니까?');
+          if (!confirm('계속하시겠습니까?')) {
+            setUploadingImage(false);
+            return;
+          }
+        } finally {
+          setUploadingImage(false);
+        }
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -199,6 +265,7 @@ export default function Home() {
           prompt,
           email,
           selectedModels,
+          referenceImageUrl: referenceImageUrl || undefined,
         }),
       });
 
@@ -253,6 +320,58 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Reference Image Upload */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center space-x-2 mb-4">
+                <ImageIcon className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-xl font-bold text-gray-900">참고 이미지 (선택)</h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                이미지를 업로드하면 유사한 스타일로 생성됩니다
+              </p>
+
+              {referenceImagePreview ? (
+                <div className="relative">
+                  <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-indigo-200">
+                    <img
+                      src={referenceImagePreview}
+                      alt="참고 이미지"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <button
+                    onClick={removeReferenceImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <p className="mt-2 text-sm text-gray-600">
+                    📎 {referenceImage?.name} ({(referenceImage!.size / 1024).toFixed(0)} KB)
+                  </p>
+                </div>
+              ) : (
+                <label className="block cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-700 font-medium mb-1">
+                      클릭하여 이미지 업로드
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      PNG, JPG, WEBP (최대 10MB)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
             {/* Email Input */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
@@ -264,8 +383,9 @@ export default function Home() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={user?.email || "your@email.com"}
+                  disabled={!user}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
@@ -445,14 +565,16 @@ export default function Home() {
               ) : (
                 <button
                   onClick={handleGenerate}
-                  disabled={totalImages === 0 || prompt.length < 10 || !user}
+                  disabled={totalImages === 0 || prompt.length < 10 || !user || uploadingImage}
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                    totalImages === 0 || prompt.length < 10 || !user
+                    totalImages === 0 || prompt.length < 10 || !user || uploadingImage
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
                   }`}
                 >
-                  {!user
+                  {uploadingImage
+                    ? '이미지 업로드 중...'
+                    : !user
                     ? '로그인이 필요합니다'
                     : totalImages === 0
                     ? '모델을 선택해주세요'
@@ -479,7 +601,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">imagesfactory</h3>
               <p className="text-gray-400 text-sm">
@@ -490,8 +612,16 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">고객지원</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>이메일: support@imagesfactory.com</li>
-                <li>전화: 010-4882-9820</li>
+                <li>
+                  이메일: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">
+                    webmaster@geniuscat.co.kr
+                  </a>
+                </li>
+                <li>
+                  전화: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">
+                    010-8440-9820
+                  </a>
+                </li>
                 <li>평일 10:00 - 18:00</li>
               </ul>
             </div>
@@ -503,6 +633,21 @@ export default function Home() {
                 <li>사업자번호: 829-04-03406</li>
                 <li>통신판매업: 2025-서울강남-06359</li>
                 <li>주소: 서울특별시 강남구 봉은사로30길 68, 6층-S42호</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">약관 및 정책</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link href="/terms" className="hover:text-white transition-colors">
+                    이용약관
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="hover:text-white transition-colors">
+                    개인정보처리방침
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 🚨 개발용 임시 규칙 - 모든 읽기/쓰기 허용
+    // ⚠️ 프로덕션 배포 전 반드시 보안 규칙 강화 필요!
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+

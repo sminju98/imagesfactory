@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "zeplin": {
+      "command": "npx",
+      "args": ["-y", "@zeplin/mcp-server@latest"],
+      "env": {
+        "ZEPLIN_ACCESS_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGVyc29uYWxfYWNjZXNzX3Rva2VuIiwiY2xpZW50X2lkIjoiNjg1YmI4YmQ1ZmE0NzAzNmU4NjJiMDZkIiwic2NvcGUiOiIiLCJpYXQiOjE3NTA4NDE1MzMsImV4cCI6MjA2NjQxMDc5MywiaXNzIjoiemVwbGluOmFwaS56ZXBsaW4uaW8iLCJzdWIiOiI2MTI5YWIzODA2NmE0NGEyYjBiNDRhYTYiLCJqdGkiOiI3MGNkOTRiZS1hMmZjLTQ2ZjEtYWY3ZS0yYjFhZjY5N2E2M2MifQ.3JERxvFaMGqxzMqBOJpdQt4Ggj1On4HzOB3qcSFYURs"
+      }
+    }
+  }
+}

@@ -33,9 +33,9 @@ export default function Header() {
                   </div>
                   <Link
                     href="/points"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-md"
                   >
-                    포인트 충전
+                    💰 포인트 충전
                   </Link>
                   <Link
                     href="/mypage"

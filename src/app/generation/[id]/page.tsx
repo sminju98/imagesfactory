@@ -21,6 +21,8 @@ interface GenerationData {
     completedCount: number;
     status: string;
   }>;
+  imageUrls?: string[];
+  zipUrl?: string;
   completedAt?: any;
   failedReason?: string;
 }
@@ -46,7 +48,13 @@ export default function GenerationPage() {
       doc(db, 'imageGenerations', generationId),
       (doc) => {
         if (doc.exists()) {
-          setGeneration({ id: doc.id, ...doc.data() } as GenerationData);
+          const data = doc.data();
+          // modelConfigs가 배열이 아니면 빈 배열로 초기화
+          setGeneration({ 
+            id: doc.id, 
+            ...data,
+            modelConfigs: Array.isArray(data.modelConfigs) ? data.modelConfigs : []
+          } as GenerationData);
         }
         setLoading(false);
       },
@@ -153,8 +161,21 @@ export default function GenerationPage() {
                 {generation.email}으로 전송되었습니다
               </p>
               
-              <div className="flex justify-center space-x-4">
-                <button className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">
+              <div className="flex justify-center space-x-4 flex-wrap gap-3">
+                {generation.zipUrl && (
+                  <a
+                    href={generation.zipUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors font-semibold shadow-lg"
+                  >
+                    📦 ZIP 파일 다운로드
+                  </a>
+                )}
+                <button 
+                  onClick={() => window.open(`mailto:${generation.email}`, '_blank')}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                >
                   이메일 확인하기
                 </button>
                 <Link
@@ -197,7 +218,7 @@ export default function GenerationPage() {
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           <h3 className="font-bold text-gray-900 mb-4">🤖 모델별 진행 상황</h3>
           <div className="space-y-4">
-            {generation.modelConfigs.map((config, index) => (
+            {Array.isArray(generation.modelConfigs) && generation.modelConfigs.map((config, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
@@ -230,6 +251,61 @@ export default function GenerationPage() {
           </div>
         </div>
 
+        {/* Generated Images - 완료 시에만 표시 */}
+        {generation.status === 'completed' && generation.imageUrls && generation.imageUrls.length > 0 && (
+          <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+            <h3 className="font-bold text-gray-900 mb-4">🎨 생성된 이미지 ({generation.imageUrls.length}장)</h3>
+            
+            {/* 이미지 그리드 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {generation.imageUrls.map((url, index) => (
+                <div key={index} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow">
+                  <img
+                    src={url}
+                    alt={`생성된 이미지 ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:bg-gray-100"
+                    >
+                      🔗 원본 보기
+                    </a>
+                  </div>
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                    #{index + 1}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 다운로드 링크 목록 */}
+            <div className="border-t border-gray-200 pt-6">
+              <h4 className="font-bold text-gray-900 mb-3">📥 다운로드 링크</h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto bg-gray-50 rounded-lg p-4">
+                {generation.imageUrls.map((url, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200 hover:border-indigo-300 transition-colors">
+                    <span className="text-sm text-gray-600 truncate flex-1 mr-4">
+                      🖼️ 이미지 {index + 1}
+                    </span>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium whitespace-nowrap"
+                    >
+                      다운로드 →
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Notice */}
         <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-6">
           <h3 className="font-bold text-indigo-900 mb-2">💡 안내</h3>
@@ -237,6 +313,9 @@ export default function GenerationPage() {
             <li>• 이 페이지를 닫아도 생성은 계속됩니다</li>
             <li>• 완료되면 {generation.email}으로 자동 전송됩니다</li>
             <li>• 마이페이지 {'>'} 히스토리에서 언제든지 확인 가능합니다</li>
+            {generation.status === 'completed' && (
+              <li>• 이미지 링크는 30일간 유효합니다</li>
+            )}
           </ul>
         </div>
       </main>
