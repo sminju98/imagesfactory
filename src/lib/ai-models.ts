@@ -246,6 +246,45 @@ export async function generateWithLeonardo(params: GenerateImageParams): Promise
 }
 
 /**
+ * Ideogram (텍스트 포함 이미지 특화)
+ */
+export async function generateWithIdeogram(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { prompt, width = 1024, height = 1024 } = params;
+
+  // 한글이면 번역
+  const finalPrompt = isKorean(prompt) 
+    ? await translatePromptToEnglish(prompt) 
+    : prompt;
+
+  const response = await fetch('https://api.ideogram.ai/generate', {
+    method: 'POST',
+    headers: {
+      'Api-Key': process.env.IDEOGRAM_API_KEY!,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      image_request: {
+        prompt: finalPrompt,
+        aspect_ratio: width === height ? 'ASPECT_1_1' : width > height ? 'ASPECT_16_9' : 'ASPECT_9_16',
+        model: 'V_2',
+        magic_prompt_option: 'AUTO',
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ideogram API error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  
+  return {
+    url: data.data[0].url,
+    modelId: 'ideogram',
+  };
+}
+
+/**
  * 모델별 이미지 생성 라우터
  */
 export async function generateImage(params: GenerateImageParams): Promise<GeneratedImage> {
@@ -273,6 +312,9 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
     
     case 'leonardo':
       return await generateWithLeonardo(params);
+    
+    case 'ideogram':
+      return await generateWithIdeogram(params);
     
     default:
       throw new Error(`Unknown model: ${modelId}`);

@@ -87,7 +87,6 @@ function getModelPoints(modelId: string): number {
     'dall-e-3': 200,
     'aurora': 250,
     'ideogram': 280,
-    'midjourney': 300,
   };
   return pointsMap[modelId] || 100;
 }

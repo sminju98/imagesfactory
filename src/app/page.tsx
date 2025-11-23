@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
-import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Info } from 'lucide-react';
-import { AI_MODELS_INFO, QUALITY_ICONS, SPEED_ICONS } from '@/data/ai-models-info';
+import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle } from 'lucide-react';
 
 // AI 모델 타입 정의
 interface AIModel {
@@ -73,6 +72,14 @@ const AI_MODELS: AIModel[] = [
     badge: 'NEW',
     color: 'bg-pink-50 border-pink-200',
   },
+  {
+    id: 'ideogram',
+    name: 'Ideogram',
+    description: '텍스트 포함 이미지, 포스터/광고 특화',
+    pointsPerImage: 280,
+    badge: '텍스트특화',
+    color: 'bg-rose-50 border-rose-200',
+  },
 ];
 
 export default function Home() {
@@ -83,7 +90,6 @@ export default function Home() {
   const [selectedModels, setSelectedModels] = useState<Record<string, number>>({
     'sdxl': 10,
   });
-  const [showModelInfo, setShowModelInfo] = useState<string | null>(null);
 
   // 사용자 이메일 동기화
   useState(() => {
@@ -281,7 +287,7 @@ export default function Home() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {AI_MODELS_INFO.map((model) => {
+                {AI_MODELS.map((model) => {
                   const isSelected = selectedModels[model.id] !== undefined;
                   const count = selectedModels[model.id] || 0;
 
@@ -304,19 +310,8 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Info Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowModelInfo(showModelInfo === model.id ? null : model.id);
-                        }}
-                        className="absolute top-2 left-2 w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
-                      >
-                        <Info className="w-4 h-4 text-gray-600" />
-                      </button>
-
-                      {/* Checkbox & Info */}
-                      <div className="flex items-start space-x-3 mb-3 mt-4">
+                      {/* Checkbox */}
+                      <div className="flex items-start space-x-3 mb-3">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -326,91 +321,12 @@ export default function Home() {
                         />
                         <div className="flex-1">
                           <h3 className="font-bold text-gray-900">{model.name}</h3>
-                          <p className="text-sm text-gray-600">{model.shortDescription}</p>
-                          
-                          {/* Used In */}
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {model.usedIn.slice(0, 2).map((platform, idx) => (
-                              <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                                {platform}
-                              </span>
-                            ))}
-                          </div>
-                          
-                          <div className="flex items-center space-x-3 mt-2">
-                            <div className="flex items-center space-x-1">
-                              <span className="text-xs text-gray-500">품질:</span>
-                              <span className="text-xs">{QUALITY_ICONS[model.quality]}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <span className="text-xs text-gray-500">속도:</span>
-                              <span className="text-xs">{SPEED_ICONS[model.speed]}</span>
-                            </div>
-                          </div>
-                          
-                          <p className="text-sm font-semibold text-indigo-600 mt-2">
+                          <p className="text-sm text-gray-600">{model.description}</p>
+                          <p className="text-sm font-semibold text-indigo-600 mt-1">
                             {model.pointsPerImage}pt / 장
                           </p>
                         </div>
                       </div>
-
-                      {/* Detailed Info Popup */}
-                      {showModelInfo === model.id && (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute left-0 right-0 top-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-4 shadow-xl z-10 max-h-96 overflow-y-auto"
-                        >
-                          <div className="space-y-3">
-                            <div>
-                              <h4 className="font-bold text-gray-900 mb-1">📝 설명</h4>
-                              <p className="text-sm text-gray-700">{model.fullDescription}</p>
-                            </div>
-                            
-                            <div>
-                              <h4 className="font-bold text-gray-900 mb-1">🏢 사용처</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {model.usedIn.map((platform, idx) => (
-                                  <span key={idx} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                                    {platform}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <h4 className="font-bold text-gray-900 mb-1">✨ 주요 특징</h4>
-                              <ul className="text-sm text-gray-700 space-y-1">
-                                {model.features.map((feature, idx) => (
-                                  <li key={idx}>• {feature}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            
-                            <div>
-                              <h4 className="font-bold text-gray-900 mb-1">🎯 추천 용도</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {model.bestFor.map((use, idx) => (
-                                  <span key={idx} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                    {use}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                              <div className="text-xs text-gray-500">
-                                {model.developer} • {model.releaseYear}
-                              </div>
-                              <button
-                                onClick={() => setShowModelInfo(null)}
-                                className="text-xs text-indigo-600 hover:underline"
-                              >
-                                닫기
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
 
                       {/* Count Selector */}
                       {isSelected && (
