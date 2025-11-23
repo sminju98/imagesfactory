@@ -100,7 +100,7 @@ export default function GenerationPage() {
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">imagesfactory</h1>
+                <h1 className="text-2xl font-bold text-gray-900">ImageFactory</h1>
                 <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
               </div>
             </div>

@@ -239,7 +239,7 @@ export default function SignupPage() {
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <div className="text-left">
-              <h1 className="text-3xl font-bold text-gray-900">imagesfactory</h1>
+              <h1 className="text-3xl font-bold text-gray-900">ImageFactory</h1>
               <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
             </div>
           </div>

@@ -20,7 +20,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">제 1 조 (목적)</h2>
               <p>
-                본 약관은 엠제이스튜디오(이하 "회사")가 운영하는 imagesfactory(이하 "서비스")의 이용과 관련하여 
+                본 약관은 엠제이스튜디오(이하 "회사")가 운영하는 ImageFactory(이하 "서비스")의 이용과 관련하여 
                 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
             </section>
