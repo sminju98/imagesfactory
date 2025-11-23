@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://ImageFactory.vercel.app",
+    url: "https://imagefactory.co.kr",
     title: "ImageFactory - AI 이미지 생성 플랫폼",
     description: "8개 AI 모델로 한 번에 수백 장의 이미지를 생성하세요",
     siteName: "ImageFactory",
