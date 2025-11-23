@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { Zap, Check, CreditCard } from 'lucide-react';
 
-// 충전 패키지
+// 충전 패키지 (보너스 포함)
 const POINT_PACKAGES = [
   {
     id: 'basic',
     points: 10000,
     amount: 10000,
+    bonus: 0, // 보너스 없음
     badge: '입문',
     color: 'from-blue-500 to-cyan-500',
   },
@@ -19,6 +20,7 @@ const POINT_PACKAGES = [
     id: 'standard',
     points: 50000,
     amount: 50000,
+    bonus: 5, // +5%
     badge: '인기',
     color: 'from-indigo-500 to-purple-500',
     popular: true,
@@ -27,6 +29,7 @@ const POINT_PACKAGES = [
     id: 'pro',
     points: 100000,
     amount: 100000,
+    bonus: 10, // +10%
     badge: '추천',
     color: 'from-purple-500 to-pink-500',
   },
@@ -34,10 +37,19 @@ const POINT_PACKAGES = [
     id: 'premium',
     points: 300000,
     amount: 300000,
+    bonus: 15, // +15%
     badge: '프리미엄',
     color: 'from-pink-500 to-rose-500',
   },
 ];
+
+// 보너스 계산 함수
+function calculateBonus(amount: number): number {
+  if (amount >= 300000) return 15;
+  if (amount >= 100000) return 10;
+  if (amount >= 50000) return 5;
+  return 0;
+}
 
 export default function PointsPage() {
   const { user } = useAuth();
@@ -47,13 +59,18 @@ export default function PointsPage() {
   const [useCustomAmount, setUseCustomAmount] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 커스텀 금액으로 포인트 계산 (1원 = 1포인트)
-  const customPoints = parseInt(customAmount) || 0;
+  // 커스텀 금액으로 포인트 계산 (1원 = 1포인트 + 보너스)
+  const customAmount_num = parseInt(customAmount) || 0;
+  const customBonus = calculateBonus(customAmount_num);
+  const customPoints = customAmount_num + Math.floor(customAmount_num * (customBonus / 100));
 
   // 선택된 패키지 정보
   const selectedPackageInfo = POINT_PACKAGES.find(p => p.id === selectedPackage);
-  const finalAmount = useCustomAmount ? customPoints : selectedPackageInfo?.amount || 0;
-  const finalPoints = useCustomAmount ? customPoints : selectedPackageInfo?.points || 0;
+  const finalAmount = useCustomAmount ? customAmount_num : selectedPackageInfo?.amount || 0;
+  const basePoints = useCustomAmount ? customAmount_num : selectedPackageInfo?.points || 0;
+  const bonusPercent = useCustomAmount ? customBonus : selectedPackageInfo?.bonus || 0;
+  const bonusPoints = Math.floor(basePoints * (bonusPercent / 100));
+  const finalPoints = basePoints + bonusPoints;
 
   // 결제 요청 (간단한 방식 - 개발 모드)
   const handleCharge = async () => {
@@ -147,7 +164,14 @@ export default function PointsPage() {
 
                 <div className={`bg-gradient-to-r ${pkg.color} rounded-xl p-4 text-white mb-4`}>
                   <p className="text-sm font-semibold mb-1">{pkg.badge}</p>
-                  <p className="text-3xl font-bold">{pkg.points.toLocaleString()}pt</p>
+                  <p className="text-3xl font-bold">
+                    {(pkg.points + Math.floor(pkg.points * (pkg.bonus / 100))).toLocaleString()}pt
+                  </p>
+                  {pkg.bonus > 0 && (
+                    <p className="text-xs opacity-90 mt-1">
+                      보너스 {pkg.bonus}% 포함
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -155,7 +179,7 @@ export default function PointsPage() {
                     {pkg.amount.toLocaleString()}원
                   </p>
                   <p className="text-sm text-gray-500">
-                    약 {Math.floor(pkg.points / 100)}장 생성 가능
+                    약 {Math.floor((pkg.points + Math.floor(pkg.points * (pkg.bonus / 100))) / 30)}장 생성 가능
                   </p>
                 </div>
 
@@ -212,14 +236,26 @@ export default function PointsPage() {
               <span>충전 금액</span>
               <span className="font-bold">{finalAmount.toLocaleString()}원</span>
             </div>
-            <div className="flex justify-between text-lg">
-              <span>받을 포인트</span>
-              <span className="font-bold">{finalPoints.toLocaleString()}pt</span>
+            <div className="border-t border-white/30 pt-4 space-y-3">
+              <div className="flex justify-between text-lg">
+                <span>기본 포인트</span>
+                <span className="font-bold">{basePoints.toLocaleString()}pt</span>
+              </div>
+              {bonusPercent > 0 && (
+                <div className="flex justify-between text-lg text-yellow-300">
+                  <span>🎁 보너스 포인트 (+{bonusPercent}%)</span>
+                  <span className="font-bold">+{bonusPoints.toLocaleString()}pt</span>
+                </div>
+              )}
+              <div className="flex justify-between text-2xl font-bold pt-3 border-t border-white/30">
+                <span>총 받을 포인트</span>
+                <span>{finalPoints.toLocaleString()}pt</span>
+              </div>
             </div>
             <div className="border-t border-white/30 pt-4">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between">
                 <span>결제 후 보유 포인트</span>
-                <span className="font-semibold">
+                <span className="font-bold text-lg">
                   {((user?.points || 0) + finalPoints).toLocaleString()}pt
                 </span>
               </div>
