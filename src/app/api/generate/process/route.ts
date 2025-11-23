@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
       imageIndex: number;
     }> = [];
 
-    modelConfigs.forEach((config, modelIndex) => {
+    modelConfigs.forEach((config: any, modelIndex: number) => {
       for (let i = 0; i < config.count; i++) {
         allGenerationTasks.push({
           modelId: config.modelId,
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
 
     // 모든 모델 상태를 processing으로 변경
     const statusUpdates: any = {};
-    modelConfigs.forEach((config, index) => {
+    modelConfigs.forEach((config: any, index: number) => {
       statusUpdates[`modelConfigs.${index}.status`] = 'processing';
     });
     await generationRef.update(statusUpdates);
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
 
     // 성공한 이미지만 수집
     results.forEach((result) => {
-      if (result.status === 'fulfilled' && result.value.success) {
+      if (result.status === 'fulfilled' && result.value.success && result.value.imageUrl) {
         generatedImages.push(result.value.imageUrl);
         completedCount++;
       }
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
 
     // 모든 모델 상태를 completed로 변경
     const completedUpdates: any = {};
-    modelConfigs.forEach((config, index) => {
+    modelConfigs.forEach((config: any, index: number) => {
       const modelResults = results.filter(
         (r) => r.status === 'fulfilled' && r.value.task?.modelIndex === index && r.value.success
       );
