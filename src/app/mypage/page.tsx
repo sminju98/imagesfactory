@@ -439,27 +439,24 @@ export default function MyPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white rounded-2xl shadow-lg p-6 border border-red-100 border-2">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">💸 총 사용</h3>
+                      <h3 className="text-lg font-bold text-gray-900">💸 사용한 포인트</h3>
                       <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">지출</span>
-                          </div>
+                    </div>
                     <p className="text-4xl font-bold text-red-600 mb-2">
-                      {pointStats.totalUsed.toLocaleString()}
+                      {pointStats.totalUsed.toLocaleString()}pt
                     </p>
                     <p className="text-sm text-gray-600">
-                      약 {Math.floor(pointStats.totalUsed / 100)}장 생성
+                      약 {Math.floor(pointStats.totalUsed / 30)}장 생성
                     </p>
                   </div>
 
                   <div className="bg-white rounded-2xl shadow-lg p-6 border border-green-100 border-2">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">💰 총 충전</h3>
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">수입</span>
+                      <h3 className="text-lg font-bold text-gray-900">💰 받은 포인트</h3>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">충전</span>
                     </div>
                     <p className="text-4xl font-bold text-green-600 mb-2">
-                      {pointStats.totalPurchased.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {(pointStats.totalPurchased).toLocaleString()}원 충전
+                      {pointStats.totalPurchased.toLocaleString()}pt
                     </p>
                   </div>
                 </div>
