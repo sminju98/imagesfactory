@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { userId, prompt, email, selectedModels } = body;
+
+    // 유효성 검사
+    if (!userId || !prompt || !email || !selectedModels) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    if (prompt.length < 10 || prompt.length > 1000) {
+      return NextResponse.json(
+        { success: false, error: '프롬프트는 10자 이상 1000자 이하여야 합니다' },
+        { status: 400 }
+      );
+    }
+
+    // 총 이미지 수와 포인트 계산
+    let totalImages = 0;
+    let totalPoints = 0;
+    const modelConfigs: any[] = [];
+
+    Object.entries(selectedModels).forEach(([modelId, count]: [string, any]) => {
+      if (count > 0) {
+        const pointsPerImage = getModelPoints(modelId);
+        totalImages += count;
+        totalPoints += pointsPerImage * count;
+        modelConfigs.push({
+          modelId,
+          count,
+          pointsPerImage,
+          status: 'pending',
+          completedCount: 0,
+        });
+      }
+    });
+
+    // Firestore에 생성 작업 저장
+    const generationRef = await addDoc(collection(db, 'imageGenerations'), {
+      userId,
+      prompt,
+      email,
+      totalImages,
+      totalPoints,
+      modelConfigs,
+      status: 'pending',
+      progress: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // 여기서 실제로는 Cloud Function이나 별도 워커를 트리거해야 합니다
+    // 지금은 간단히 응답만 반환
+    console.log('Generation created:', generationRef.id);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        generationId: generationRef.id,
+        totalImages,
+        totalPoints,
+      },
+    });
+  } catch (error: any) {
+    console.error('Generate API error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+function getModelPoints(modelId: string): number {
+  const pointsMap: Record<string, number> = {
+    'dall-e-3': 200,
+    'sdxl': 100,
+    'flux': 80,
+    'leonardo': 120,
+  };
+  return pointsMap[modelId] || 100;
+}
+

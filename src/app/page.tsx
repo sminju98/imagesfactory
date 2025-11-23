@@ -109,6 +109,64 @@ export default function Home() {
   const currentPoints = user?.points || 0;
   const isInsufficient = totalPoints > currentPoints;
 
+  // 이미지 생성 요청
+  const handleGenerate = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다');
+      window.location.href = '/login';
+      return;
+    }
+
+    if (totalImages === 0) {
+      alert('최소 1개의 모델을 선택해주세요');
+      return;
+    }
+
+    if (prompt.length < 10) {
+      alert('프롬프트를 10자 이상 입력해주세요');
+      return;
+    }
+
+    if (isInsufficient) {
+      alert('포인트가 부족합니다');
+      return;
+    }
+
+    const confirmed = confirm(
+      `총 ${totalImages}장의 이미지를 ${totalPoints.toLocaleString()} 포인트로 생성하시겠습니까?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          prompt,
+          email,
+          selectedModels,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('이미지 생성이 시작되었습니다! 완료되면 이메일로 전송됩니다.');
+        // 생성 진행 화면으로 이동
+        window.location.href = `/generation/${data.data.generationId}`;
+      } else {
+        alert('생성 실패: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Generate error:', error);
+      alert('이미지 생성 중 오류가 발생했습니다');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
@@ -345,19 +403,25 @@ export default function Home() {
 
               {/* Generate Button */}
               {isInsufficient ? (
-                <button className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold text-lg hover:bg-yellow-600 transition-all shadow-lg">
+                <button 
+                  onClick={() => window.location.href = '/points'}
+                  className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold text-lg hover:bg-yellow-600 transition-all shadow-lg"
+                >
                   포인트 충전하기
                 </button>
               ) : (
                 <button
-                  disabled={totalImages === 0 || prompt.length < 10}
+                  onClick={handleGenerate}
+                  disabled={totalImages === 0 || prompt.length < 10 || !user}
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${
-                    totalImages === 0 || prompt.length < 10
+                    totalImages === 0 || prompt.length < 10 || !user
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
                   }`}
                 >
-                  {totalImages === 0
+                  {!user
+                    ? '로그인이 필요합니다'
+                    : totalImages === 0
                     ? '모델을 선택해주세요'
                     : prompt.length < 10
                     ? '프롬프트를 입력해주세요'
