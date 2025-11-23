@@ -1,0 +1,552 @@
+# imagesfactory 프로젝트 커서 룰
+
+## 🚨 필수 규칙 (절대 준수)
+
+### 배포 관련
+- **절대로 사용자의 명시적 허락 없이 배포(deploy)하지 말 것**
+- git push, vercel deploy, firebase deploy 등 모든 배포 명령은 사용자 승인 필요
+- 프로덕션 환경 변경은 반드시 사용자 확인 후 진행
+
+### 언어
+- **모든 응답은 무조건 한국어로 작성**
+- 코드 주석도 한국어 우선
+- 변수명, 함수명은 영어 사용 (컨벤션 준수)
+
+### 문서 참조
+- **코딩 시작 전 반드시 다음 문서들을 읽고 참고할 것:**
+  1. `/docs/01_BRD_비즈니스_요구사항_정의서.md`
+  2. `/docs/02_PRD_제품_요구사항_정의서.md`
+  3. `/docs/03_기술_명세서.md`
+  4. `/docs/04_Firebase_설정_가이드.md`
+  5. `/docs/05_개발_가이드.md`
+  6. 이 `.cursorrules` 파일
+- 기획서에 정의된 요구사항과 상충되는 코드 작성 금지
+- 새로운 기능 추가 시 관련 문서 업데이트 필수
+
+### Git 관리
+- **모든 의미 있는 변경사항은 Git 커밋 필수**
+- 커밋 메시지는 한국어로 명확하게 작성
+- 커밋 컨벤션:
+  ```
+  feat: 새로운 기능 추가
+  fix: 버그 수정
+  docs: 문서 수정
+  style: 코드 포맷팅, 세미콜론 누락 등
+  refactor: 코드 리팩토링
+  test: 테스트 코드 추가
+  chore: 빌드 업무 수정, 패키지 매니저 수정 등
+  ```
+- 작업 완료 후 자동으로 커밋 제안
+
+---
+
+## 🛠 기술 스택
+
+### Frontend
+- **Framework**: Next.js 14+ (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **State Management**: Zustand
+- **Forms**: React Hook Form + Zod
+
+### Backend & Database
+- **Backend**: Next.js API Routes
+- **Database**: Firebase Firestore
+- **Authentication**: Firebase Authentication (Email/Password, Google)
+- **Storage**: Firebase Storage (이미지 저장)
+- **Functions**: Firebase Cloud Functions (이미지 생성 워커)
+- **Hosting**: Firebase Hosting (선택) 또는 Vercel
+
+### 외부 API
+- **AI Image Generation**: 
+  - OpenAI DALL-E 3
+  - Stability AI (대안)
+- **Email**: SendGrid 또는 Firebase Extensions (Trigger Email)
+- **Payment**: 토스페이먼츠
+- **Translation**: Google Cloud Translation API
+
+---
+
+## 📁 프로젝트 구조
+
+```
+imagesfactory/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (auth)/            # 인증 페이지
+│   │   ├── (dashboard)/       # 대시보드 페이지
+│   │   ├── api/               # API Routes
+│   │   └── page.tsx           # 랜딩 페이지
+│   ├── components/            # React 컴포넌트
+│   ├── lib/
+│   │   ├── firebase.ts        # Firebase 초기화
+│   │   ├── firestore.ts       # Firestore 헬퍼
+│   │   └── storage.ts         # Storage 헬퍼
+│   ├── services/              # 비즈니스 로직
+│   ├── hooks/                 # Custom Hooks
+│   ├── types/                 # TypeScript 타입
+│   └── store/                 # Zustand Store
+├── functions/                 # Firebase Cloud Functions
+│   └── src/
+│       └── imageGeneration.ts # 이미지 생성 워커
+├── docs/                      # 📚 기획/개발 문서
+├── firestore.rules           # Firestore 보안 규칙
+├── storage.rules             # Storage 보안 규칙
+├── firebase.json             # Firebase 설정
+└── .cursorrules              # 이 파일
+```
+
+---
+
+## 🎯 코딩 컨벤션
+
+### TypeScript
+- **타입 정의 필수**: `any` 사용 최소화
+- **인터페이스 네이밍**: PascalCase, 접두사 `I` 사용 안 함
+  ```typescript
+  interface User { }          // ✅ 좋음
+  interface IUser { }         // ❌ 나쁨
+  ```
+- **타입 vs 인터페이스**:
+  - 객체 구조: `interface` 우선
+  - Union, Primitive: `type` 사용
+- **함수 타입 명시**:
+  ```typescript
+  const fetchUser = async (id: string): Promise<User> => { }
+  ```
+
+### React 컴포넌트
+- **함수형 컴포넌트**: Arrow Function 사용
+  ```typescript
+  export const Button = ({ children }: ButtonProps) => {
+    return <button>{children}</button>;
+  };
+  ```
+- **Props 타입**: 파일 상단에 정의
+  ```typescript
+  interface ButtonProps {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }
+  ```
+- **useState**: 초기값 타입 명시
+  ```typescript
+  const [user, setUser] = useState<User | null>(null);
+  ```
+- **useEffect**: 의존성 배열 필수, 정리 함수 작성
+
+### 네이밍
+- **컴포넌트**: PascalCase (`Button.tsx`)
+- **함수/변수**: camelCase (`fetchUserData`)
+- **상수**: UPPER_SNAKE_CASE (`MAX_IMAGE_COUNT`)
+- **파일명**:
+  - 컴포넌트: PascalCase (`Button.tsx`)
+  - 유틸/서비스: camelCase (`auth.service.ts`)
+  - 타입: camelCase (`user.types.ts`)
+
+### Firebase
+- **컬렉션 네이밍**: 복수형, camelCase
+  ```typescript
+  const usersRef = collection(db, 'users');
+  const generationsRef = collection(db, 'imageGenerations');
+  ```
+- **문서 ID**: UUID 사용 (자동 생성)
+- **타임스탬프**: `serverTimestamp()` 사용
+  ```typescript
+  import { serverTimestamp } from 'firebase/firestore';
+  
+  const data = {
+    createdAt: serverTimestamp(),
+  };
+  ```
+
+### 에러 처리
+- **try-catch 필수**: 모든 비동기 함수
+  ```typescript
+  try {
+    const data = await fetchData();
+  } catch (error) {
+    console.error('Error:', error);
+    throw new Error('Failed to fetch data');
+  }
+  ```
+- **커스텀 에러**: 명확한 메시지
+  ```typescript
+  class InsufficientPointsError extends Error {
+    constructor(required: number, current: number) {
+      super(`포인트가 부족합니다. 필요: ${required}, 현재: ${current}`);
+      this.name = 'InsufficientPointsError';
+    }
+  }
+  ```
+
+---
+
+## 🔒 보안 규칙
+
+### Firebase 보안
+- **Firestore Rules**: 모든 쿼리에 보안 규칙 적용
+- **Storage Rules**: 인증된 사용자만 업로드 가능
+- **API Keys**: 환경 변수로 관리, `.env.local`에 저장
+- **클라이언트 사이드**: 민감한 로직 금지
+
+### 환경 변수
+- **절대 커밋 금지**: `.env.local`, `.env.production`
+- **예시 파일 제공**: `.env.example`
+- **네이밍 규칙**:
+  - 클라이언트: `NEXT_PUBLIC_` 접두사
+  - 서버: 접두사 없음
+  ```bash
+  NEXT_PUBLIC_FIREBASE_API_KEY=...
+  FIREBASE_ADMIN_PROJECT_ID=...
+  ```
+
+### 입력 검증
+- **클라이언트**: Zod 스키마
+- **서버**: 추가 검증 필수
+- **XSS 방지**: 사용자 입력 sanitize
+
+---
+
+## 🎨 UI/UX 가이드라인
+
+### 디자인 시스템
+- **컬러**: Tailwind 기본 색상 + 커스텀 Primary
+  ```typescript
+  // tailwind.config.ts
+  colors: {
+    primary: {
+      50: '#F0F9FF',
+      500: '#6366F1',
+      900: '#312E81',
+    }
+  }
+  ```
+- **간격**: Tailwind spacing (4px 단위)
+- **폰트**: Pretendard (한글), Inter (영문)
+
+### 접근성
+- **시맨틱 HTML**: `<button>`, `<nav>`, `<main>` 등
+- **ARIA 레이블**: 스크린 리더 고려
+- **키보드 네비게이션**: Tab 순서, Enter/Space 동작
+- **색상 대비**: WCAG AA 준수 (4.5:1)
+
+### 반응형
+- **모바일 우선**: `sm:`, `md:`, `lg:` 순서로 작성
+- **브레이크포인트**:
+  - Mobile: 0-639px
+  - Tablet: 640px-1023px
+  - Desktop: 1024px+
+
+---
+
+## 📊 데이터 모델 (Firestore)
+
+### 컬렉션 구조
+
+#### users
+```typescript
+interface User {
+  uid: string;                    // Auth UID (문서 ID와 동일)
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  provider: 'password' | 'google';
+  points: number;
+  emailVerified: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+#### imageGenerations
+```typescript
+interface ImageGeneration {
+  id: string;
+  userId: string;
+  prompt: string;
+  promptKo?: string;
+  promptTranslated: string;
+  imageCount: number;
+  style: string;
+  aspectRatio: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  pointsUsed: number;
+  completedAt?: Timestamp;
+  failedReason?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+#### images (서브컬렉션)
+```typescript
+// Path: imageGenerations/{generationId}/images/{imageId}
+interface Image {
+  id: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  order: number;
+  width: number;
+  height: number;
+  fileSize: number;
+  createdAt: Timestamp;
+}
+```
+
+#### pointTransactions
+```typescript
+interface PointTransaction {
+  id: string;
+  userId: string;
+  amount: number;                 // 양수: 충전, 음수: 사용
+  type: 'purchase' | 'usage' | 'refund' | 'bonus';
+  description: string;
+  relatedGenerationId?: string;
+  relatedPaymentId?: string;
+  balanceBefore: number;
+  balanceAfter: number;
+  createdAt: Timestamp;
+}
+```
+
+#### payments
+```typescript
+interface Payment {
+  id: string;
+  userId: string;
+  amount: number;
+  points: number;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  paymentMethod?: string;
+  paymentKey?: string;
+  orderId: string;
+  transactionId?: string;
+  receiptUrl?: string;
+  failReason?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  confirmedAt?: Timestamp;
+}
+```
+
+### 인덱스 전략
+- **복합 인덱스** (Firestore 콘솔에서 생성):
+  - `imageGenerations`: `userId` + `createdAt` (DESC)
+  - `pointTransactions`: `userId` + `createdAt` (DESC)
+  - `payments`: `userId` + `createdAt` (DESC)
+
+---
+
+## 🚀 개발 워크플로우
+
+### 새 기능 개발 순서
+1. **문서 확인**: PRD에서 요구사항 확인
+2. **타입 정의**: `types/` 에 필요한 타입 추가
+3. **Firestore 스키마**: 필요 시 컬렉션 구조 설계
+4. **Service 레이어**: 비즈니스 로직 작성
+5. **API Route**: 엔드포인트 구현
+6. **UI 컴포넌트**: 화면 구현
+7. **테스트**: 기능 검증
+8. **문서 업데이트**: 변경사항 문서화
+9. **Git 커밋**: 의미 있는 커밋 메시지
+
+### 코드 리뷰 체크리스트
+- [ ] 타입 안정성 확보
+- [ ] 에러 처리 완료
+- [ ] Firebase 보안 규칙 확인
+- [ ] 사용자 입력 검증
+- [ ] 반응형 디자인 확인
+- [ ] 접근성 고려
+- [ ] 성능 최적화 (불필요한 리렌더링 방지)
+- [ ] 한국어 주석/메시지
+- [ ] 문서 업데이트
+
+---
+
+## 🧪 테스트
+
+### 유닛 테스트
+- **Service 레이어**: 모든 함수 테스트
+- **Utils**: 유틸리티 함수 테스트
+- **Hooks**: Custom Hook 테스트
+
+### 통합 테스트
+- **API Routes**: 엔드포인트 테스트
+- **Firebase Operations**: CRUD 테스트
+
+### E2E 테스트
+- **주요 플로우**: 회원가입, 로그인, 이미지 생성
+- **결제 플로우**: 포인트 충전
+
+---
+
+## 📦 패키지 관리
+
+### 설치 규칙
+- **pnpm 사용**: `pnpm install`, `pnpm add`
+- **버전 고정**: 메이저 버전 명시
+  ```json
+  "next": "14.2.0",
+  "react": "18.3.0"
+  ```
+- **불필요한 패키지 제거**: `pnpm remove`
+
+### 자주 사용하는 명령어
+```bash
+# 개발 서버
+pnpm dev
+
+# 빌드
+pnpm build
+
+# 타입 체크
+pnpm type-check
+
+# 린트
+pnpm lint
+
+# Firebase 에뮬레이터
+pnpm firebase:emulator
+
+# Firebase Functions 배포 (승인 필요)
+pnpm deploy:functions
+```
+
+---
+
+## 🔍 디버깅
+
+### 로깅
+- **개발**: `console.log` 사용 가능
+- **프로덕션**: `console.error`만 사용
+- **Firebase Functions**: `functions.logger` 사용
+
+### Firebase 에뮬레이터
+- **로컬 테스트**: 프로덕션 데이터 건드리지 않음
+- **사용 포트**:
+  - Firestore: 8080
+  - Auth: 9099
+  - Functions: 5001
+  - Storage: 9199
+  - Hosting: 5000
+
+---
+
+## 🌐 API 설계 원칙
+
+### REST 규칙
+- **HTTP 메서드**: GET (조회), POST (생성), PUT/PATCH (수정), DELETE (삭제)
+- **URL 네이밍**: 명사 복수형
+  - ✅ `/api/generations`
+  - ❌ `/api/getGenerations`
+- **상태 코드**: 의미 있는 코드 반환
+  - 200: 성공
+  - 201: 생성 성공
+  - 400: 잘못된 요청
+  - 401: 인증 필요
+  - 403: 권한 없음
+  - 404: 없음
+  - 500: 서버 에러
+
+### 응답 형식
+```typescript
+// 성공
+{
+  success: true,
+  data: { ... }
+}
+
+// 실패
+{
+  success: false,
+  error: {
+    code: 'ERROR_CODE',
+    message: '사용자 친화적 메시지'
+  }
+}
+```
+
+---
+
+## 📱 성능 최적화
+
+### Next.js
+- **이미지**: `<Image>` 컴포넌트 사용
+- **동적 임포트**: 큰 컴포넌트는 `dynamic()` 사용
+- **메타데이터**: SEO를 위한 메타 태그
+
+### Firebase
+- **쿼리 최적화**: 
+  - `limit()` 사용
+  - 불필요한 필드 제외 (`select()`)
+- **캐싱**: 
+  - 자주 조회하는 데이터는 Zustand에 캐시
+  - `enableIndexedDbPersistence()` 사용
+
+### 이미지
+- **최적화**: Sharp로 압축
+- **썸네일**: 작은 버전 생성
+- **Lazy Loading**: 화면에 보일 때만 로드
+
+---
+
+## 🎓 학습 리소스
+
+### 공식 문서
+- [Next.js 14 문서](https://nextjs.org/docs)
+- [Firebase 문서](https://firebase.google.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+### 참고 레포지토리
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Next.js Examples](https://github.com/vercel/next.js/tree/canary/examples)
+
+---
+
+## ✅ 체크리스트
+
+### 코딩 시작 전
+- [ ] 관련 기획 문서 읽기
+- [ ] 타입 정의 확인
+- [ ] Firebase 스키마 확인
+
+### 코딩 중
+- [ ] 타입 안정성
+- [ ] 에러 처리
+- [ ] 한국어 주석
+- [ ] 보안 고려
+
+### 코딩 후
+- [ ] 로컬 테스트
+- [ ] 타입 체크 통과
+- [ ] 린트 통과
+- [ ] 문서 업데이트
+- [ ] Git 커밋
+
+### 배포 전 (사용자 승인 필수)
+- [ ] 빌드 성공 확인
+- [ ] 테스트 통과
+- [ ] 환경 변수 확인
+- [ ] 사용자 최종 승인
+
+---
+
+## 🚨 주의사항
+
+1. **절대 사용자 승인 없이 배포하지 말 것**
+2. **모든 응답은 한국어로**
+3. **문서를 항상 참고하고 업데이트할 것**
+4. **Firebase 보안 규칙 반드시 설정**
+5. **환경 변수 절대 커밋 금지**
+6. **사용자 데이터 보호**
+7. **에러 처리 필수**
+8. **의미 있는 커밋 메시지**
+
+---
+
+**이 규칙은 프로젝트의 품질과 일관성을 위해 반드시 준수해야 합니다.**
+
