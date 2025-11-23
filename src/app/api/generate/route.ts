@@ -1,14 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth, fieldValue } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
+    // Authorization 헤더에서 ID Token 가져오기
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Missing token' },
+        { status: 401 }
+      );
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+
+    // ID Token 검증하여 userId 추출
+    let userId;
+    try {
+      const decodedToken = await auth.verifyIdToken(idToken);
+      userId = decodedToken.uid;
+      console.log('✅ 인증된 사용자:', userId);
+    } catch (error) {
+      console.error('❌ Token 검증 실패:', error);
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Invalid token' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { userId, prompt, email, selectedModels, referenceImageUrl } = body;
+    const { prompt, email, selectedModels, referenceImageUrl } = body;
 
     // 유효성 검사
-    if (!userId || !prompt || !email || !selectedModels) {
+    if (!prompt || !email || !selectedModels) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -49,8 +73,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Firestore에 생성 작업 저장
-    const generationRef = await addDoc(collection(db, 'imageGenerations'), {
+    // Firestore에 생성 작업 저장 (Admin SDK 사용)
+    const generationRef = await db.collection('imageGenerations').add({
       userId,
       prompt,
       email,
@@ -60,8 +84,8 @@ export async function POST(request: NextRequest) {
       referenceImageUrl: referenceImageUrl || null,
       status: 'pending',
       progress: 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: fieldValue.serverTimestamp(),
+      updatedAt: fieldValue.serverTimestamp(),
     });
 
     console.log('Generation created:', generationRef.id);

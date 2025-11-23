@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, fieldValue } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,18 +54,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 사용자 정보 가져오기
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
+    // 사용자 정보 가져오기 (Admin SDK)
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-    if (!userDoc.exists()) {
+    if (!userDoc.exists) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const userData = userDoc.data();
+    const userData = userDoc.data()!;
     const currentPoints = userData.points || 0;
     const newPoints = currentPoints + points;
 
@@ -78,14 +77,14 @@ export async function POST(request: NextRequest) {
       totalPointsPurchased: 0,
     };
 
-    await updateDoc(userRef, {
+    await userRef.update({
       points: newPoints,
       'stats.totalPointsPurchased': (currentStats.totalPointsPurchased || 0) + points,
-      updatedAt: serverTimestamp(),
+      updatedAt: fieldValue.serverTimestamp(),
     });
 
     // 포인트 거래 내역 저장
-    await addDoc(collection(db, 'pointTransactions'), {
+    await db.collection('pointTransactions').add({
       userId,
       amount: points,
       type: 'purchase',
@@ -93,11 +92,11 @@ export async function POST(request: NextRequest) {
       balanceBefore: currentPoints,
       balanceAfter: newPoints,
       relatedPaymentId: paymentData.paymentKey,
-      createdAt: serverTimestamp(),
+      createdAt: fieldValue.serverTimestamp(),
     });
 
     // 결제 내역 저장
-    await addDoc(collection(db, 'payments'), {
+    await db.collection('payments').add({
       userId,
       amount,
       points,
@@ -107,8 +106,8 @@ export async function POST(request: NextRequest) {
       orderId: paymentData.orderId,
       transactionId: paymentData.transactionKey,
       receiptUrl: paymentData.receipt?.url,
-      createdAt: serverTimestamp(),
-      confirmedAt: serverTimestamp(),
+      createdAt: fieldValue.serverTimestamp(),
+      confirmedAt: fieldValue.serverTimestamp(),
     });
 
     console.log('✅ 포인트 충전 완료:', {
@@ -134,4 +133,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

@@ -255,13 +255,22 @@ export default function Home() {
         }
       }
 
+      // Firebase ID Token 가져오기
+      const { auth: firebaseAuth } = await import('@/lib/firebase');
+      const idToken = await firebaseAuth.currentUser?.getIdToken();
+
+      if (!idToken) {
+        alert('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
+        return;
+      }
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-          userId: user.uid,
           prompt,
           email,
           selectedModels,
