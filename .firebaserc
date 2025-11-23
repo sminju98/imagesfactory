@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "imagefactory-5ccc6": {
+      "storage": {
+        "default": [
+          "imagefactory-5ccc6.firebasestorage.app"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

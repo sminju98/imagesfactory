@@ -17,11 +17,8 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "storage": [
-    {
-      "target": "imagefactory-5ccc6.firebasestorage.app",
-      "rules": "storage.rules"
-    }
-  ]
+  "storage": {
+    "rules": "storage.rules"
+  }
 }
 
