@@ -31,7 +31,7 @@ export default function AdminPage() {
       }
 
       const userDoc = snapshot.docs[0];
-      const userData = { id: userDoc.id, ...userDoc.data() };
+      const userData: any = { id: userDoc.id, ...userDoc.data() };
       setFoundUser(userData);
       setMessage(`✅ 사용자 발견: ${userData.displayName} (현재 포인트: ${userData.points?.toLocaleString() || 0}pt)`);
     } catch (error: any) {

@@ -51,8 +51,12 @@ export async function generateWithDALLE3(params: GenerateImageParams): Promise<G
     quality: 'standard',
   });
 
+  if (!response.data || !response.data[0]?.url) {
+    throw new Error('DALL-E 3 API 응답 오류');
+  }
+
   return {
-    url: response.data[0].url!,
+    url: response.data[0].url,
     modelId: 'dall-e-3',
   };
 }
