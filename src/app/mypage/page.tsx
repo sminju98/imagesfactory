@@ -377,14 +377,35 @@ export default function MyPage() {
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {recentGenerations.map((gen) => (
-                        <div
+                        <Link
                           key={gen.id}
-                          className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                          href={`/generation/${gen.id}`}
+                          className="group aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl transition-all relative"
                         >
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <ImageIcon className="w-12 h-12" />
-                          </div>
-                        </div>
+                          {gen.imageUrls && gen.imageUrls[0] ? (
+                            <>
+                              <img
+                                src={gen.imageUrls[0]}
+                                alt="생성된 이미지"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                                <span className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 px-3 py-1 rounded text-sm font-semibold">
+                                  자세히 보기
+                                </span>
+                              </div>
+                              {gen.totalImages && gen.totalImages > 1 && (
+                                <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                                  +{gen.totalImages - 1}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <ImageIcon className="w-12 h-12" />
+                            </div>
+                          )}
+                        </Link>
                       ))}
                     </div>
                   )}
