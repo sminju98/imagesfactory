@@ -37,9 +37,9 @@ service cloud.firestore {
       allow create: if isSignedIn() && 
         request.resource.data.userId == request.auth.uid;
       
-      // 자신의 생성 작업만 업데이트 가능
-      allow update: if isSignedIn() && 
-        resource.data.userId == request.auth.uid;
+      // 업데이트는 본인 또는 서버 (request.auth 없는 경우도 허용)
+      allow update: if request.auth == null || 
+        (isSignedIn() && resource.data.userId == request.auth.uid);
       
       // 자신의 생성 작업만 삭제
       allow delete: if isSignedIn() && 
