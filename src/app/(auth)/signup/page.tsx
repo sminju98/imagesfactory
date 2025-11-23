@@ -103,10 +103,8 @@ export default function SignupPage() {
         console.error('Welcome email error:', emailError);
       }
 
-      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증이 필요합니다. 메일함을 확인해주세요.');
-      
-      // 인증 페이지로 이동
-      router.push('/verify-email');
+      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증 링크를 확인해주세요');
+      router.push('/');
     } catch (error: any) {
       console.error('Signup error:', error);
       
