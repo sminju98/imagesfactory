@@ -88,7 +88,22 @@ export default function SignupPage() {
       // 이메일 인증 발송
       await sendEmailVerification(user);
 
-      alert('회원가입이 완료되었습니다! 이메일을 확인해주세요.\n가입 보너스로 1,000 포인트가 지급되었습니다. 🎉');
+      // 환영 이메일 발송
+      try {
+        await fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            displayName: formData.displayName,
+            points: 1000,
+          }),
+        });
+      } catch (emailError) {
+        console.error('Welcome email error:', emailError);
+      }
+
+      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증 링크를 확인해주세요');
       router.push('/');
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -137,7 +152,22 @@ export default function SignupPage() {
           },
         });
         
-        alert('회원가입이 완료되었습니다! 🎉\n가입 보너스로 1,000 포인트가 지급되었습니다.');
+        // 환영 이메일 발송
+        try {
+          await fetch('/api/email/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              displayName: user.displayName || '사용자',
+              points: 1000,
+            }),
+          });
+        } catch (emailError) {
+          console.error('Welcome email error:', emailError);
+        }
+
+        alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급');
       }
 
       router.push('/');
