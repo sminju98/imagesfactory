@@ -52,6 +52,7 @@ export function getGenerationCompleteEmailHTML(data: {
   prompt: string;
   downloadUrl: string;
   imageUrls?: string[];
+  zipUrl?: string;
 }) {
   return `
 <!DOCTYPE html>
