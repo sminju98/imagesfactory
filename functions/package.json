@@ -1,0 +1,26 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for imagesfactory",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^5.0.0",
+    "node-fetch": "^2.7.0",
+    "openai": "^4.0.0",
+    "replicate": "^0.30.0",
+    "jszip": "^3.10.1",
+    "nodemailer": "^6.9.0"
+  }
+}
+
