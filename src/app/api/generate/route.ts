@@ -90,14 +90,36 @@ export async function POST(request: NextRequest) {
 
     console.log('Generation created:', generationRef.id);
 
-    // 백그라운드에서 이미지 생성 시작
-    // 비동기로 처리 (응답은 즉시 반환)
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/generate/process`, {
+    // 백그라운드에서 이미지 생성 시작 (비동기)
+    // Vercel에서는 VERCEL_URL 사용
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    
+    const processUrl = `${baseUrl}/api/generate/process`;
+    
+    console.log('🚀 Triggering process:', {
+      generationId: generationRef.id,
+      processUrl,
+      vercelUrl: process.env.VERCEL_URL,
+    });
+    
+    // 즉시 호출 (await 하지 않음 - 백그라운드)
+    fetch(processUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ generationId: generationRef.id }),
+    }).then(async (res) => {
+      if (res.ok) {
+        console.log('✅ Process started successfully');
+      } else {
+        const error = await res.text();
+        console.error('❌ Process failed:', res.status, error);
+      }
     }).catch(error => {
-      console.error('Failed to trigger process:', error);
+      console.error('❌ Failed to trigger process:', error.message);
     });
 
     return NextResponse.json({

@@ -4,6 +4,9 @@ import { generateImage } from '@/lib/ai-models';
 import { sendEmail, getGenerationCompleteEmailHTML } from '@/lib/email';
 import JSZip from 'jszip';
 
+// Vercel serverless function 타임아웃 설정 (최대 5분)
+export const maxDuration = 300;
+
 /**
  * ZIP 파일 생성 및 Storage 업로드
  */
