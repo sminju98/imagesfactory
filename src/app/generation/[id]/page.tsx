@@ -172,12 +172,6 @@ export default function GenerationPage() {
                     📦 ZIP 파일 다운로드
                   </a>
                 )}
-                <button 
-                  onClick={() => window.open(`mailto:${generation.email}`, '_blank')}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-                >
-                  이메일 확인하기
-                </button>
                 <Link
                   href="/"
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
@@ -212,43 +206,6 @@ export default function GenerationPage() {
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
           <h3 className="font-bold text-gray-900 mb-3">📝 프롬프트</h3>
           <p className="text-gray-700 whitespace-pre-wrap">{generation.prompt}</p>
-        </div>
-
-        {/* Model Progress */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h3 className="font-bold text-gray-900 mb-4">🤖 모델별 진행 상황</h3>
-          <div className="space-y-4">
-            {Array.isArray(generation.modelConfigs) && generation.modelConfigs.map((config, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    {config.status === 'completed' ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                    ) : config.status === 'processing' ? (
-                      <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
-                    ) : (
-                      <Clock className="w-5 h-5 text-gray-400" />
-                    )}
-                    <span className="font-semibold text-gray-900">
-                      {MODEL_NAMES[config.modelId] || config.modelId}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-600">
-                    {config.completedCount}/{config.count}장
-                  </span>
-                </div>
-                
-                {config.status === 'processing' && (
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-indigo-600 h-2 rounded-full transition-all"
-                      style={{ width: `${(config.completedCount / config.count) * 100}%` }}
-                    ></div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Generated Images - 완료 시에만 표시 */}
