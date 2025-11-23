@@ -208,6 +208,40 @@ export default function GenerationPage() {
           <p className="text-gray-700 whitespace-pre-wrap">{generation.prompt}</p>
         </div>
 
+        {/* 모델별 결과 요약 */}
+        {generation.modelConfigs && Array.isArray(generation.modelConfigs) && generation.modelConfigs.length > 0 && (
+          <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+            <h3 className="font-bold text-gray-900 mb-4">📊 모델별 결과</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {generation.modelConfigs.map((config: any, index: number) => {
+                const modelNames: Record<string, string> = {
+                  'pixart': 'PixArt-Σ',
+                  'realistic-vision': 'Realistic Vision',
+                  'flux': 'Flux Schnell',
+                  'sdxl': 'SDXL',
+                  'leonardo': 'Leonardo',
+                  'dall-e-3': 'DALL-E 3',
+                  'aurora': 'Aurora',
+                  'ideogram': 'Ideogram',
+                };
+                const modelName = modelNames[config.modelId] || config.modelId;
+                const isSuccess = config.completedCount > 0;
+
+                return (
+                  <div key={index} className={`p-3 rounded-lg border ${
+                    isSuccess ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-xs text-gray-600">{modelName}</p>
+                    <p className={`text-lg font-bold ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+                      {config.completedCount || 0} / {config.count}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Generated Images - 완료 시에만 표시 */}
         {generation.status === 'completed' && generation.imageUrls && generation.imageUrls.length > 0 && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
