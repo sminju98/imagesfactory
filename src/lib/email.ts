@@ -52,7 +52,6 @@ export function getGenerationCompleteEmailHTML(data: {
   prompt: string;
   downloadUrl: string;
   imageUrls?: string[];
-  zipUrl?: string;
 }) {
   return `
 <!DOCTYPE html>
@@ -115,21 +114,12 @@ export function getGenerationCompleteEmailHTML(data: {
               </div>
               ` : ''}
               
-              <!-- Download Buttons -->
+              <!-- Download Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
-                ${data.zipUrl ? `
                 <tr>
-                  <td align="center" style="padding: 10px 0;">
-                    <a href="${data.zipUrl}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                      📦 ZIP 파일 다운로드 (전체)
-                    </a>
-                  </td>
-                </tr>
-                ` : ''}
-                <tr>
-                  <td align="center" style="padding: 10px 0;">
+                  <td align="center" style="padding: 20px 0;">
                     <a href="${data.downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-size: 18px; font-weight: bold;">
-                      🖼️ 결과 페이지 보기
+                      📥 결과 페이지 보기
                     </a>
                   </td>
                 </tr>
