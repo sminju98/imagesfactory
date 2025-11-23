@@ -82,14 +82,18 @@ export default function PointsPage() {
     try {
       setLoading(true);
 
+      // Firebase ID Token 가져오기
+      const { auth: firebaseAuth } = await import('@/lib/firebase');
+      const idToken = await firebaseAuth.currentUser?.getIdToken();
+
       // 🚨 개발 모드: 실제 결제 없이 바로 충전
       const response = await fetch('/api/payment/charge', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-          userId: user.uid,
           amount: finalAmount,
           points: finalPoints,
         }),
