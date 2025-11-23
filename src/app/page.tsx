@@ -64,6 +64,14 @@ const AI_MODELS: AIModel[] = [
     badge: '최고품질',
     color: 'bg-purple-50 border-purple-200',
   },
+  {
+    id: 'aurora',
+    name: 'Aurora (xAI Grok)',
+    description: '일론 머스크의 최신 AI, 초고품질',
+    pointsPerImage: 250,
+    badge: 'NEW',
+    color: 'bg-pink-50 border-pink-200',
+  },
 ];
 
 export default function Home() {
