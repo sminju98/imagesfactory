@@ -94,29 +94,6 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = userDoc.data()!;
-    const currentPoints = userData.points || 0;
-
-    // 포인트 확인
-    if (currentPoints < totalPoints) {
-      throw new Error('Insufficient points');
-    }
-
-    // 포인트 차감
-    await userRef.update({
-      points: currentPoints - totalPoints,
-    });
-
-    // 포인트 거래 내역 저장
-    await db.collection('pointTransactions').add({
-      userId,
-      amount: -totalPoints,
-      type: 'usage',
-      description: `이미지 생성 (${generationData.totalImages}장)`,
-      balanceBefore: currentPoints,
-      balanceAfter: currentPoints - totalPoints,
-      relatedGenerationId: generationId,
-      createdAt: fieldValue.serverTimestamp(),
-    });
 
     // 상태 업데이트: processing
     await generationRef.update({
@@ -171,9 +148,22 @@ export async function POST(request: NextRequest) {
           const imageResponse = await fetch(result.url);
           const imageBuffer = await imageResponse.arrayBuffer();
 
-          // Firebase Storage에 업로드
+          // Firebase Storage에 업로드 (파일명에 모델명 포함)
+          const modelNames: Record<string, string> = {
+            'pixart': 'PixArt',
+            'realistic-vision': 'Realistic',
+            'flux': 'Flux',
+            'sdxl': 'SDXL',
+            'leonardo': 'Leonardo',
+            'dall-e-3': 'DALLE3',
+            'aurora': 'Grok',
+            'ideogram': 'Ideogram',
+          };
+          const modelName = modelNames[task.modelId] || task.modelId;
+          const imageNumber = String(task.imageIndex + 1).padStart(3, '0');
+          
           const bucket = storage.bucket();
-          const filename = `generations/${generationId}/${task.modelId}_${task.imageIndex}.png`;
+          const filename = `generations/${generationId}/${imageNumber}_${modelName}.png`;
           const file = bucket.file(filename);
           
           await file.save(Buffer.from(imageBuffer), {
@@ -222,6 +212,44 @@ export async function POST(request: NextRequest) {
     await generationRef.update(completedUpdates);
 
     console.log(`🎉 병렬 처리 완료: ${completedCount}/${allGenerationTasks.length}장 성공`);
+
+    // 실패한 이미지에 대한 환불 처리
+    const failedCount = allGenerationTasks.length - completedCount;
+    if (failedCount > 0) {
+      // 모델별 실패 포인트 계산
+      let refundPoints = 0;
+      results.forEach((result) => {
+        if (result.status === 'rejected' || (result.status === 'fulfilled' && !result.value.success)) {
+          if (result.status === 'fulfilled' && result.value.task) {
+            const modelConfig = modelConfigs[result.value.task.modelIndex];
+            refundPoints += modelConfig.pointsPerImage || 0;
+          }
+        }
+      });
+
+      if (refundPoints > 0) {
+        // 포인트 환불
+        const currentPoints = userData.points || 0;
+        await userRef.update({
+          points: currentPoints + refundPoints,
+          updatedAt: fieldValue.serverTimestamp(),
+        });
+
+        // 환불 거래 내역 저장
+        await db.collection('pointTransactions').add({
+          userId,
+          amount: refundPoints,
+          type: 'refund',
+          description: `이미지 생성 실패 환불 (${failedCount}장)`,
+          balanceBefore: currentPoints,
+          balanceAfter: currentPoints + refundPoints,
+          relatedGenerationId: generationId,
+          createdAt: fieldValue.serverTimestamp(),
+        });
+
+        console.log(`💰 환불 완료: ${refundPoints}pt (${failedCount}장 실패)`);
+      }
+    }
 
     // ZIP 파일 생성 및 Storage 업로드
     let zipUrl = '';

@@ -40,16 +40,36 @@ export default function AdminPage() {
 
   const fetchPendingPayments = async () => {
     try {
-      // 관리자 API로 조회
-      const response = await fetch('/api/admin/pending-payments');
-      const data = await response.json();
+      // Firestore 실시간 리스너 설정
+      const { collection: firestoreCollection, query: firestoreQuery, where: firestoreWhere, onSnapshot } = await import('firebase/firestore');
+      const { db: clientDb } = await import('@/lib/firebase');
       
-      if (data.success) {
-        setPendingPayments(data.data);
-        console.log('✅ 입금 대기 목록:', data.data.length, '건');
-      } else {
-        console.error('입금 대기 목록 조회 실패:', data.error);
-      }
+      const paymentsRef = firestoreCollection(clientDb, 'payments');
+      const q = firestoreQuery(
+        paymentsRef,
+        firestoreWhere('paymentMethod', '==', 'bank_transfer')
+      );
+      
+      // 실시간 리스너 (자동 갱신)
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const payments = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        // 최근순 정렬
+        payments.sort((a: any, b: any) => {
+          const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return bTime - aTime;
+        });
+        
+        setPendingPayments(payments);
+        console.log('✅ 입금 목록 실시간 갱신:', payments.length, '건');
+      });
+      
+      // cleanup 함수 저장 (컴포넌트 언마운트 시 정리)
+      return unsubscribe;
     } catch (error) {
       console.error('입금 대기 목록 조회 에러:', error);
     }
