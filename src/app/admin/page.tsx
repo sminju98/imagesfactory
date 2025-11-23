@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Search, DollarSign, Send, Shield, LogOut, Users, CreditCard } from 'lucide-react';
-import Link from 'next/link';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -41,16 +40,16 @@ export default function AdminPage() {
 
   const fetchPendingPayments = async () => {
     try {
-      const paymentsRef = collection(db, 'payments');
-      const q = query(paymentsRef, where('status', '==', 'pending'));
-      const snapshot = await getDocs(q);
+      // 관리자 API로 조회
+      const response = await fetch('/api/admin/pending-payments');
+      const data = await response.json();
       
-      const payments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      
-      setPendingPayments(payments);
+      if (data.success) {
+        setPendingPayments(data.data);
+        console.log('✅ 입금 대기 목록:', data.data.length, '건');
+      } else {
+        console.error('입금 대기 목록 조회 실패:', data.error);
+      }
     } catch (error) {
       console.error('입금 대기 목록 조회 에러:', error);
     }
