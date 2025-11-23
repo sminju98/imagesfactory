@@ -73,3 +73,5 @@ temp/
 # Firebase Service Account Keys
 **/*firebase-adminsdk*.json
 service-account-base64.txt
+vercel-env.txt
+vercel.env.txt

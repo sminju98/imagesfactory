@@ -73,46 +73,8 @@ export default function PointsPage() {
       return;
     }
 
-    const confirmed = confirm(
-      `${finalAmount.toLocaleString()}원을 결제하여 ${finalPoints.toLocaleString()} 포인트를 충전하시겠습니까?\n\n🚨 개발 모드: 실제 결제 없이 바로 충전됩니다.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setLoading(true);
-
-      // Firebase ID Token 가져오기
-      const { auth: firebaseAuth } = await import('@/lib/firebase');
-      const idToken = await firebaseAuth.currentUser?.getIdToken();
-
-      // 🚨 개발 모드: 실제 결제 없이 바로 충전
-      const response = await fetch('/api/payment/charge', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          amount: finalAmount,
-          points: finalPoints,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert(`✅ ${finalPoints.toLocaleString()} 포인트가 충전되었습니다!`);
-        router.push('/mypage');
-      } else {
-        alert('충전 실패: ' + data.error);
-      }
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      alert('충전 중 오류가 발생했습니다');
-    } finally {
-      setLoading(false);
-    }
+    // 무통장 입금 페이지로 이동
+    router.push(`/payment/bank-transfer?amount=${finalAmount}&points=${finalPoints}`);
   };
 
   return (

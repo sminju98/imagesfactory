@@ -256,14 +256,19 @@ export default function Home() {
       }
 
       // Firebase ID Token 가져오기
+      console.log('🔵 ID Token 가져오기 시작...');
       const { auth: firebaseAuth } = await import('@/lib/firebase');
+      console.log('🔵 Firebase Auth:', firebaseAuth.currentUser?.email);
+      
       const idToken = await firebaseAuth.currentUser?.getIdToken();
+      console.log('🔵 ID Token:', idToken ? '✅ 가져옴' : '❌ 없음');
 
       if (!idToken) {
         alert('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
         return;
       }
 
+      console.log('🔵 API 호출 시작...');
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -277,6 +282,7 @@ export default function Home() {
           referenceImageUrl: referenceImageUrl || undefined,
         }),
       });
+      console.log('🔵 API 응답:', response.status);
 
       const data = await response.json();
 
