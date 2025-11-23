@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Search, DollarSign, Send, Shield, LogOut, Users, CreditCard } from 'lucide-react';
 
 export default function AdminPage() {
@@ -81,26 +79,29 @@ export default function AdminPage() {
     router.push('/admin/login');
   };
 
-  // 사용자 검색
+  // 사용자 검색 (Admin API 사용)
   const searchUser = async () => {
     try {
       setLoading(true);
       setMessage('');
       setFoundUser(null);
 
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', email));
-      const snapshot = await getDocs(q);
+      const response = await fetch('/api/admin/search-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      if (snapshot.empty) {
+      const data = await response.json();
+
+      if (data.success) {
+        setFoundUser(data.data);
+        setMessage(`✅ 사용자 발견: ${data.data.displayName} (현재 포인트: ${data.data.points?.toLocaleString() || 0}pt)`);
+      } else {
         setMessage('❌ 사용자를 찾을 수 없습니다');
-        return;
       }
-
-      const userDoc = snapshot.docs[0];
-      const userData: any = { id: userDoc.id, ...userDoc.data() };
-      setFoundUser(userData);
-      setMessage(`✅ 사용자 발견: ${userData.displayName} (현재 포인트: ${userData.points?.toLocaleString() || 0}pt)`);
     } catch (error: any) {
       console.error('Search error:', error);
       setMessage(`❌ 검색 실패: ${error.message}`);
@@ -109,7 +110,7 @@ export default function AdminPage() {
     }
   };
 
-  // 포인트 지급
+  // 포인트 지급 (Admin API 사용)
   const addPoints = async () => {
     if (!foundUser) {
       setMessage('❌ 먼저 사용자를 검색하세요');
@@ -125,29 +126,27 @@ export default function AdminPage() {
       setLoading(true);
 
       const currentPoints = foundUser.points || 0;
-      const newPoints = currentPoints + points;
-      const currentStats = foundUser.stats || {};
 
-      // 포인트 업데이트
-      await updateDoc(doc(db, 'users', foundUser.id), {
-        points: newPoints,
-        'stats.totalPointsPurchased': (currentStats.totalPointsPurchased || 0) + points,
-        updatedAt: serverTimestamp(),
+      const response = await fetch('/api/admin/add-points', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: foundUser.id,
+          points,
+        }),
       });
 
-      // 거래 내역 저장
-      await addDoc(collection(db, 'pointTransactions'), {
-        userId: foundUser.id,
-        amount: points,
-        type: 'purchase',
-        description: '관리자 포인트 지급',
-        balanceBefore: currentPoints,
-        balanceAfter: newPoints,
-        createdAt: serverTimestamp(),
-      });
+      const data = await response.json();
 
-      setMessage(`✅ 포인트 지급 완료!\n현재 포인트: ${currentPoints.toLocaleString()}pt → ${newPoints.toLocaleString()}pt`);
-      setFoundUser({ ...foundUser, points: newPoints });
+      if (data.success) {
+        const newPoints = data.data.newBalance;
+        setMessage(`✅ 포인트 지급 완료!\n현재 포인트: ${currentPoints.toLocaleString()}pt → ${newPoints.toLocaleString()}pt`);
+        setFoundUser({ ...foundUser, points: newPoints });
+      } else {
+        setMessage(`❌ 포인트 지급 실패: ${data.error}`);
+      }
     } catch (error: any) {
       console.error('Add points error:', error);
       setMessage(`❌ 포인트 지급 실패: ${error.message}`);
