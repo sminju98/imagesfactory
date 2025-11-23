@@ -242,34 +242,13 @@ export default function Home() {
                 <h2 className="text-xl font-bold text-gray-900">결과 받을 이메일</h2>
               </div>
               <div className="flex items-center space-x-3">
-                {isEditingEmail ? (
-                  <>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                    <button
-                      onClick={() => setIsEditingEmail(false)}
-                      className="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      확인
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                      {email}
-                    </div>
-                    <button
-                      onClick={() => setIsEditingEmail(true)}
-                      className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      수정
-                    </button>
-                  </>
-                )}
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
               </div>
               <p className="mt-2 text-sm text-gray-500">
                 💡 생성 완료 시 이메일로 ZIP 파일을 보내드립니다

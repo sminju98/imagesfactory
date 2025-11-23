@@ -56,9 +56,17 @@ export async function POST(request: NextRequest) {
       updatedAt: serverTimestamp(),
     });
 
-    // 여기서 실제로는 Cloud Function이나 별도 워커를 트리거해야 합니다
-    // 지금은 간단히 응답만 반환
     console.log('Generation created:', generationRef.id);
+
+    // 백그라운드에서 이미지 생성 시작
+    // 비동기로 처리 (응답은 즉시 반환)
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/generate/process`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ generationId: generationRef.id }),
+    }).catch(error => {
+      console.error('Failed to trigger process:', error);
+    });
 
     return NextResponse.json({
       success: true,
