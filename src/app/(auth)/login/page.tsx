@@ -65,7 +65,20 @@ export default function LoginPage() {
       router.push('/');
     } catch (error: any) {
       console.error('Google login error:', error);
-      setError('구글 로그인 중 오류가 발생했습니다');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError('팝업이 닫혔습니다. 다시 시도해주세요');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        setError('로그인이 취소되었습니다');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setError('이 도메인은 승인되지 않았습니다. Firebase Console에서 localhost를 승인해주세요');
+      } else {
+        setError(`구글 로그인 오류: ${error.code} - ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
