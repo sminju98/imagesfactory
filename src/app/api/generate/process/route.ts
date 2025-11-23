@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
           displayName: userData.displayName || '사용자',
           totalImages: generatedImages.length,
           prompt,
-          downloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://imagesfactory.vercel.app'}/generation/${generationId}`,
+          downloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://imagefactory.co.kr'}/generation/${generationId}`,
           imageUrls: generatedImages,
           zipUrl: zipUrl || undefined,
         }),
