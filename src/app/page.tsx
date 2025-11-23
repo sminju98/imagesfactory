@@ -18,20 +18,20 @@ interface AIModel {
 // AI 모델 데이터
 const AI_MODELS: AIModel[] = [
   {
-    id: 'dall-e-3',
-    name: 'DALL-E 3',
-    description: '최고 품질의 정교한 이미지',
-    pointsPerImage: 200,
-    badge: '최고품질',
-    color: 'bg-purple-50 border-purple-200',
+    id: 'pixart',
+    name: 'PixArt-Σ',
+    description: '초저가 초고속! 1-2초 생성',
+    pointsPerImage: 50,
+    badge: '초저가',
+    color: 'bg-emerald-50 border-emerald-200',
   },
   {
-    id: 'sdxl',
-    name: 'Stable Diffusion XL',
-    description: '빠르고 저렴한 기본 옵션',
-    pointsPerImage: 100,
-    badge: '추천',
-    color: 'bg-blue-50 border-blue-200',
+    id: 'realistic-vision',
+    name: 'Realistic Vision',
+    description: '인물/사진 특화, 초사실적',
+    pointsPerImage: 60,
+    badge: '인물특화',
+    color: 'bg-cyan-50 border-cyan-200',
   },
   {
     id: 'flux',
@@ -42,11 +42,27 @@ const AI_MODELS: AIModel[] = [
     color: 'bg-green-50 border-green-200',
   },
   {
+    id: 'sdxl',
+    name: 'Stable Diffusion XL',
+    description: '빠르고 안정적인 범용 옵션',
+    pointsPerImage: 100,
+    badge: '추천',
+    color: 'bg-blue-50 border-blue-200',
+  },
+  {
     id: 'leonardo',
     name: 'Leonardo.ai',
     description: '일러스트 & 게임 아트 특화',
     pointsPerImage: 120,
     color: 'bg-orange-50 border-orange-200',
+  },
+  {
+    id: 'dall-e-3',
+    name: 'DALL-E 3',
+    description: '최고 품질의 정교한 이미지',
+    pointsPerImage: 200,
+    badge: '최고품질',
+    color: 'bg-purple-50 border-purple-200',
   },
 ];
 

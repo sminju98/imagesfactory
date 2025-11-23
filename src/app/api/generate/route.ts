@@ -79,10 +79,15 @@ export async function POST(request: NextRequest) {
 
 function getModelPoints(modelId: string): number {
   const pointsMap: Record<string, number> = {
-    'dall-e-3': 200,
-    'sdxl': 100,
+    'pixart': 50,
+    'realistic-vision': 60,
     'flux': 80,
+    'sdxl': 100,
     'leonardo': 120,
+    'dall-e-3': 200,
+    'aurora': 250,
+    'ideogram': 280,
+    'midjourney': 300,
   };
   return pointsMap[modelId] || 100;
 }
