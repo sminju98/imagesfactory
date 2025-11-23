@@ -10,7 +10,7 @@ import Link from 'next/link';
 function BankTransferContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [copied, setCopied] = useState(false);
   const [depositorName, setDepositorName] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -19,6 +19,9 @@ function BankTransferContent() {
   const points = parseInt(searchParams.get('points') || '0');
 
   useEffect(() => {
+    // 로딩 중일 때는 리다이렉트하지 않음
+    if (authLoading) return;
+
     if (!user) {
       router.push('/login');
       return;
@@ -31,7 +34,23 @@ function BankTransferContent() {
 
     // 기본 입금자명을 사용자 이름으로 설정
     setDepositorName(user.displayName || '');
-  }, [user, amount, points, router]);
+  }, [user, authLoading, amount, points, router]);
+
+  // 로딩 중일 때 표시
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // 리다이렉트 중
+  }
 
   const copyAccount = () => {
     navigator.clipboard.writeText('110452180013');
