@@ -88,39 +88,8 @@ export async function POST(request: NextRequest) {
       updatedAt: fieldValue.serverTimestamp(),
     });
 
-    console.log('Generation created:', generationRef.id);
-
-    // 백그라운드에서 이미지 생성 시작 (비동기)
-    // Vercel에서는 VERCEL_URL 사용
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    
-    const processUrl = `${baseUrl}/api/generate/process`;
-    
-    console.log('🚀 Triggering process:', {
-      generationId: generationRef.id,
-      processUrl,
-      vercelUrl: process.env.VERCEL_URL,
-    });
-    
-    // 즉시 호출 (await 하지 않음 - 백그라운드)
-    fetch(processUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ generationId: generationRef.id }),
-    }).then(async (res) => {
-      if (res.ok) {
-        console.log('✅ Process started successfully');
-      } else {
-        const error = await res.text();
-        console.error('❌ Process failed:', res.status, error);
-      }
-    }).catch(error => {
-      console.error('❌ Failed to trigger process:', error.message);
-    });
+    console.log('✅ Generation created:', generationRef.id);
+    console.log('🔥 Firebase Functions가 자동으로 이미지 생성을 시작합니다');
 
     return NextResponse.json({
       success: true,
@@ -141,15 +110,15 @@ export async function POST(request: NextRequest) {
 
 function getModelPoints(modelId: string): number {
   const pointsMap: Record<string, number> = {
-    'pixart': 50,
-    'realistic-vision': 60,
-    'flux': 80,
-    'sdxl': 100,
-    'leonardo': 120,
-    'dall-e-3': 200,
-    'aurora': 250,
-    'ideogram': 280,
+    'pixart': 10,
+    'realistic-vision': 20,
+    'flux': 10,
+    'sdxl': 30,
+    'leonardo': 30,
+    'dall-e-3': 150,
+    'aurora': 60,
+    'ideogram': 60,
   };
-  return pointsMap[modelId] || 100;
+  return pointsMap[modelId] || 30;
 }
 

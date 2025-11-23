@@ -16,88 +16,97 @@ interface AIModel {
   color: string;
   company: string;
   logo?: string;
+  maxCount?: number; // 모델별 최대 생성 수량
 }
 
-// AI 모델 데이터
+// AI 모델 데이터 (병렬 처리 기준 최대치 설정)
 const AI_MODELS: AIModel[] = [
   {
     id: 'pixart',
     name: 'PixArt-Σ',
     description: '초저가 초고속! 1-2초 생성',
-    pointsPerImage: 50,
-    badge: '초저가',
+    pointsPerImage: 10,
+    badge: '최저가',
     color: 'bg-emerald-50 border-emerald-200',
     company: 'Huawei Noah\'s Ark Lab',
     logo: '🎨',
+    maxCount: 48,
   },
   {
     id: 'realistic-vision',
     name: 'Realistic Vision',
     description: '인물/사진 특화, 초사실적',
-    pointsPerImage: 60,
+    pointsPerImage: 20,
     badge: '인물특화',
     color: 'bg-cyan-50 border-cyan-200',
     company: 'SG_161222 (Civitai)',
     logo: '📸',
+    maxCount: 24,
   },
   {
     id: 'flux',
     name: 'Flux Schnell',
     description: '초고속 생성, 우수한 품질',
-    pointsPerImage: 80,
+    pointsPerImage: 10,
     badge: '초고속',
     color: 'bg-green-50 border-green-200',
     company: 'Black Forest Labs',
     logo: '⚡',
+    maxCount: 48,
   },
   {
     id: 'sdxl',
     name: 'Stable Diffusion XL',
     description: '빠르고 안정적인 범용 옵션',
-    pointsPerImage: 100,
+    pointsPerImage: 30,
     badge: '추천',
     color: 'bg-blue-50 border-blue-200',
     company: 'Stability AI',
     logo: '🎯',
+    maxCount: 24,
   },
   {
     id: 'leonardo',
     name: 'Leonardo.ai',
     description: '일러스트 & 게임 아트 특화',
-    pointsPerImage: 120,
+    pointsPerImage: 30,
     color: 'bg-orange-50 border-orange-200',
     company: 'Leonardo.ai',
     logo: '🎮',
+    maxCount: 20,
   },
   {
     id: 'dall-e-3',
     name: 'DALL-E 3',
     description: 'ChatGPT의 이미지 생성 AI',
-    pointsPerImage: 200,
+    pointsPerImage: 150,
     badge: '최고품질',
     color: 'bg-purple-50 border-purple-200',
     company: 'OpenAI (ChatGPT)',
     logo: '🤖',
+    maxCount: 12,
   },
   {
     id: 'aurora',
     name: 'Aurora',
     description: 'Grok의 이미지 생성 모델',
-    pointsPerImage: 250,
+    pointsPerImage: 60,
     badge: 'NEW',
     color: 'bg-pink-50 border-pink-200',
     company: 'xAI (Grok)',
     logo: '🌟',
+    maxCount: 12,
   },
   {
     id: 'ideogram',
     name: 'Ideogram',
     description: '텍스트 포함 이미지, 포스터/광고 특화',
-    pointsPerImage: 280,
+    pointsPerImage: 60,
     badge: '텍스트특화',
     color: 'bg-rose-50 border-rose-200',
     company: 'Ideogram AI',
     logo: '✍️',
+    maxCount: 12,
   },
 ];
 
@@ -168,7 +177,10 @@ export default function Home() {
 
   // 수량 변경
   const updateModelCount = (modelId: string, count: number) => {
-    if (count >= 0 && count <= 100) {
+    const model = AI_MODELS.find(m => m.id === modelId);
+    const maxCount = model?.maxCount || 100;
+    
+    if (count >= 0 && count <= maxCount) {
       setSelectedModels(prev => ({
         ...prev,
         [modelId]: count,
@@ -415,7 +427,7 @@ export default function Home() {
                 <h2 className="text-xl font-bold text-gray-900">AI 모델 선택 및 수량</h2>
               </div>
               <p className="text-sm text-gray-600 mb-6">
-                여러 모델을 동시에 선택하여 다양한 스타일의 이미지를 한 번에 생성하세요 (모델당 최대 100장)
+                여러 모델을 동시에 선택하여 다양한 스타일의 이미지를 한 번에 생성하세요 (병렬 처리로 빠른 생성!)
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -485,7 +497,7 @@ export default function Home() {
                               onClick={(e) => e.stopPropagation()}
                               className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-bold"
                               min="0"
-                              max="100"
+                              max={model.maxCount || 100}
                             />
                             <button
                               onClick={(e) => {

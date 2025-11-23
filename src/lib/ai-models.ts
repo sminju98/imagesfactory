@@ -109,12 +109,12 @@ export async function generateWithSDXL(params: GenerateImageParams): Promise<Gen
     : prompt;
 
   const input: any = {
-    prompt: finalPrompt,
-    width,
-    height,
-    num_outputs: 1,
-    scheduler: "K_EULER",
-    num_inference_steps: 25,
+        prompt: finalPrompt,
+        width,
+        height,
+        num_outputs: 1,
+        scheduler: "K_EULER",
+        num_inference_steps: 25,
   };
 
   // 참고 이미지가 있으면 img2img 모드

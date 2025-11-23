@@ -128,22 +128,40 @@ export async function POST(request: NextRequest) {
     const generatedImages: string[] = [];
     let completedCount = 0;
 
-    // 각 모델별로 이미지 생성
-    for (const modelConfig of modelConfigs) {
-      const { modelId, count } = modelConfig;
-      const modelIndex = modelConfigs.indexOf(modelConfig);
+    // 모든 이미지 생성 작업을 배열로 준비
+    const allGenerationTasks: Array<{
+      modelId: string;
+      modelIndex: number;
+      imageIndex: number;
+    }> = [];
 
-      // 모델 상태 업데이트
-      await generationRef.update({
-        [`modelConfigs.${modelIndex}.status`]: 'processing',
-      });
+    modelConfigs.forEach((config, modelIndex) => {
+      for (let i = 0; i < config.count; i++) {
+        allGenerationTasks.push({
+          modelId: config.modelId,
+          modelIndex,
+          imageIndex: i,
+        });
+      }
+    });
 
-      for (let i = 0; i < count; i++) {
+    console.log(`🚀 병렬 처리 시작: 총 ${allGenerationTasks.length}장을 동시에 생성`);
+
+    // 모든 모델 상태를 processing으로 변경
+    const statusUpdates: any = {};
+    modelConfigs.forEach((config, index) => {
+      statusUpdates[`modelConfigs.${index}.status`] = 'processing';
+    });
+    await generationRef.update(statusUpdates);
+
+    // 병렬로 모든 이미지 생성 (Promise.all)
+    const results = await Promise.allSettled(
+      allGenerationTasks.map(async (task) => {
         try {
           // AI로 이미지 생성
           const result = await generateImage({
             prompt,
-            modelId,
+            modelId: task.modelId,
             width: 1024,
             height: 1024,
             referenceImageUrl: referenceImageUrl || undefined,
@@ -153,9 +171,9 @@ export async function POST(request: NextRequest) {
           const imageResponse = await fetch(result.url);
           const imageBuffer = await imageResponse.arrayBuffer();
 
-          // Firebase Storage에 업로드 (Admin SDK)
+          // Firebase Storage에 업로드
           const bucket = storage.bucket();
-          const filename = `generations/${generationId}/${modelId}_${i}.png`;
+          const filename = `generations/${generationId}/${task.modelId}_${task.imageIndex}.png`;
           const file = bucket.file(filename);
           
           await file.save(Buffer.from(imageBuffer), {
@@ -169,27 +187,41 @@ export async function POST(request: NextRequest) {
           await file.makePublic();
           const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
 
-          generatedImages.push(imageUrl);
-          completedCount++;
-
-          // 진행률 업데이트
-          const progress = Math.round((completedCount / generationData.totalImages) * 100);
-          await generationRef.update({
-            progress,
-            [`modelConfigs.${modelIndex}.completedCount`]: i + 1,
-          });
-
-          console.log(`Generated: ${modelId} ${i + 1}/${count} (${progress}%)`);
+          console.log(`✅ ${task.modelId} ${task.imageIndex + 1} 생성 완료`);
+          
+          return { success: true, imageUrl, task };
         } catch (error) {
-          console.error(`Error generating image ${i} for ${modelId}:`, error);
+          console.error(`❌ ${task.modelId} ${task.imageIndex + 1} 실패:`, error);
+          return { success: false, error, task };
         }
-      }
+      })
+    );
 
-      // 모델 완료
-      await generationRef.update({
-        [`modelConfigs.${modelIndex}.status`]: 'completed',
-      });
-    }
+    // 성공한 이미지만 수집
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value.success) {
+        generatedImages.push(result.value.imageUrl);
+        completedCount++;
+      }
+    });
+
+    // 최종 진행률 업데이트
+    await generationRef.update({
+      progress: 100,
+    });
+
+    // 모든 모델 상태를 completed로 변경
+    const completedUpdates: any = {};
+    modelConfigs.forEach((config, index) => {
+      const modelResults = results.filter(
+        (r) => r.status === 'fulfilled' && r.value.task?.modelIndex === index && r.value.success
+      );
+      completedUpdates[`modelConfigs.${index}.status`] = 'completed';
+      completedUpdates[`modelConfigs.${index}.completedCount`] = modelResults.length;
+    });
+    await generationRef.update(completedUpdates);
+
+    console.log(`🎉 병렬 처리 완료: ${completedCount}/${allGenerationTasks.length}장 성공`);
 
     // ZIP 파일 생성 및 Storage 업로드
     let zipUrl = '';
