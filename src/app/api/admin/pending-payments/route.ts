@@ -6,11 +6,10 @@ export async function GET(request: NextRequest) {
     // 관리자 인증 확인 (간단한 체크)
     // 프로덕션에서는 더 강력한 인증 필요
     
-    // 입금 대기 중인 결제 조회
+    // 입금 대기 중인 결제 조회 (orderBy 제거 - 인덱스 없이 작동)
     const paymentsSnapshot = await db.collection('payments')
       .where('status', '==', 'pending')
       .where('paymentMethod', '==', 'bank_transfer')
-      .orderBy('createdAt', 'desc')
       .get();
 
     const payments = paymentsSnapshot.docs.map(doc => ({
