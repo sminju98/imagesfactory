@@ -7,6 +7,7 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // output: 'export'는 사용하지 않음 (웹은 SSR 유지)
   images: {
     domains: ['storage.googleapis.com', 'firebasestorage.googleapis.com'],
   },
