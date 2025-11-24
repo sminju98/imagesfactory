@@ -38,8 +38,14 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#6366F1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="ImageFactory" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         
         {/* Google Tag Manager */}
         <script

@@ -16,3 +16,4 @@ echo "NEXT_PUBLIC_FIREBASE_APP_ID" | npx vercel env add NEXT_PUBLIC_FIREBASE_APP
 
 echo "All environment variables added!"
 
+
