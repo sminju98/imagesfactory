@@ -75,3 +75,8 @@ temp/
 service-account-base64.txt
 vercel-env.txt
 vercel.env.txt
+
+# Capacitor
+ios/
+android/
+out/
