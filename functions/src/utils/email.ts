@@ -77,10 +77,6 @@ export function getGenerationCompleteEmailHTML({
     >
   `).join('');
 
-  const statusText = failedImages > 0 
-    ? `${successImages}장 성공, ${failedImages}장 실패`
-    : `${successImages}장 모두 성공`;
-
   return `
     <!DOCTYPE html>
     <html lang="ko">
