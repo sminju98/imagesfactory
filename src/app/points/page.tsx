@@ -147,6 +147,7 @@ export default function PointsPage() {
                 onClick={() => {
                   setSelectedPackage(pkg.id);
                   setUseCustomAmount(false);
+                  setCustomAmount(pkg.amount.toString()); // 금액 직접 입력 영역에도 표시
                 }}
                 className={`relative cursor-pointer rounded-2xl p-6 border-2 transition-all ${
                   selectedPackage === pkg.id && !useCustomAmount

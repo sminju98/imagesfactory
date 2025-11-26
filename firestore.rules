@@ -1,87 +1,158 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 헬퍼 함수
-    function isSignedIn() {
+    // ========================================
+    // 공통 함수
+    // ========================================
+    
+    // 인증된 사용자인지 확인
+    function isAuthenticated() {
       return request.auth != null;
     }
     
+    // 본인 문서인지 확인
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
+    // ========================================
     // users 컬렉션
+    // ========================================
     match /users/{userId} {
-      // 자신의 문서만 읽기 가능
       allow read: if isOwner(userId);
+      allow create: if isAuthenticated();
+      allow update: if isOwner(userId);
+      allow delete: if false; // 삭제 불가 (관리자만 가능)
+    }
+    
+    // ========================================
+    // tasks 컬렉션 (이미지 생성 작업)
+    // ========================================
+    match /tasks/{taskId} {
+      // 본인 작업만 읽기 가능
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
-      // 회원가입 시 생성 가능 (자신의 UID로만)
-      allow create: if isSignedIn() && isOwner(userId);
+      // 생성: Cloud Functions에서만 (클라이언트 불가)
+      allow create: if false;
       
-      // 자신의 문서만 수정 가능
+      // 수정/삭제: Cloud Functions에서만
+      allow update, delete: if false;
+      
+      // jobs 서브컬렉션
+      match /jobs/{jobId} {
+        // 본인 작업의 Job만 읽기 가능
+        allow read: if isAuthenticated() && 
+          get(/databases/$(database)/documents/tasks/$(taskId)).data.userId == request.auth.uid;
+        
+        // 생성/수정/삭제: Cloud Functions에서만
+        allow create, update, delete: if false;
+      }
+    }
+    
+    // ========================================
+    // gallery 컬렉션 (사용자별 갤러리)
+    // ========================================
+    match /gallery/{userId}/images/{imageId} {
+      // 공개 이미지는 누구나, 비공개는 본인만
+      allow read: if resource.data.isPublic == true || isOwner(userId);
+      
+      // 생성: Cloud Functions에서만
+      allow create: if false;
+      
+      // 수정: 본인만 (공개 여부 등)
       allow update: if isOwner(userId);
       
-      // 자신의 계정만 삭제 가능
+      // 삭제: 본인만
       allow delete: if isOwner(userId);
     }
     
-    // imageGenerations 컬렉션
-    match /imageGenerations/{generationId} {
-      // 자신의 생성 작업만 읽기
-      allow read: if isSignedIn() && 
-        (resource.data.userId == request.auth.uid);
+    // ========================================
+    // likes 컬렉션 (좋아요)
+    // ========================================
+    match /likes/{imageId}/users/{likeUserId} {
+      // 읽기: 누구나
+      allow read: if true;
       
-      // 생성 작업 생성 가능 (자신의 userId로만)
-      allow create: if isSignedIn() && 
+      // 생성/삭제: 인증된 사용자, 본인 좋아요만
+      allow create: if isAuthenticated() && request.auth.uid == likeUserId;
+      allow delete: if isAuthenticated() && request.auth.uid == likeUserId;
+      
+      // 수정: 불가
+      allow update: if false;
+    }
+    
+    // ========================================
+    // comments 컬렉션 (코멘트)
+    // ========================================
+    match /comments/{imageId}/items/{commentId} {
+      // 읽기: 누구나
+      allow read: if true;
+      
+      // 생성: 인증된 사용자
+      allow create: if isAuthenticated() && 
         request.resource.data.userId == request.auth.uid;
       
-      // 업데이트는 본인 또는 서버 (request.auth 없는 경우도 허용)
-      allow update: if request.auth == null || 
-        (isSignedIn() && resource.data.userId == request.auth.uid);
+      // 수정: 본인 코멘트만
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
       
-      // 자신의 생성 작업만 삭제
-      allow delete: if isSignedIn() && 
+      // 삭제: 본인 코멘트만
+      allow delete: if isAuthenticated() && 
         resource.data.userId == request.auth.uid;
     }
     
-    // pointTransactions 컬렉션
-    match /pointTransactions/{transactionId} {
-      // 자신의 거래 내역만 읽기
-      allow read: if isSignedIn() && 
-        resource.data.userId == request.auth.uid;
+    // ========================================
+    // evolutions 컬렉션 (진화 세션)
+    // ========================================
+    match /evolutions/{evolutionId} {
+      // 본인 진화 세션만 읽기
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
-      // 생성은 허용 (본인 userId로만)
-      allow create: if isSignedIn() && 
+      // 생성/수정/삭제: Cloud Functions에서만
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================
+    // pointTransactions 컬렉션 (포인트 거래)
+    // ========================================
+    match /pointTransactions/{transactionId} {
+      // 본인 거래만 읽기
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // 생성/수정/삭제: Cloud Functions 또는 서버에서만
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================
+    // payments 컬렉션 (결제)
+    // ========================================
+    match /payments/{paymentId} {
+      // 본인 결제만 읽기
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // 생성: 인증된 사용자
+      allow create: if isAuthenticated() && 
         request.resource.data.userId == request.auth.uid;
       
-      // 수정/삭제는 불가
+      // 수정/삭제: 서버에서만
       allow update, delete: if false;
     }
     
-    // payments 컬렉션
-    match /payments/{paymentId} {
-      // 자신의 결제 내역만 읽기
-      allow read: if isSignedIn() && 
-        resource.data.userId == request.auth.uid;
-      
-      // 결제 생성 가능 (본인 userId로만)
-      allow create: if isSignedIn() && 
-        request.resource.data.userId == request.auth.uid;
-      
-      // 업데이트는 본인만 가능
-      allow update: if isSignedIn() && 
-        resource.data.userId == request.auth.uid;
-      
-      // 삭제는 불가
+    // ========================================
+    // imageGenerations 컬렉션 (기존 호환)
+    // ========================================
+    match /imageGenerations/{generationId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow delete: if false;
-    }
-    
-    // 기타 컬렉션은 모두 차단
-    match /{document=**} {
-      allow read, write: if false;
+      
+      match /images/{imageId} {
+        allow read: if isAuthenticated() && 
+          get(/databases/$(database)/documents/imageGenerations/$(generationId)).data.userId == request.auth.uid;
+        allow create, update, delete: if false;
+      }
     }
   }
 }
-

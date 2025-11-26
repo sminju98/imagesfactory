@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import Link from 'next/link';
-import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle } from 'lucide-react';
+import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Lightbulb, Loader2 } from 'lucide-react';
+import PromptCorrectionModal from '@/components/image-factory/PromptCorrectionModal';
 
 // AI 모델 타입 정의
 interface AIModel {
@@ -118,11 +119,23 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [selectedModels, setSelectedModels] = useState<Record<string, number>>({
-    'sdxl': 10,
+    'pixart': 1,
+    'realistic-vision': 1,
+    'flux': 1,
+    'sdxl': 1,
+    'dall-e-3': 1,
+    'ideogram': 1,
   });
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // 새로운 기능: GPT 교정/추천 상태
+  const [activeTab, setActiveTab] = useState<'image' | 'content'>('image');
+  const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [isRecommendingModel, setIsRecommendingModel] = useState(false);
+  const [gptRecommendation, setGptRecommendation] = useState<string | null>(null);
+  const [correctionInfo, setCorrectionInfo] = useState<{ purpose: string; size: string } | null>(null);
 
   // 사용자 이메일 동기화
   useEffect(() => {
@@ -130,6 +143,52 @@ export default function Home() {
       setEmail(user.email);
     }
   }, [user]);
+
+  // GPT 프롬프트 교정 - 모달에서 콜백으로 처리
+  const handlePromptCorrected = (correctedPrompt: string, purpose: string, size: string) => {
+    setPrompt(correctedPrompt);
+    setCorrectionInfo({ purpose, size });
+  };
+
+  // GPT 모델 추천
+  const handleRecommendModel = async () => {
+    if (!prompt.trim()) return;
+    
+    setIsRecommendingModel(true);
+    try {
+      const response = await fetch('/api/gpt/recommend-model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      
+      const data = await response.json();
+      if (data.success && data.data?.recommendations) {
+        // 추천 모델로 자동 선택
+        const newSelectedModels: Record<string, number> = {};
+        data.data.recommendations.forEach((rec: { modelId: string; count: number }) => {
+          if (AI_MODELS.find(m => m.id === rec.modelId)) {
+            newSelectedModels[rec.modelId] = rec.count;
+          }
+        });
+        
+        if (Object.keys(newSelectedModels).length > 0) {
+          setSelectedModels(newSelectedModels);
+          setGptRecommendation(data.data.explanation || '추천이 적용되었습니다.');
+          alert(`💡 ${data.data.explanation || 'AI가 추천한 모델이 선택되었습니다!'}`);
+        } else {
+          alert('추천된 모델 중 사용 가능한 모델이 없습니다.');
+        }
+      } else {
+        alert('모델 추천에 실패했습니다: ' + (data.error || '알 수 없는 오류'));
+      }
+    } catch (error) {
+      console.error('GPT 추천 오류:', error);
+      alert('모델 추천 중 오류가 발생했습니다');
+    } finally {
+      setIsRecommendingModel(false);
+    }
+  };
 
   // 참고 이미지 업로드 처리
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,18 +230,18 @@ export default function Home() {
       if (newModels[modelId]) {
         delete newModels[modelId];
       } else {
-        newModels[modelId] = 10; // 기본 10장
+        newModels[modelId] = 1; // 기본 1장
       }
       return newModels;
     });
   };
 
-  // 수량 변경
+  // 수량 변경 (최소 1장)
   const updateModelCount = (modelId: string, count: number) => {
     const model = AI_MODELS.find(m => m.id === modelId);
     const maxCount = model?.maxCount || 100;
     
-    if (count >= 0 && count <= maxCount) {
+    if (count >= 1 && count <= maxCount) {
       setSelectedModels(prev => ({
         ...prev,
         [modelId]: count,
@@ -320,6 +379,57 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* 탭 네비게이션 */}
+        <div className="mb-6">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-md">
+            <button
+              onClick={() => setActiveTab('image')}
+              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'image'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              🎨 ImageFactory
+            </button>
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'content'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              📄 ContentFactory
+            </button>
+          </div>
+        </div>
+
+        {/* ContentFactory 탭 (Coming Soon) */}
+        {activeTab === 'content' && (
+          <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-200 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="text-6xl mb-4">🚀</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">ContentFactory</h2>
+              <p className="text-gray-600 mb-6">
+                카드뉴스, 썸네일, 릴스/틱톡 영상 자동 생성 기능이<br />
+                곧 출시됩니다!
+              </p>
+              <div className="flex flex-wrap justify-center gap-2 text-sm">
+                <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full">카드뉴스</span>
+                <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full">썸네일</span>
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full">릴스/틱톡</span>
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full">포스터</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-6">
+                ImageFactory에서 생성한 이미지로 콘텐츠를 자동 제작할 수 있습니다
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ImageFactory 탭 */}
+        {activeTab === 'image' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Form */}
           <div className="lg:col-span-2 space-y-6">
@@ -347,6 +457,56 @@ export default function Home() {
                   </p>
                 )}
               </div>
+
+              {/* GPT 버튼들 */}
+              <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => setIsCorrectionModalOpen(true)}
+                  disabled={!prompt.trim()}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 hover:from-indigo-100 hover:to-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>프롬프트 교정 (GPT-5.1)</span>
+                </button>
+
+                <button
+                  onClick={handleRecommendModel}
+                  disabled={!prompt.trim() || isRecommendingModel}
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                    isRecommendingModel
+                      ? 'bg-amber-100 text-amber-600'
+                      : 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 hover:from-amber-100 hover:to-orange-100'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isRecommendingModel ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Lightbulb className="w-4 h-4" />
+                  )}
+                  <span>모델 추천 (GPT)</span>
+                </button>
+              </div>
+
+              {/* 프롬프트 교정 정보 표시 */}
+              {correctionInfo && (
+                <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                  <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded">
+                    ✨ {correctionInfo.purpose} 용도로 교정됨
+                  </span>
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                    {correctionInfo.size}
+                  </span>
+                </div>
+              )}
+
+              {/* GPT 추천 결과 */}
+              {gptRecommendation && (
+                <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-sm text-amber-800">
+                    💡 <span className="font-medium">AI 추천:</span> {gptRecommendation}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Reference Image Upload */}
@@ -486,7 +646,7 @@ export default function Home() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateModelCount(model.id, count - 5);
+                                updateModelCount(model.id, count - 1);
                               }}
                               className="w-8 h-8 bg-gray-200 rounded-lg hover:bg-gray-300 font-bold"
                             >
@@ -495,16 +655,16 @@ export default function Home() {
                             <input
                               type="number"
                               value={count}
-                              onChange={(e) => updateModelCount(model.id, parseInt(e.target.value) || 0)}
+                              onChange={(e) => updateModelCount(model.id, parseInt(e.target.value) || 1)}
                               onClick={(e) => e.stopPropagation()}
                               className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-bold"
-                              min="0"
+                              min="1"
                               max={model.maxCount || 100}
                             />
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateModelCount(model.id, count + 5);
+                                updateModelCount(model.id, count + 1);
                               }}
                               className="w-8 h-8 bg-gray-200 rounded-lg hover:bg-gray-300 font-bold"
                             >
@@ -618,13 +778,15 @@ export default function Home() {
                 <h3 className="font-bold text-gray-900 mb-2">💡 TIP</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• 여러 모델을 선택하면 다양한 스타일을 비교할 수 있어요</li>
-                  <li>• 평균 생성 시간은 이미지당 약 30초입니다</li>
+                  <li>• <span className="text-indigo-600 font-medium">프롬프트 교정</span>으로 더 나은 결과를 얻으세요</li>
+                  <li>• <span className="text-amber-600 font-medium">모델 추천</span>으로 최적의 AI를 선택하세요</li>
                   <li>• 완료되면 이메일로 자동 전송됩니다</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
+        )}
       </main>
 
       {/* Footer */}
@@ -685,6 +847,14 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* 프롬프트 교정 모달 */}
+      <PromptCorrectionModal
+        isOpen={isCorrectionModalOpen}
+        onClose={() => setIsCorrectionModalOpen(false)}
+        prompt={prompt}
+        onCorrect={handlePromptCorrected}
+      />
     </div>
   );
 }
