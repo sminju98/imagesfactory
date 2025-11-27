@@ -1,82 +1,55 @@
 "use strict";
 /**
- * Task 완료 체크 Firebase Function
+ * Task 완료 체크 Firebase Function (v2)
  * Firestore Trigger: Job 상태가 변경되면 Task 완료 여부 확인
  */
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkTaskCompletion = void 0;
-const functions = __importStar(require("firebase-functions"));
-const firestore_1 = require("./utils/firestore");
+const firestore_1 = require("firebase-functions/v2/firestore");
+const firestore_2 = require("./utils/firestore");
 const zip_1 = require("./utils/zip");
 const email_1 = require("./utils/email");
 /**
- * Job 업데이트 시 Task 완료 여부 확인
+ * Job 업데이트 시 Task 완료 여부 확인 (v2)
  */
-exports.checkTaskCompletion = functions
-    .region('asia-northeast3')
-    .runWith({
-    timeoutSeconds: 540, // 9분 (ZIP 생성 포함)
-    memory: '2GB',
-})
-    .firestore
-    .document('tasks/{taskId}/jobs/{jobId}')
-    .onUpdate(async (change, context) => {
-    const { taskId, jobId } = context.params;
+exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
+    document: 'tasks/{taskId}/jobs/{jobId}',
+    region: 'asia-northeast3',
+    timeoutSeconds: 540,
+    memory: '2GiB',
+}, async (event) => {
+    const change = event.data;
+    if (!change) {
+        console.log('No data associated with the event');
+        return;
+    }
+    const { taskId, jobId } = event.params;
     const newData = change.after.data();
     const oldData = change.before.data();
     // 상태 변경 확인
     if (newData.status === oldData.status) {
-        return null;
+        return;
     }
     // completed 또는 failed로 변경된 경우만 처리
     if (newData.status !== 'completed' && newData.status !== 'failed') {
-        return null;
+        return;
+    }
+    // requeued 상태에서 변경된 경우는 무시
+    if (oldData.status === 'requeued') {
+        return;
     }
     console.log(`🔍 Job ${jobId} 상태 변경: ${oldData.status} → ${newData.status}`);
-    const taskRef = firestore_1.db.collection('tasks').doc(taskId);
+    const taskRef = firestore_2.db.collection('tasks').doc(taskId);
     const taskDoc = await taskRef.get();
     if (!taskDoc.exists) {
         console.error(`Task ${taskId} not found`);
-        return null;
+        return;
     }
     const task = taskDoc.data();
     // 이미 완료된 Task는 스킵
     if (task.status === 'completed' || task.status === 'failed') {
         console.log(`ℹ️ Task ${taskId} already ${task.status}, skipping`);
-        return null;
+        return;
     }
     // 모든 Job 조회
     const jobsSnapshot = await taskRef.collection('jobs').get();
@@ -84,6 +57,7 @@ exports.checkTaskCompletion = functions
     let failedJobs = 0;
     let pendingJobs = 0;
     let processingJobs = 0;
+    let requeuedJobs = 0;
     const imageUrls = [];
     jobsSnapshot.forEach(doc => {
         const job = doc.data();
@@ -103,9 +77,12 @@ exports.checkTaskCompletion = functions
             case 'processing':
                 processingJobs++;
                 break;
+            case 'requeued':
+                requeuedJobs++;
+                break;
         }
     });
-    const totalJobs = jobsSnapshot.size;
+    const totalJobs = jobsSnapshot.size - requeuedJobs;
     const finishedJobs = completedJobs + failedJobs;
     const progress = Math.round((finishedJobs / totalJobs) * 100);
     console.log(`📊 Task ${taskId}: ${completedJobs} completed, ${failedJobs} failed, ${pendingJobs} pending, ${processingJobs} processing (${progress}%)`);
@@ -113,17 +90,17 @@ exports.checkTaskCompletion = functions
     if (task.status === 'pending' && (processingJobs > 0 || finishedJobs > 0)) {
         await taskRef.update({
             status: 'processing',
-            updatedAt: firestore_1.fieldValue.serverTimestamp(),
+            updatedAt: firestore_2.fieldValue.serverTimestamp(),
         });
     }
     // 진행률 업데이트
     await taskRef.update({
         progress,
-        updatedAt: firestore_1.fieldValue.serverTimestamp(),
+        updatedAt: firestore_2.fieldValue.serverTimestamp(),
     });
     // 모든 Job이 완료되었는지 확인
     if (pendingJobs > 0 || processingJobs > 0) {
-        return null; // 아직 진행 중인 Job이 있음
+        return;
     }
     console.log(`🎉 Task ${taskId} 모든 Job 완료!`);
     // Task 최종 상태 결정
@@ -142,22 +119,26 @@ exports.checkTaskCompletion = functions
     // 결과 페이지 URL
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://imagefactory.co.kr';
     const resultPageUrl = `${appUrl}/generation/${taskId}`;
-    // Task 업데이트
-    await taskRef.update({
+    // Task 업데이트 (undefined 값 제외)
+    const updateData = {
         status: finalStatus,
         progress: 100,
         imageUrls,
         resultPageUrl,
-        failedReason,
-        finishedAt: firestore_1.fieldValue.serverTimestamp(),
-        updatedAt: firestore_1.fieldValue.serverTimestamp(),
-    });
+        finishedAt: firestore_2.fieldValue.serverTimestamp(),
+        updatedAt: firestore_2.fieldValue.serverTimestamp(),
+    };
+    // failedReason이 있을 때만 추가
+    if (failedReason) {
+        updateData.failedReason = failedReason;
+    }
+    await taskRef.update(updateData);
     // 사용자 통계 업데이트
-    const userRef = firestore_1.db.collection('users').doc(task.userId);
+    const userRef = firestore_2.db.collection('users').doc(task.userId);
     await userRef.update({
-        'stats.totalGenerations': firestore_1.fieldValue.increment(1),
-        'stats.totalImages': firestore_1.fieldValue.increment(completedJobs),
-        updatedAt: firestore_1.fieldValue.serverTimestamp(),
+        'stats.totalGenerations': firestore_2.fieldValue.increment(1),
+        'stats.totalImages': firestore_2.fieldValue.increment(completedJobs),
+        updatedAt: firestore_2.fieldValue.serverTimestamp(),
     });
     // 갤러리에 이미지 추가
     if (completedJobs > 0) {
@@ -170,21 +151,19 @@ exports.checkTaskCompletion = functions
     else if (finalStatus === 'failed') {
         await processFailedTask(task);
     }
-    return null;
 });
 /**
  * 완료된 Task 처리 (ZIP 생성 + 이메일 발송)
  */
 async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs) {
-    const taskRef = firestore_1.db.collection('tasks').doc(taskId);
-    // ZIP 파일 생성
+    const taskRef = firestore_2.db.collection('tasks').doc(taskId);
     let zipUrl;
     try {
-        if (imageUrls.length >= 3) { // 3장 이상일 때만 ZIP 생성
+        if (imageUrls.length >= 3) {
             zipUrl = await (0, zip_1.createZipAndUpload)(taskId, imageUrls);
             await taskRef.update({
                 zipUrl,
-                updatedAt: firestore_1.fieldValue.serverTimestamp(),
+                updatedAt: firestore_2.fieldValue.serverTimestamp(),
             });
             console.log(`📦 ZIP 생성 완료: ${zipUrl}`);
         }
@@ -192,10 +171,8 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
     catch (error) {
         console.error('ZIP 생성 실패:', error);
     }
-    // 사용자 정보 조회
-    const userDoc = await firestore_1.db.collection('users').doc(task.userId).get();
+    const userDoc = await firestore_2.db.collection('users').doc(task.userId).get();
     const userData = userDoc.data();
-    // 완료 이메일 발송
     try {
         await (0, email_1.sendEmail)({
             to: task.userEmail,
@@ -221,7 +198,7 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
  * 실패한 Task 처리 (이메일 발송)
  */
 async function processFailedTask(task) {
-    const userDoc = await firestore_1.db.collection('users').doc(task.userId).get();
+    const userDoc = await firestore_2.db.collection('users').doc(task.userId).get();
     const userData = userDoc.data();
     try {
         await (0, email_1.sendEmail)({
@@ -244,17 +221,17 @@ async function processFailedTask(task) {
  * 갤러리에 이미지 추가
  */
 async function addImagesToGallery(taskId, task) {
-    const taskRef = firestore_1.db.collection('tasks').doc(taskId);
+    const taskRef = firestore_2.db.collection('tasks').doc(taskId);
     const jobsSnapshot = await taskRef.collection('jobs')
         .where('status', '==', 'completed')
         .get();
-    const batch = firestore_1.db.batch();
+    const batch = firestore_2.db.batch();
     const appUrl = process.env.CDN_DOMAIN || 'https://cdn.imagefactory.co.kr';
     jobsSnapshot.forEach(doc => {
         const job = doc.data();
         if (!job.imageUrl)
             return;
-        const galleryRef = firestore_1.db.collection('gallery')
+        const galleryRef = firestore_2.db.collection('gallery')
             .doc(task.userId)
             .collection('images')
             .doc();
@@ -269,13 +246,13 @@ async function addImagesToGallery(taskId, task) {
             publicUrl: `${appUrl}/${task.userId}/${doc.id}.png`,
             width: 1024,
             height: 1024,
-            fileSize: 0, // TODO: 실제 파일 크기 계산
+            fileSize: 0,
             likesCount: 0,
             commentsCount: 0,
             isPublic: true,
             evolutionGeneration: 0,
             parentImageId: task.evolutionSourceId,
-            createdAt: firestore_1.fieldValue.serverTimestamp(),
+            createdAt: firestore_2.fieldValue.serverTimestamp(),
         };
         batch.set(galleryRef, galleryImage);
     });

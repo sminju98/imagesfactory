@@ -136,12 +136,12 @@ export const AI_MODELS: AIModel[] = [
   },
   {
     id: 'flux',
-    name: 'Flux Schnell',
-    description: '빠른 생성, 스타일리시',
-    pointsPerImage: 10,
-    category: 'fast',
-    supportsReference: true,
-    maxImages: 20,
+    name: 'Flux 1.1 Pro',
+    description: '원조 Black Forest Labs 공식 모델',
+    pointsPerImage: 30,
+    category: 'quality',
+    supportsReference: false,
+    maxImages: 15,
   },
   {
     id: 'realistic-vision',
@@ -154,11 +154,11 @@ export const AI_MODELS: AIModel[] = [
   },
   {
     id: 'sdxl',
-    name: 'SDXL',
-    description: '고품질 범용 모델',
-    pointsPerImage: 30,
+    name: 'SD 3.5 Large',
+    description: 'Stability AI 최신 MMDiT 모델',
+    pointsPerImage: 40,
     category: 'quality',
-    supportsReference: true,
+    supportsReference: false,
     maxImages: 15,
   },
   {
@@ -213,4 +213,5 @@ export function getModelPoints(modelId: string): number {
 export function getModelInfo(modelId: string): AIModel | undefined {
   return AI_MODELS.find(m => m.id === modelId);
 }
+
 

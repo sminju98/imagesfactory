@@ -118,30 +118,54 @@ export async function POST(request: NextRequest) {
       remaining: currentPoints - totalPoints,
     });
 
-    // Firestore에 생성 작업 저장
-    const generationRef = await db.collection('imageGenerations').add({
+    // 🔥 tasks 컬렉션에 Task 문서 생성 (Firebase Functions 트리거용)
+    const taskRef = db.collection('tasks').doc();
+    await taskRef.set({
       userId,
+      userEmail: email,
       prompt,
-      email,
       totalImages,
       totalPoints,
       modelConfigs,
       referenceImageUrl: referenceImageUrl || null,
       status: 'pending',
       progress: 0,
-      pointsDeducted: true, // 포인트 차감 완료 표시
-      transactionId: transactionRef.id, // 거래 ID 저장 (환불용)
+      pointsDeducted: true,
+      transactionId: transactionRef.id,
       createdAt: fieldValue.serverTimestamp(),
       updatedAt: fieldValue.serverTimestamp(),
     });
 
-    console.log('✅ Generation created:', generationRef.id);
-    console.log('🔥 Firebase Functions가 자동으로 이미지 생성을 시작합니다');
+    console.log('✅ Task created:', taskRef.id);
+
+    // 🚀 jobs 서브컬렉션에 개별 Job 생성 → jobWorker가 트리거됨
+    const batch = db.batch();
+    
+    for (const config of modelConfigs) {
+      for (let i = 0; i < config.count; i++) {
+        const jobRef = taskRef.collection('jobs').doc();
+        batch.set(jobRef, {
+          taskId: taskRef.id,
+          userId,
+          prompt,
+          modelId: config.modelId,
+          status: 'pending',
+          retries: 0,
+          pointsCost: config.pointsPerImage,
+          referenceImageUrl: referenceImageUrl || null,
+          createdAt: fieldValue.serverTimestamp(),
+          updatedAt: fieldValue.serverTimestamp(),
+        });
+      }
+    }
+    
+    await batch.commit();
+    console.log(`🚀 ${totalImages}개 Job 생성 완료 → Firebase Functions 트리거!`);
 
     return NextResponse.json({
       success: true,
       data: {
-        generationId: generationRef.id,
+        generationId: taskRef.id,
         totalImages,
         totalPoints,
       },
@@ -157,14 +181,26 @@ export async function POST(request: NextRequest) {
 
 function getModelPoints(modelId: string): number {
   const pointsMap: Record<string, number> = {
+    // 무료/저가 모델
     'pixart': 10,
-    'realistic-vision': 20,
     'flux': 10,
+    'realistic-vision': 20,
     'sdxl': 30,
-    'leonardo': 30,
-    'dall-e-3': 150,
-    'aurora': 60,
-    'ideogram': 60,
+    'kandinsky': 30,
+    'hunyuan': 30,
+    // 중간가 모델
+    'playground': 40,
+    'leonardo': 50,
+    'recraft': 50,
+    'seedream': 50,
+    // 고가 모델
+    'gemini': 60,
+    'grok': 80,
+    'ideogram': 80,
+    // 프리미엄 모델
+    'gpt-image': 150,
+    'firefly': 120,
+    'midjourney': 200,
   };
   return pointsMap[modelId] || 30;
 }

@@ -12,7 +12,7 @@ const openai = new OpenAI({
 export async function translatePromptToEnglish(koreanPrompt: string): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // 번역은 저렴한 3.5로 충분
+      model: 'gpt-5.1', // GPT-5.1 사용
       messages: [
         {
           role: 'system',
@@ -52,7 +52,7 @@ export function isKorean(text: string): boolean {
 export async function improvePrompt(prompt: string): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-5.1', // GPT-5.1 사용
       messages: [
         {
           role: 'system',

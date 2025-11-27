@@ -157,10 +157,7 @@ export const PromptCorrectionModal = ({
       setError('그림체를 선택해주세요.');
       return;
     }
-    if (!selectedMood) {
-      setError('분위기를 선택해주세요.');
-      return;
-    }
+    // 분위기는 선택사항 (optional)
 
     setIsLoading(true);
     setError(null);
@@ -315,10 +312,10 @@ export const PromptCorrectionModal = ({
             )}
           </div>
 
-          {/* 분위기(무드) 선택 */}
+          {/* 분위기(무드) 선택 - 선택사항 */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
-              🌈 분위기 선택
+              🌈 분위기 선택 <span className="text-gray-500 text-xs">(선택)</span>
             </label>
             <div className="grid grid-cols-4 gap-2">
               {MOOD_OPTIONS.map((mood) => (
@@ -505,7 +502,7 @@ export const PromptCorrectionModal = ({
           </button>
           <button
             onClick={handleCorrect}
-            disabled={isLoading || !selectedPurpose || !selectedStyle || !selectedMood}
+            disabled={isLoading || !selectedPurpose || !selectedStyle}
             className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-500 hover:to-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? (

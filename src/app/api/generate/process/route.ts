@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Firestore에서 생성 작업 가져오기 (Admin SDK)
-    const generationRef = db.collection('imageGenerations').doc(generationId);
+    // Firestore에서 생성 작업 가져오기 (Admin SDK) - tasks 컬렉션 사용
+    const generationRef = db.collection('tasks').doc(generationId);
     const generationDoc = await generationRef.get();
 
     if (!generationDoc.exists) {
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
     try {
       const { generationId } = await request.json();
       if (generationId) {
-        await db.collection('imageGenerations').doc(generationId).update({
+        await db.collection('tasks').doc(generationId).update({
           status: 'failed',
           failedReason: error.message,
           updatedAt: fieldValue.serverTimestamp(),

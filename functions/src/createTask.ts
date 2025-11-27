@@ -1,68 +1,54 @@
 /**
- * Task 생성 Firebase Function
+ * Task 생성 Firebase Function (v2)
  * HTTP Callable Function으로 클라이언트에서 호출
  */
 
-import * as functions from 'firebase-functions';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, fieldValue } from './utils/firestore';
 import { Task, Job, ModelConfig, User, getModelPoints } from './types';
 
 interface CreateTaskData {
   prompt: string;
-  selectedModels: Record<string, number>; // { modelId: count }
+  selectedModels: Record<string, number>;
   referenceImageUrl?: string;
   evolutionSourceId?: string;
 }
 
 /**
- * Task 생성 및 Job 생성
- * - 사용자 포인트 확인 및 차감
- * - Task 문서 생성
- * - Job 서브컬렉션에 개별 작업 생성
+ * Task 생성 및 Job 생성 (v2)
  */
-export const createTask = functions
-  .region('asia-northeast3')
-  .https.onCall(async (data: CreateTaskData, context) => {
+export const createTask = onCall(
+  {
+    region: 'asia-northeast3',
+    memory: '256MiB',
+  },
+  async (request) => {
     // 1. 인증 확인
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        'unauthenticated',
-        '로그인이 필요합니다.'
-      );
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', '로그인이 필요합니다.');
     }
 
-    const userId = context.auth.uid;
-    const userEmail = context.auth.token.email || '';
+    const userId = request.auth.uid;
+    const userEmail = request.auth.token.email || '';
+    const data = request.data as CreateTaskData;
 
     const { prompt, selectedModels, referenceImageUrl, evolutionSourceId } = data;
 
     // 2. 입력 유효성 검사
     if (!prompt || typeof prompt !== 'string') {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '프롬프트를 입력해주세요.'
-      );
+      throw new HttpsError('invalid-argument', '프롬프트를 입력해주세요.');
     }
 
     if (prompt.length < 10) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '프롬프트는 최소 10자 이상이어야 합니다.'
-      );
+      throw new HttpsError('invalid-argument', '프롬프트는 최소 10자 이상이어야 합니다.');
     }
 
     if (prompt.length > 1000) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '프롬프트는 최대 1000자까지 입력 가능합니다.'
-      );
+      throw new HttpsError('invalid-argument', '프롬프트는 최대 1000자까지 입력 가능합니다.');
     }
 
     if (!selectedModels || Object.keys(selectedModels).length === 0) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '최소 1개 이상의 모델을 선택해주세요.'
-      );
+      throw new HttpsError('invalid-argument', '최소 1개 이상의 모델을 선택해주세요.');
     }
 
     // 3. 총 이미지 수 및 포인트 계산
@@ -76,10 +62,7 @@ export const createTask = functions
       
       if (isNaN(numCount) || numCount <= 0) continue;
       if (numCount > 50) {
-        throw new functions.https.HttpsError(
-          'invalid-argument',
-          `모델당 최대 50장까지 생성 가능합니다. (${modelId})`
-        );
+        throw new HttpsError('invalid-argument', `모델당 최대 50장까지 생성 가능합니다. (${modelId})`);
       }
 
       const pointsPerImage = getModelPoints(modelId);
@@ -94,10 +77,9 @@ export const createTask = functions
         completedCount: 0,
       });
 
-      // Job 데이터 준비
       for (let i = 0; i < numCount; i++) {
         jobsToCreate.push({
-          taskId: '', // 나중에 설정
+          taskId: '',
           userId,
           prompt,
           modelId,
@@ -110,17 +92,11 @@ export const createTask = functions
     }
 
     if (totalImages === 0) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '생성할 이미지가 없습니다.'
-      );
+      throw new HttpsError('invalid-argument', '생성할 이미지가 없습니다.');
     }
 
     if (totalImages > 100) {
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        '한 번에 최대 100장까지 생성 가능합니다.'
-      );
+      throw new HttpsError('invalid-argument', '한 번에 최대 100장까지 생성 가능합니다.');
     }
 
     console.log(`📝 Task 생성 시작: userId=${userId}, totalImages=${totalImages}, totalPoints=${totalPoints}`);
@@ -135,20 +111,14 @@ export const createTask = functions
         const userDoc = await transaction.get(userRef);
 
         if (!userDoc.exists) {
-          throw new functions.https.HttpsError(
-            'not-found',
-            '사용자 정보를 찾을 수 없습니다.'
-          );
+          throw new HttpsError('not-found', '사용자 정보를 찾을 수 없습니다.');
         }
 
         const userData = userDoc.data() as User;
         const currentPoints = userData.points || 0;
 
         if (currentPoints < totalPoints) {
-          throw new functions.https.HttpsError(
-            'failed-precondition',
-            `포인트가 부족합니다. 현재: ${currentPoints}pt, 필요: ${totalPoints}pt`
-          );
+          throw new HttpsError('failed-precondition', `포인트가 부족합니다. 현재: ${currentPoints}pt, 필요: ${totalPoints}pt`);
         }
 
         // 포인트 차감
@@ -213,7 +183,6 @@ export const createTask = functions
 
       console.log(`✅ Task ${result.taskId} 생성 완료: ${totalImages}개 Job 생성`);
 
-      // 예상 소요 시간 계산 (이미지당 평균 10초)
       const estimatedTime = Math.ceil(totalImages * 10);
 
       return {
@@ -228,15 +197,15 @@ export const createTask = functions
     } catch (error) {
       console.error('❌ Task 생성 실패:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         '이미지 생성 요청 중 오류가 발생했습니다.',
         error instanceof Error ? error.message : String(error)
       );
     }
-  });
-
+  }
+);

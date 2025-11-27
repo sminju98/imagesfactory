@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // GPT-4로 모델 추천
+    // GPT-5.1로 모델 추천
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5.1', // GPT-5.1 최신 모델
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       ],
       response_format: { type: 'json_object' },
       temperature: 0.7,
-      max_tokens: 1000,
+      max_completion_tokens: 1000,
     });
 
     const content = completion.choices[0]?.message?.content;

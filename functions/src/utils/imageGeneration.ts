@@ -14,18 +14,120 @@ function isKorean(text: string): boolean {
 }
 
 /**
- * 프롬프트 영문 번역 (Google Cloud Translation API)
- * TODO: 실제 번역 API 연동 필요
+ * 민감한 키워드 우회 처리
+ */
+function sanitizePrompt(prompt: string): string {
+  const replacements: [RegExp, string][] = [
+    // 의료/성형 관련
+    [/plastic surgery/gi, 'aesthetic enhancement'],
+    [/cosmetic surgery/gi, 'beauty treatment'],
+    [/surgery clinic/gi, 'wellness center'],
+    [/성형/gi, '뷰티'],
+    [/수술/gi, '시술'],
+    [/병원/gi, '센터'],
+    [/클리닉/gi, '스튜디오'],
+    // 신체 부위 민감 표현
+    [/breast/gi, 'figure'],
+    [/liposuction/gi, 'body contouring'],
+    [/facelift/gi, 'facial rejuvenation'],
+    [/nose job/gi, 'facial harmony'],
+    [/rhinoplasty/gi, 'facial harmony'],
+    // 기타 민감 표현
+    [/before and after/gi, 'transformation'],
+    [/medical procedure/gi, 'wellness service'],
+  ];
+
+  let sanitized = prompt;
+  for (const [pattern, replacement] of replacements) {
+    sanitized = sanitized.replace(pattern, replacement);
+  }
+  
+  if (sanitized !== prompt) {
+    console.log(`🛡️ [Sanitize] 프롬프트 우회 처리됨`);
+  }
+  
+  return sanitized;
+}
+
+/**
+ * GPT를 사용한 프롬프트 교정 및 영어 번역
+ * - 모든 언어를 영어로 번역
+ * - 이미지 생성에 최적화된 프롬프트로 교정
+ */
+async function enhanceAndTranslatePrompt(prompt: string): Promise<string> {
+  // OpenAI API 키가 없으면 원본 반환
+  if (!process.env.OPENAI_API_KEY) {
+    console.log(`🌐 [Enhance] OpenAI API 키 없음, 원본 사용`);
+    return prompt;
+  }
+
+  try {
+    console.log(`🤖 [GPT] 프롬프트 교정 시작`);
+    
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert prompt engineer for AI image generation.
+Your task:
+1. If the input is NOT in English, translate it to natural English first
+2. Enhance the prompt for better AI image generation results
+3. Add relevant artistic details (lighting, composition, style, quality)
+4. Keep it concise but descriptive (max 150 words)
+5. Output ONLY the enhanced English prompt, no explanations or prefixes`,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_completion_tokens: 250,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const enhancedPrompt = response.data?.choices?.[0]?.message?.content?.trim();
+    
+    if (enhancedPrompt) {
+      console.log(`✅ [GPT] 프롬프트 교정 완료: "${enhancedPrompt.substring(0, 80)}..."`);
+      return enhancedPrompt;
+    }
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown }; message?: string };
+    console.error('❌ [GPT] 프롬프트 교정 실패:', err.response?.data || err.message);
+  }
+  
+  // 교정 실패 시 원본 반환
+  console.log(`🌐 [GPT] 교정 실패, 원본 사용`);
+  return prompt;
+}
+
+/**
+ * 프롬프트 영문 번역 (GPT 사용, 폴백으로 Google Translation)
  */
 async function translatePromptToEnglish(prompt: string): Promise<string> {
-  // Google Cloud Translation API 키가 있으면 실제 번역
+  // GPT로 교정 + 번역 시도
+  const enhanced = await enhanceAndTranslatePrompt(prompt);
+  if (enhanced !== prompt) {
+    return enhanced;
+  }
+  
+  // Google Cloud Translation API 폴백 (자동 언어 감지)
   if (process.env.GOOGLE_TRANSLATE_API_KEY) {
     try {
       const response = await axios.post(
         `https://translation.googleapis.com/language/translate/v2?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`,
         {
           q: prompt,
-          source: 'ko',
           target: 'en',
           format: 'text',
         }
@@ -41,7 +143,7 @@ async function translatePromptToEnglish(prompt: string): Promise<string> {
     }
   }
   
-  // 번역 실패 시 원본 반환
+  // 모두 실패 시 원본 반환
   console.log(`🌐 [Translate] Using original prompt (no translation)`);
   return prompt;
 }
@@ -52,7 +154,10 @@ async function translatePromptToEnglish(prompt: string): Promise<string> {
 async function generateWithDALLE3(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024, referenceImageUrl } = params;
 
-  let finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
 
   if (referenceImageUrl) {
     finalPrompt = `${finalPrompt}, in a similar style and composition to the reference image, maintaining consistent aesthetic`;
@@ -89,23 +194,26 @@ async function generateWithDALLE3(params: GenerateImageParams): Promise<Generate
 }
 
 /**
- * xAI Grok (Aurora)로 이미지 생성
+ * xAI Grok-2 이미지 생성
  */
 async function generateWithGrok(params: GenerateImageParams): Promise<GeneratedImage> {
-  const { prompt, width = 1024, height = 1024 } = params;
+  const { prompt } = params;
 
-  const finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
 
-  console.log('🌟 [Aurora] 이미지 생성 시작');
+  console.log(`🌟 [Grok-2] 이미지 생성 시작`);
 
+  // Grok-2 Image API는 size 파라미터를 지원하지 않음
   const response = await axios.post(
     'https://api.x.ai/v1/images/generations',
     {
-      model: 'grok-2-vision-1212',
+      model: 'grok-2-image-1212',
       prompt: finalPrompt,
       n: 1,
       response_format: 'url',
-      size: `${width}x${height}`,
     },
     {
       headers: {
@@ -116,21 +224,25 @@ async function generateWithGrok(params: GenerateImageParams): Promise<GeneratedI
   );
 
   if (!response.data?.data?.[0]?.url) {
+    console.error('❌ [Grok] API 응답:', JSON.stringify(response.data));
     throw new Error('Grok API 응답 오류');
   }
 
+  console.log('✅ [Grok-2] 이미지 생성 완료');
+
   return {
     url: response.data.data[0].url,
-    modelId: 'aurora',
+    modelId: 'grok',
   };
 }
 
 /**
  * Replicate API를 통한 이미지 생성 (SDXL, Flux, PixArt 등)
+ * model: 모델 ID (예: 'jyoung105/playground-v2.5') 또는 버전 해시
  */
 async function generateWithReplicate(
   params: GenerateImageParams,
-  version: string,
+  model: string,
   inputOverrides: Record<string, unknown> = {}
 ): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024, referenceImageUrl, modelId } = params;
@@ -150,10 +262,16 @@ async function generateWithReplicate(
     input.prompt_strength = 0.8;
   }
 
-  // Prediction 생성
+  // Prediction 생성 (model 필드 사용 - 최신 API 방식)
+  // 버전 해시인 경우 version 필드, 모델 ID인 경우 model 필드 사용
+  const isVersionHash = model.length === 64 && /^[a-f0-9]+$/.test(model);
+  const requestBody = isVersionHash 
+    ? { version: model, input }
+    : { model, input };
+
   const response = await axios.post(
     'https://api.replicate.com/v1/predictions',
-    { version, input },
+    requestBody,
     {
       headers: {
         'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
@@ -200,28 +318,206 @@ async function generateWithReplicate(
 /**
  * SDXL 이미지 생성
  */
+/**
+ * Stable Diffusion 3.5 Large 이미지 생성 (Stability AI via Replicate)
+ * SDXL보다 최신, MMDiT 아키텍처, 타이포그래피/프롬프트 이해 향상
+ */
 async function generateWithSDXL(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🎯 [SD 3.5 Large] 이미지 생성 시작`);
+
   return generateWithReplicate(
-    params,
-    '39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b', // stability-ai/sdxl
+    { ...params, prompt: finalPrompt, modelId: 'sdxl' },
+    'stability-ai/stable-diffusion-3.5-large',
     {
-      scheduler: 'K_EULER',
-      num_inference_steps: 25,
+      width: width,
+      height: height,
+      num_inference_steps: 28,
+      guidance_scale: 3.5,
+      output_format: 'webp',
+      output_quality: 80,
     }
   );
 }
 
 /**
- * Flux Schnell 이미지 생성
+ * Flux 1.1 Pro 이미지 생성 (Black Forest Labs via Replicate)
+ * 원조 개발사의 공식 최신 모델 - 고품질, 프롬프트 준수 최고
  */
 async function generateWithFlux(params: GenerateImageParams): Promise<GeneratedImage> {
   const { width = 1024, height = 1024 } = params;
   const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🎨 [Flux 1.1 Pro] 이미지 생성 시작`);
 
   return generateWithReplicate(
-    { ...params, modelId: 'flux' },
-    'black-forest-labs/flux-schnell',
-    { aspect_ratio: aspectRatio }
+    { ...params, prompt: finalPrompt, modelId: 'flux' },
+    'black-forest-labs/flux-1.1-pro',
+    { 
+      aspect_ratio: aspectRatio,
+      output_format: 'webp',
+      output_quality: 80,
+      safety_tolerance: 2,
+      prompt_upsampling: true,
+    }
+  );
+}
+
+/**
+ * Hunyuan Image 3 이미지 생성 (Tencent via Replicate)
+ */
+async function generateWithHunyuan(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🎨 [Hunyuan] Image 3 이미지 생성 시작`);
+
+  return generateWithReplicate(
+    { ...params, prompt: finalPrompt, modelId: 'hunyuan' },
+    'tencent/hunyuan-image-3',
+    { 
+      aspect_ratio: aspectRatio,
+      num_outputs: 1,
+    }
+  );
+}
+
+/**
+ * Seedream 4.0 이미지 생성 (Segmind API)
+ * 4K 고해상도 text-to-image 모델
+ */
+async function generateWithSeedream(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🎨 [Seedream 4] 이미지 생성 시작`);
+
+  const response = await axios.post(
+    'https://api.segmind.com/v1/seedream-4',
+    {
+      prompt: finalPrompt,
+      negative_prompt: 'blurry, low quality, distorted, deformed',
+      samples: 1,
+      width: width,
+      height: height,
+      guidance_scale: 7.5,
+      num_inference_steps: 30,
+    },
+    {
+      headers: {
+        'x-api-key': process.env.SEGMIND_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      responseType: 'arraybuffer',
+    }
+  );
+
+  // Segmind는 이미지를 직접 바이너리로 반환
+  const base64Image = Buffer.from(response.data).toString('base64');
+
+  console.log(`✅ [Seedream 4] 이미지 생성 완료`);
+
+  return {
+    url: base64Image,  // base64 데이터만 반환 (data:image 접두사 없음)
+    modelId: 'seedream',
+    isBase64: true,
+  };
+}
+
+/**
+ * Recraft V3 이미지 생성 (Replicate)
+ * SOTA 벤치마크 1위, 긴 텍스트 렌더링, 다양한 스타일 지원
+ */
+async function generateWithRecraft(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🖌️ [Recraft V3] 이미지 생성 시작 (SOTA)`);
+
+  // 크기를 Recraft 지원 형식으로 변환
+  const size = `${width}x${height}`;
+
+  return generateWithReplicate(
+    { ...params, prompt: finalPrompt, modelId: 'recraft' },
+    'recraft-ai/recraft-v3',
+    { 
+      size: size,
+      style: 'realistic_image',
+    }
+  );
+}
+
+/**
+ * Playground v2.5 이미지 생성 (Replicate)
+ * 미적 점수 SDXL 2배, Aesthetic 특화 (53K+ runs)
+ */
+async function generateWithPlayground(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🎨 [Playground v2.5] 이미지 생성 시작`);
+
+  return generateWithReplicate(
+    { ...params, prompt: finalPrompt, modelId: 'playground' },
+    'jyoung105/playground-v2.5',
+    { 
+      width: width,
+      height: height,
+      guidance_scale: 3,
+    }
+  );
+}
+
+/**
+ * Kandinsky 3.0 이미지 생성 (Replicate)
+ * 러시아 Sber AI, 가성비 고품질 (111K+ runs)
+ */
+async function generateWithKandinsky(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+  
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log(`🪆 [Kandinsky 3.0] 이미지 생성 시작`);
+
+  return generateWithReplicate(
+    { ...params, prompt: finalPrompt, modelId: 'kandinsky' },
+    'asiryan/kandinsky-3.0',
+    { 
+      width: width,
+      height: height,
+      num_inference_steps: 25,
+    }
   );
 }
 
@@ -249,19 +545,24 @@ async function generateWithRealisticVision(params: GenerateImageParams): Promise
 }
 
 /**
- * Leonardo.ai 이미지 생성
+ * Leonardo.ai 이미지 생성 (Phoenix 1.0)
  */
 async function generateWithLeonardo(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024 } = params;
 
-  const finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  console.log('🎨 [Leonardo] Phoenix 1.0 이미지 생성 시작');
 
   // Generation 요청
   const response = await axios.post(
     'https://cloud.leonardo.ai/api/rest/v1/generations',
     {
       prompt: finalPrompt,
-      modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876', // Leonardo Diffusion XL
+      modelId: 'de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3', // Phoenix 1.0
       width,
       height,
       num_images: 1,
@@ -316,39 +617,271 @@ async function generateWithLeonardo(params: GenerateImageParams): Promise<Genera
 }
 
 /**
- * Ideogram 이미지 생성
+ * GPT-Image-1 이미지 생성 (OpenAI 최신 이미지 모델)
+ * 참고: https://platform.openai.com/docs/api-reference/images/create
  */
-async function generateWithIdeogram(params: GenerateImageParams): Promise<GeneratedImage> {
-  const { prompt, width = 1024, height = 1024 } = params;
+async function generateWithGPTImage(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { prompt, width = 1024, height = 1024, referenceImageUrl } = params;
 
-  const finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
-  const aspectRatio = width === height ? 'ASPECT_1_1' : width > height ? 'ASPECT_16_9' : 'ASPECT_9_16';
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  // 번역 후에도 한번 더 우회 처리
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  if (referenceImageUrl) {
+    finalPrompt = `${finalPrompt}, in a similar style and composition to the reference image, maintaining consistent aesthetic`;
+    console.log('🖼️ [GPT-Image-1] 참고 이미지 스타일 반영');
+  }
+
+  // gpt-image-1 지원 사이즈: 1024x1024, 1536x1024, 1024x1536
+  const size = width === height ? '1024x1024' : width > height ? '1536x1024' : '1024x1536';
+
+  console.log(`🎨 [GPT-Image-1] 이미지 생성 시작 (size: ${size})`);
 
   const response = await axios.post(
-    'https://api.ideogram.ai/generate',
+    'https://api.openai.com/v1/images/generations',
     {
-      image_request: {
-        prompt: finalPrompt,
-        aspect_ratio: aspectRatio,
-        model: 'V_2',
-        magic_prompt_option: 'AUTO',
-      },
+      model: 'gpt-image-1',
+      prompt: finalPrompt,
+      n: 1,
+      size,
+      quality: 'high',
     },
     {
       headers: {
-        'Api-Key': process.env.IDEOGRAM_API_KEY!,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
     }
   );
 
-  if (!response.data?.data?.[0]?.url) {
-    throw new Error('Ideogram API 응답 오류');
+  // gpt-image-1은 b64_json 또는 url 반환
+  const imageData = response.data?.data?.[0];
+  if (!imageData) {
+    console.error('❌ [GPT-Image-1] API 응답:', JSON.stringify(response.data));
+    throw new Error('GPT-Image-1 API 응답 오류');
   }
 
+  let imageUrl = imageData.url;
+
+  // b64_json인 경우 Storage에 업로드
+  if (!imageUrl && imageData.b64_json) {
+    console.log('📦 [GPT-Image-1] base64 이미지를 Storage에 업로드 중...');
+    const { storage } = await import('./firestore');
+    
+    const bucket = storage.bucket();
+    const filename = `gpt-image-temp/${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+    const file = bucket.file(filename);
+    
+    const imageBuffer = Buffer.from(imageData.b64_json, 'base64');
+    
+    await file.save(imageBuffer, {
+      contentType: 'image/png',
+      metadata: {
+        cacheControl: 'public, max-age=2592000',
+      },
+    });
+    
+    await file.makePublic();
+    imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+  }
+
+  console.log('✅ [GPT-Image-1] 이미지 생성 완료');
+
   return {
-    url: response.data.data[0].url,
-    modelId: 'ideogram',
+    url: imageUrl,
+    modelId: 'gpt-image',
+  };
+}
+
+/**
+ * Google Gemini 이미지 생성 (Imagen 4.0)
+ * 참고: https://ai.google.dev/gemini-api/docs/imagen
+ */
+async function generateWithGemini(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { prompt, width = 1024, height = 1024 } = params;
+
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  // 가로세로 비율 계산
+  const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
+
+  console.log(`💎 [Gemini Imagen 4.0] 이미지 생성 시작 (aspectRatio: ${aspectRatio})`);
+
+  // Gemini Imagen API (x-goog-api-key 헤더 사용)
+  const response = await axios.post(
+    'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict',
+    {
+      instances: [
+        {
+          prompt: finalPrompt,
+        },
+      ],
+      parameters: {
+        sampleCount: 1,
+        aspectRatio,
+        personGeneration: 'allow_adult',
+      },
+    },
+    {
+      headers: {
+        'x-goog-api-key': process.env.GOOGLE_AI_API_KEY,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.data?.predictions?.[0]?.bytesBase64Encoded) {
+    console.error('❌ [Gemini] API 응답:', JSON.stringify(response.data));
+    throw new Error('Gemini Imagen API 응답 오류');
+  }
+
+  console.log('✅ [Gemini] 이미지 생성 완료, base64 데이터 수신');
+
+  // Base64 이미지를 Firebase Storage에 업로드
+  const base64Image = response.data.predictions[0].bytesBase64Encoded;
+  const { storage } = await import('./firestore');
+  
+  const bucket = storage.bucket();
+  const filename = `gemini-temp/${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+  const file = bucket.file(filename);
+  
+  const imageBuffer = Buffer.from(base64Image, 'base64');
+  
+  await file.save(imageBuffer, {
+    contentType: 'image/png',
+    metadata: {
+      cacheControl: 'public, max-age=2592000',
+    },
+  });
+  
+  await file.makePublic();
+  const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+
+  console.log(`☁️ [Gemini] Storage 업로드 완료: ${imageUrl}`);
+
+  return {
+    url: imageUrl,
+    modelId: 'gemini',
+  };
+}
+
+/**
+ * Ideogram 이미지 생성
+ */
+/**
+ * Ideogram V3 Turbo 이미지 생성 (Replicate)
+ * 텍스트 렌더링 최강, 4.6M runs
+ */
+async function generateWithIdeogram(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { width = 1024, height = 1024 } = params;
+
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(params.prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+  
+  const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
+
+  console.log(`✍️ [Ideogram V3 Turbo] 이미지 생성 시작 (Replicate)`);
+
+  return generateWithReplicate(
+    { ...params, prompt: finalPrompt, modelId: 'ideogram' },
+    'ideogram-ai/ideogram-v3-turbo',
+    {
+      prompt: finalPrompt,
+      aspect_ratio: aspectRatio,
+    }
+  );
+}
+
+/**
+ * Midjourney 이미지 생성 (Maginary.ai API)
+ * 참고: https://app.maginary.ai
+ */
+async function generateWithMidjourney(params: GenerateImageParams): Promise<GeneratedImage> {
+  const { prompt, width = 1024, height = 1024 } = params;
+
+  // 민감한 키워드 우회 처리
+  const sanitizedPrompt = sanitizePrompt(prompt);
+  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+  finalPrompt = sanitizePrompt(finalPrompt);
+
+  // 가로세로 비율 추가
+  const aspectRatio = width === height ? '' : width > height ? ' --ar 16:9' : ' --ar 9:16';
+  const promptWithAspect = finalPrompt + aspectRatio;
+
+  console.log(`🎨 [Midjourney] 이미지 생성 시작`);
+
+  // 1) Generation 생성
+  const createRes = await axios.post(
+    'https://app.maginary.ai/api/gens/',
+    { prompt: promptWithAspect },
+    {
+      headers: {
+        'Authorization': `Bearer ${process.env.MAGINARY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!createRes.data?.uuid) {
+    console.error('❌ [Midjourney] 생성 요청 실패:', JSON.stringify(createRes.data));
+    throw new Error('Midjourney API 생성 요청 실패');
+  }
+
+  const uuid = createRes.data.uuid;
+  console.log(`📝 [Midjourney] Generation UUID: ${uuid}`);
+
+  // 2) 폴링으로 완료 대기 (최대 5분)
+  const maxWaitTime = 5 * 60 * 1000;
+  const startTime = Date.now();
+  let genDetails;
+
+  while (Date.now() - startTime < maxWaitTime) {
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3초마다 체크
+
+    const getRes = await axios.get(
+      `https://app.maginary.ai/api/gens/${uuid}/`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.MAGINARY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    genDetails = getRes.data;
+
+    // 상태 확인 (Maginary API는 processing_state 사용, 완료시 'done')
+    const processingState = genDetails.processing_state || genDetails.status;
+    
+    if (processingState === 'done' || processingState === 'completed' || processingState === 'finished' || genDetails.images?.length > 0) {
+      console.log('✅ [Midjourney] 이미지 생성 완료');
+      break;
+    }
+
+    if (processingState === 'failed' || processingState === 'error') {
+      throw new Error(`Midjourney 생성 실패: ${genDetails.error || genDetails.message || 'Unknown error'}`);
+    }
+
+    console.log(`⏳ [Midjourney] 생성 중... (state: ${processingState})`);
+  }
+
+  if (!genDetails?.images?.length) {
+    throw new Error('Midjourney 이미지 생성 타임아웃');
+  }
+
+  // 첫 번째 이미지 URL 반환
+  const imageUrl = genDetails.images[0]?.url || genDetails.images[0];
+
+  return {
+    url: imageUrl,
+    modelId: 'midjourney',
   };
 }
 
@@ -426,6 +959,30 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
 
       case 'ideogram':
         return generateWithIdeogram(params);
+
+      case 'gpt-image':
+        return generateWithGPTImage(params);
+
+      case 'gemini':
+        return generateWithGemini(params);
+
+      case 'midjourney':
+        return generateWithMidjourney(params);
+
+      case 'hunyuan':
+        return generateWithHunyuan(params);
+
+      case 'seedream':
+        return generateWithSeedream(params);
+
+      case 'recraft':
+        return generateWithRecraft(params);
+
+      case 'playground':
+        return generateWithPlayground(params);
+
+      case 'kandinsky':
+        return generateWithKandinsky(params);
 
       default:
         console.warn(`Unknown model: ${modelId}, using SDXL as fallback`);

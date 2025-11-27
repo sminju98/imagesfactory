@@ -132,7 +132,7 @@ export default function MyPage() {
 
     try {
       console.log('🔍 히스토리 조회 시작:', user.uid);
-      const generationsRef = collection(db, 'imageGenerations');
+      const generationsRef = collection(db, 'tasks');
       const q = query(
         generationsRef,
         where('userId', '==', user.uid),

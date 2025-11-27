@@ -1,38 +1,45 @@
 /**
- * Job Worker Firebase Function
+ * Job Worker Firebase Function (v2)
  * Firestore Trigger: Job 문서가 생성되면 이미지 생성 작업 수행
  */
 
-import * as functions from 'firebase-functions';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db, storage, fieldValue } from './utils/firestore';
 import { generateImage } from './utils/imageGeneration';
-import { Job, Task, User } from './types';
+import { Job, Task, User, SYSTEM_MAX_INSTANCES } from './types';
 import fetch from 'node-fetch';
 
 const MAX_RETRIES = 3;
 
 /**
- * Job 생성 시 이미지 생성 작업 수행
+ * Job 생성 시 이미지 생성 작업 수행 (v2)
  */
-export const jobWorker = functions
-  .region('asia-northeast3')
-  .runWith({
-    timeoutSeconds: 300, // 5분
-    memory: '1GB',
-  })
-  .firestore
-  .document('tasks/{taskId}/jobs/{jobId}')
-  .onCreate(async (snapshot, context) => {
-    const { taskId, jobId } = context.params;
+export const jobWorker = onDocumentCreated(
+  {
+    document: 'tasks/{taskId}/jobs/{jobId}',
+    region: 'asia-northeast3',
+    timeoutSeconds: 300,
+    memory: '1GiB',
+    maxInstances: SYSTEM_MAX_INSTANCES,
+  },
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+      console.log('No data associated with the event');
+      return;
+    }
+
+    const { taskId, jobId } = event.params;
     const jobData = snapshot.data() as Job;
 
     // pending 상태의 Job만 처리
     if (jobData.status !== 'pending') {
       console.log(`ℹ️ Job ${jobId} is not pending, skipping`);
-      return null;
+      return;
     }
 
-    console.log(`🚀 Job ${jobId} 시작: Task=${taskId}, Model=${jobData.modelId}`);
+    const { userId, modelId } = jobData;
+    console.log(`🚀 Job ${jobId} 시작: Task=${taskId}, Model=${modelId}, User=${userId}`);
 
     // Job 상태를 processing으로 업데이트
     await snapshot.ref.update({
@@ -52,12 +59,21 @@ export const jobWorker = functions
 
       console.log(`🎨 이미지 생성 완료: ${generatedImage.url.substring(0, 50)}...`);
 
-      // 2. 생성된 이미지 다운로드
-      const imageResponse = await fetch(generatedImage.url);
-      if (!imageResponse.ok) {
-        throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
+      // 2. 생성된 이미지 다운로드 (base64인 경우 직접 변환)
+      let imageBuffer: Buffer;
+      
+      if (generatedImage.isBase64) {
+        // base64 데이터를 직접 Buffer로 변환
+        console.log(`📦 [Base64] 직접 변환 중...`);
+        imageBuffer = Buffer.from(generatedImage.url, 'base64');
+      } else {
+        // URL에서 이미지 다운로드
+        const imageResponse = await fetch(generatedImage.url);
+        if (!imageResponse.ok) {
+          throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
+        }
+        imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
       }
-      const imageBuffer = await imageResponse.arrayBuffer();
 
       // 3. Firebase Storage에 업로드
       const bucket = storage.bucket();
@@ -67,12 +83,8 @@ export const jobWorker = functions
       await file.save(Buffer.from(imageBuffer), {
         contentType: 'image/png',
         metadata: {
-          cacheControl: 'public, max-age=2592000', // 30일
-          metadata: {
-            taskId,
-            jobId,
-            modelId: generatedImage.modelId,
-          },
+          cacheControl: 'public, max-age=2592000',
+          metadata: { taskId, jobId, modelId: generatedImage.modelId },
         },
       });
 
@@ -81,14 +93,11 @@ export const jobWorker = functions
 
       console.log(`☁️ Storage 업로드 완료: ${imageUrl}`);
 
-      // TODO: 썸네일 생성 (Sharp 사용)
-      const thumbnailUrl = imageUrl; // 임시로 원본 URL 사용
-
       // 4. Job 상태 업데이트: completed
       await snapshot.ref.update({
         status: 'completed',
         imageUrl,
-        thumbnailUrl,
+        thumbnailUrl: imageUrl,
         finishedAt: fieldValue.serverTimestamp(),
         updatedAt: fieldValue.serverTimestamp(),
       });
@@ -102,22 +111,18 @@ export const jobWorker = functions
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       if (retries <= MAX_RETRIES) {
-        // 재시도: 상태를 pending으로 변경
         console.log(`🔄 Job ${jobId} 재시도 (${retries}/${MAX_RETRIES})`);
         
-        // 재시도를 위해 새 Job 문서 생성 (기존 Job은 실패로 표시)
         const taskRef = db.collection('tasks').doc(taskId);
         const newJobRef = taskRef.collection('jobs').doc();
         
         await db.runTransaction(async (transaction) => {
-          // 기존 Job 실패 표시
           transaction.update(snapshot.ref, {
             status: 'failed',
             errorMessage: `재시도 중... (${retries}/${MAX_RETRIES})`,
             updatedAt: fieldValue.serverTimestamp(),
           });
 
-          // 새 Job 생성
           transaction.set(newJobRef, {
             taskId,
             userId: jobData.userId,
@@ -133,7 +138,6 @@ export const jobWorker = functions
         });
 
       } else {
-        // 최대 재시도 초과: 실패 처리 및 포인트 환불
         console.error(`☠️ Job ${jobId} 영구 실패 (재시도 ${MAX_RETRIES}회 초과)`);
 
         await snapshot.ref.update({
@@ -143,13 +147,11 @@ export const jobWorker = functions
           updatedAt: fieldValue.serverTimestamp(),
         });
 
-        // 포인트 환불
         await refundJobPoints(taskId, jobData);
       }
     }
-
-    return null;
-  });
+  }
+);
 
 /**
  * 실패한 Job에 대한 포인트 환불
@@ -177,13 +179,11 @@ async function refundJobPoints(taskId: string, jobData: Job): Promise<void> {
       const userData = userDoc.data() as User;
       const refundAmount = jobData.pointsCost;
 
-      // 포인트 환불
       transaction.update(userRef, {
         points: fieldValue.increment(refundAmount),
         updatedAt: fieldValue.serverTimestamp(),
       });
 
-      // 환불 거래 내역
       const transactionRef = db.collection('pointTransactions').doc();
       transaction.set(transactionRef, {
         userId: task.userId,
@@ -202,4 +202,3 @@ async function refundJobPoints(taskId: string, jobData: Job): Promise<void> {
     console.error('포인트 환불 실패:', error);
   }
 }
-

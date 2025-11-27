@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:emulator": "FIREBASE_EMULATOR=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "emulator": "firebase emulators:start",
+    "emulator:export": "firebase emulators:export ./emulator-data",
+    "emulator:import": "firebase emulators:start --import=./emulator-data"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
