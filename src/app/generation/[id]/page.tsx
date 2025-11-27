@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw } from 'lucide-react';
 
 interface GenerationData {
   id: string;
@@ -29,23 +29,72 @@ interface GenerationData {
 
 const MODEL_NAMES: Record<string, string> = {
   'dall-e-3': 'DALL-E 3',
-  'sdxl': 'Stable Diffusion XL',
-  'flux': 'Flux Schnell',
-  'leonardo': 'Leonardo.ai',
+  'sdxl': 'SDXL',
+  'flux': 'Flux',
+  'leonardo': 'Leonardo',
+  'pixart': 'PixArt',
+  'realistic-vision': 'Realistic',
+  'aurora': 'Aurora',
+  'ideogram': 'Ideogram',
+  'grok': 'Grok',
+  'gpt-image': 'GPT-Image',
+  'firefly': 'Firefly',
+  'midjourney': 'Midjourney',
+  'recraft': 'Recraft',
+  'playground': 'Playground',
+  'kandinsky': 'Kandinsky',
+  'gemini': 'Gemini',
+  'seedream': 'Seedream',
+  'hunyuan': 'Hunyuan',
 };
+
+// URL에서 모델명 추출 (예: ..._pixart.png -> pixart)
+function extractModelFromUrl(url: string): string {
+  try {
+    const filename = url.split('/').pop() || '';
+    const match = filename.match(/_([a-zA-Z0-9-]+)\.png$/);
+    if (match) {
+      return MODEL_NAMES[match[1]] || match[1];
+    }
+  } catch (e) {}
+  return '';
+}
 
 export default function GenerationPage() {
   const params = useParams();
+  const router = useRouter();
   const generationId = params.id as string;
   const [generation, setGeneration] = useState<GenerationData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 다시 생성하기 - 같은 프롬프트, 모델, 수량으로 메인페이지 이동
+  const handleRegenerate = () => {
+    if (!generation) return;
+    
+    // 모델별 수량 정보 저장
+    const modelCounts: Record<string, number> = {};
+    generation.modelConfigs.forEach((config) => {
+      modelCounts[config.modelId] = config.count;
+    });
+
+    // localStorage에 재생성 데이터 저장
+    const regenerateData = {
+      prompt: generation.prompt,
+      modelCounts,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem('regenerateData', JSON.stringify(regenerateData));
+    
+    // 메인페이지로 이동
+    router.push('/');
+  };
+
   useEffect(() => {
     if (!generationId) return;
 
-    // Firestore 실시간 리스너
+    // Firestore 실시간 리스너 (tasks 컬렉션 사용)
     const unsubscribe = onSnapshot(
-      doc(db, 'imageGenerations', generationId),
+      doc(db, 'tasks', generationId),
       (doc) => {
         if (doc.exists()) {
           const data = doc.data();
@@ -172,6 +221,13 @@ export default function GenerationPage() {
                     📦 ZIP 파일 다운로드
                   </a>
                 )}
+                <button
+                  onClick={handleRegenerate}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-lg"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  <span>다시 생성하기</span>
+                </button>
                 <Link
                   href="/"
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
@@ -192,12 +248,21 @@ export default function GenerationPage() {
               <p className="text-sm text-gray-600 mb-6">
                 사용하신 포인트는 자동으로 환불되었습니다
               </p>
-              <Link
-                href="/"
-                className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-              >
-                다시 시도하기
-              </Link>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={handleRegenerate}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-lg"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  <span>다시 생성하기</span>
+                </button>
+                <Link
+                  href="/"
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                >
+                  새로운 이미지 생성
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -207,40 +272,6 @@ export default function GenerationPage() {
           <h3 className="font-bold text-gray-900 mb-3">📝 프롬프트</h3>
           <p className="text-gray-700 whitespace-pre-wrap">{generation.prompt}</p>
         </div>
-
-        {/* 모델별 결과 요약 */}
-        {generation.modelConfigs && Array.isArray(generation.modelConfigs) && generation.modelConfigs.length > 0 && (
-          <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-            <h3 className="font-bold text-gray-900 mb-4">📊 모델별 결과</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {generation.modelConfigs.map((config: any, index: number) => {
-                const modelNames: Record<string, string> = {
-                  'pixart': 'PixArt-Σ',
-                  'realistic-vision': 'Realistic Vision',
-                  'flux': 'Flux Schnell',
-                  'sdxl': 'SDXL',
-                  'leonardo': 'Leonardo',
-                  'dall-e-3': 'DALL-E 3',
-                  'aurora': 'Aurora',
-                  'ideogram': 'Ideogram',
-                };
-                const modelName = modelNames[config.modelId] || config.modelId;
-                const isSuccess = config.completedCount > 0;
-
-                return (
-                  <div key={index} className={`p-3 rounded-lg border ${
-                    isSuccess ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                  }`}>
-                    <p className="text-xs text-gray-600">{modelName}</p>
-                    <p className={`text-lg font-bold ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
-                      {config.completedCount || 0} / {config.count}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* Generated Images - 완료 시에만 표시 */}
         {generation.status === 'completed' && generation.imageUrls && generation.imageUrls.length > 0 && (
@@ -267,7 +298,7 @@ export default function GenerationPage() {
                     </a>
                   </div>
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                    #{index + 1}
+                    #{index + 1} {extractModelFromUrl(url)}
                   </div>
                 </div>
               ))}
@@ -280,7 +311,7 @@ export default function GenerationPage() {
                 {generation.imageUrls.map((url, index) => (
                   <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200 hover:border-indigo-300 transition-colors">
                     <span className="text-sm text-gray-600 truncate flex-1 mr-4">
-                      🖼️ 이미지 {index + 1}
+                      🖼️ 이미지 {index + 1} - {extractModelFromUrl(url) || '알 수 없음'}
                     </span>
                     <a
                       href={url}

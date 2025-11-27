@@ -21,11 +21,130 @@ interface AIModel {
 }
 
 // AI 모델 데이터 (병렬 처리 기준 최대치 설정)
+// 각 모델별 특징 및 최신 API 버전 반영
+// 🔗 API 버전 정보: name에 공식 모델명, description에 별명/버전 표기
 const AI_MODELS: AIModel[] = [
+  // ===== 👑 1. GPT-Image (OpenAI 최신) =====
+  {
+    id: 'gpt-image',
+    name: 'GPT-Image-1 (DALL·E 4)',
+    description: '🧠 OpenAI 최신 · 멀티모달 네이티브 · API: gpt-image-1',
+    pointsPerImage: 100,
+    badge: 'NEW',
+    color: 'bg-violet-50 border-violet-200',
+    company: 'OpenAI',
+    logo: '🧠',
+    maxCount: 12,
+  },
+  // ===== 🍌 2. Nano Banana Pro (Google Gemini) =====
+  {
+    id: 'gemini',
+    name: '🍌 Nano Banana Pro',
+    description: '🍌 Gemini 3 Pro Image · 고해상도 1K/2K/4K · API: gemini-3-pro-image-preview',
+    pointsPerImage: 80,
+    badge: 'Google',
+    color: 'bg-yellow-50 border-yellow-300',
+    company: 'Google DeepMind',
+    logo: '🍌',
+    maxCount: 15,
+  },
+  // ===== 🌟 3. Grok-2 (xAI) =====
+  {
+    id: 'grok',
+    name: 'Grok-2 Image',
+    description: '🌟 xAI 이미지 생성 · 밈/유머 강점 · API: grok-2-image',
+    pointsPerImage: 60,
+    badge: 'xAI',
+    color: 'bg-pink-50 border-pink-200',
+    company: 'xAI (Elon Musk)',
+    logo: '🌟',
+    maxCount: 15,
+  },
+  // ===== 🎮 4. Leonardo Phoenix =====
+  {
+    id: 'leonardo',
+    name: 'Leonardo Phoenix',
+    description: '🎮 게임/캐릭터 특화 · Alchemy 엔진 · API: 6b645e3a-d64f-4341',
+    pointsPerImage: 50,
+    badge: '게임아트',
+    color: 'bg-orange-50 border-orange-200',
+    company: 'Leonardo.ai',
+    logo: '🎮',
+    maxCount: 20,
+  },
+  // ===== 🎯 5. SD 3.5 Large =====
+  {
+    id: 'sdxl',
+    name: 'SD 3.5 Large',
+    description: '🎯 MMDiT 최신 아키텍처 · 타이포그래피 향상 · API: stable-diffusion-3.5-large',
+    pointsPerImage: 40,
+    badge: '최신',
+    color: 'bg-blue-50 border-blue-200',
+    company: 'Stability AI',
+    logo: '🎯',
+    maxCount: 20,
+  },
+  // ===== 🐉 6. Hunyuan Image 3.0 =====
+  {
+    id: 'hunyuan',
+    name: 'Hunyuan Image 3.0',
+    description: '🐉 Tencent AI · 아시아 인물 특화 · API: tencent/hunyuan-image-3',
+    pointsPerImage: 30,
+    badge: 'Tencent',
+    color: 'bg-blue-100 border-blue-300',
+    company: 'Tencent (텐센트)',
+    logo: '🐉',
+    maxCount: 24,
+  },
+  // ===== 나머지 모델들 =====
+  {
+    id: 'flux',
+    name: 'Flux 1.1 Pro',
+    description: '⚡ 원조 Black Forest Labs · 품질/프롬프트 최고 · API: flux-1.1-pro',
+    pointsPerImage: 30,
+    badge: '공식',
+    color: 'bg-green-50 border-green-200',
+    company: 'Black Forest Labs',
+    logo: '⚡',
+    maxCount: 20,
+  },
+  {
+    id: 'ideogram',
+    name: 'Ideogram V3 Turbo',
+    description: '✍️ 텍스트 렌더링 최강 · 포스터/로고 · API: V_3_TURBO',
+    pointsPerImage: 60,
+    badge: '텍스트특화',
+    color: 'bg-rose-50 border-rose-200',
+    company: 'Ideogram AI',
+    logo: '✍️',
+    maxCount: 12,
+  },
+  {
+    id: 'recraft',
+    name: 'Recraft V3',
+    description: '🖌️ 벡터/일러스트 특화 · 스타일 일관성 · API: recraft-ai/recraft-v3',
+    pointsPerImage: 40,
+    badge: '디자인',
+    color: 'bg-amber-50 border-amber-200',
+    company: 'Recraft AI',
+    logo: '🖌️',
+    maxCount: 20,
+  },
+  {
+    id: 'seedream',
+    name: 'Seedream 4.0',
+    description: '🌱 4K 고해상도 · 포스터/배너 특화 · API: segmind/seedream-4',
+    pointsPerImage: 50,
+    badge: '4K',
+    color: 'bg-green-100 border-green-300',
+    company: 'Segmind',
+    logo: '🌱',
+    maxCount: 20,
+  },
   {
     id: 'pixart',
-    name: 'PixArt-Σ',
-    description: '초저가 초고속! 1-2초 생성',
+    name: 'PixArt-Σ (Sigma)',
+    description: '⚡ 1-2초 생성 · Transformer 기반 · API: cjwbw/pixart-sigma',
     pointsPerImage: 10,
     badge: '최저가',
     color: 'bg-emerald-50 border-emerald-200',
@@ -35,8 +154,8 @@ const AI_MODELS: AIModel[] = [
   },
   {
     id: 'realistic-vision',
-    name: 'Realistic Vision',
-    description: '인물/사진 특화, 초사실적',
+    name: 'Realistic Vision v6.0',
+    description: '📸 인물/피부 질감 최고 · SD1.5 기반 · API: adirik/realistic-vision-v6.0',
     pointsPerImage: 20,
     badge: '인물특화',
     color: 'bg-cyan-50 border-cyan-200',
@@ -44,73 +163,11 @@ const AI_MODELS: AIModel[] = [
     logo: '📸',
     maxCount: 24,
   },
-  {
-    id: 'flux',
-    name: 'Flux Schnell',
-    description: '초고속 생성, 우수한 품질',
-    pointsPerImage: 10,
-    badge: '초고속',
-    color: 'bg-green-50 border-green-200',
-    company: 'Black Forest Labs',
-    logo: '⚡',
-    maxCount: 48,
-  },
-  {
-    id: 'sdxl',
-    name: 'Stable Diffusion XL',
-    description: '빠르고 안정적인 범용 옵션',
-    pointsPerImage: 30,
-    badge: '추천',
-    color: 'bg-blue-50 border-blue-200',
-    company: 'Stability AI',
-    logo: '🎯',
-    maxCount: 24,
-  },
-  // Leonardo는 현재 비활성화 (비동기 폴링 구현 필요)
-  // {
-  //   id: 'leonardo',
-  //   name: 'Leonardo.ai',
-  //   description: '일러스트 & 게임 아트 특화',
-  //   pointsPerImage: 30,
-  //   color: 'bg-orange-50 border-orange-200',
-  //   company: 'Leonardo.ai',
-  //   logo: '🎮',
-  //   maxCount: 20,
-  // },
-  {
-    id: 'dall-e-3',
-    name: 'DALL-E 3',
-    description: 'ChatGPT의 이미지 생성 AI',
-    pointsPerImage: 150,
-    badge: '최고품질',
-    color: 'bg-purple-50 border-purple-200',
-    company: 'OpenAI (ChatGPT)',
-    logo: '🤖',
-    maxCount: 12,
-  },
-  // Grok 비활성화 (API 불안정)
-  // {
-  //   id: 'aurora',
-  //   name: 'Grok',
-  //   description: 'xAI의 최신 이미지 생성 모델',
-  //   pointsPerImage: 60,
-  //   badge: 'NEW',
-  //   color: 'bg-pink-50 border-pink-200',
-  //   company: 'xAI',
-  //   logo: '🌟',
-  //   maxCount: 12,
-  // },
-  {
-    id: 'ideogram',
-    name: 'Ideogram',
-    description: '텍스트 포함 이미지, 포스터/광고 특화',
-    pointsPerImage: 60,
-    badge: '텍스트특화',
-    color: 'bg-rose-50 border-rose-200',
-    company: 'Ideogram AI',
-    logo: '✍️',
-    maxCount: 12,
-  },
+  // ===== 비활성화된 모델들 =====
+  // Playground v2.5 비활성화 (Replicate API 버전 해시 필요)
+  // Kandinsky 3.0 비활성화 (Replicate API 버전 해시 필요)
+  // Midjourney 비활성화 (API 서버 문제)
+  // Adobe Firefly - 권한 미획득으로 비활성화
 ];
 
 export default function Home() {
@@ -118,13 +175,20 @@ export default function Home() {
   const [prompt, setPrompt] = useState('');
   const [email, setEmail] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+  // 모든 활성화된 모델 기본 선택 (각 1장씩)
   const [selectedModels, setSelectedModels] = useState<Record<string, number>>({
     'pixart': 1,
     'realistic-vision': 1,
     'flux': 1,
     'sdxl': 1,
-    'dall-e-3': 1,
     'ideogram': 1,
+    'leonardo': 1,
+    'grok': 1,
+    'gpt-image': 1,
+    'gemini': 1,
+    'recraft': 1,
+    'hunyuan': 1,
+    'seedream': 1,
   });
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');
@@ -143,6 +207,45 @@ export default function Home() {
       setEmail(user.email);
     }
   }, [user]);
+
+  // 다시 생성하기 데이터 복원 (localStorage에서)
+  useEffect(() => {
+    const regenerateDataStr = localStorage.getItem('regenerateData');
+    if (regenerateDataStr) {
+      try {
+        const regenerateData = JSON.parse(regenerateDataStr);
+        
+        // 5분 이내의 데이터만 사용 (너무 오래된 데이터 방지)
+        if (Date.now() - regenerateData.timestamp < 5 * 60 * 1000) {
+          // 프롬프트 설정
+          if (regenerateData.prompt) {
+            setPrompt(regenerateData.prompt);
+          }
+          
+          // 모델 및 수량 설정 (현재 활성화된 모델만)
+          if (regenerateData.modelCounts) {
+            const validModelCounts: Record<string, number> = {};
+            Object.entries(regenerateData.modelCounts).forEach(([modelId, count]) => {
+              // AI_MODELS에 존재하는 모델만 선택
+              if (AI_MODELS.find(m => m.id === modelId)) {
+                validModelCounts[modelId] = count as number;
+              }
+            });
+            
+            if (Object.keys(validModelCounts).length > 0) {
+              setSelectedModels(validModelCounts);
+            }
+          }
+        }
+        
+        // 사용 후 삭제
+        localStorage.removeItem('regenerateData');
+      } catch (e) {
+        console.error('Failed to parse regenerateData:', e);
+        localStorage.removeItem('regenerateData');
+      }
+    }
+  }, []);
 
   // GPT 프롬프트 교정 - 모달에서 콜백으로 처리
   const handlePromptCorrected = (correctedPrompt: string, purpose: string, size: string) => {
@@ -483,7 +586,7 @@ export default function Home() {
                   ) : (
                     <Lightbulb className="w-4 h-4" />
                   )}
-                  <span>모델 추천 (GPT)</span>
+                  <span>모델 추천 (GPT-5.1)</span>
                 </button>
               </div>
 

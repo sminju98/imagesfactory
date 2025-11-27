@@ -33,7 +33,7 @@ export default function HistoryPage() {
 
     try {
       setLoadingData(true);
-      const generationsRef = collection(db, 'imageGenerations');
+      const generationsRef = collection(db, 'tasks');
       const q = query(
         generationsRef,
         where('userId', '==', user.uid),

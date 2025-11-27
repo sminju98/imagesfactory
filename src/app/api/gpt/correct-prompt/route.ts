@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
 
     // GPT-5.1로 프롬프트 교정
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1', // GPT-5.1 최신 모델
+      model: 'gpt-5.1', // GPT-5.1 최신 모델
       messages: [
         { role: 'system', content: getSystemPrompt(promptOptions) },
         { 
@@ -297,7 +297,7 @@ ${angle ? `카메라 앵글: ${angleLabel} (${angleDesc})` : ''}`
       ],
       response_format: { type: 'json_object' },
       temperature: 0.7,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
     });
 
     const content = completion.choices[0]?.message?.content;
@@ -328,7 +328,7 @@ ${angle ? `카메라 앵글: ${angleLabel} (${angleDesc})` : ''}`
         lightingLabel,
         angle,
         angleLabel,
-        model: 'gpt-4.1',
+        model: 'gpt-5.1',
       },
     });
 
