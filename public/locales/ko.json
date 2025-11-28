@@ -115,13 +115,37 @@
     "createFirst": "첫 이미지 생성하기",
     "usedPoints": "사용한 포인트",
     "purchasedPoints": "충전한 포인트",
-    "approxImages": "약 {{count}}장 생성 가능",
+    "approxImages": "약 {{count}}장 생성",
     "transactionHistory": "거래 내역",
     "paymentHistory": "결제 내역",
     "profile": "프로필 정보",
     "joinDate": "가입일",
     "loginMethod": "로그인 방식",
-    "usageStats": "사용 통계"
+    "usageStats": "사용 통계",
+    "confirmLogout": "로그아웃 하시겠습니까?",
+    "expense": "지출",
+    "income": "충전",
+    "totalTransactions": "총 {{count}}건의 거래 내역",
+    "noTransactions": "거래 내역이 없습니다",
+    "txType": {
+      "purchase": "포인트 충전",
+      "usage": "이미지 생성",
+      "refund": "환불",
+      "bonus": "보너스"
+    },
+    "before": "이전",
+    "after": "이후",
+    "emailNotVerified": "이메일 인증이 필요합니다",
+    "totalUsedPoints": "총 사용 포인트",
+    "totalPurchasedPoints": "총 구매 포인트",
+    "charged": "충전",
+    "generationHistory": "생성 히스토리",
+    "totalPayments": "총 {{count}}건의 결제 내역",
+    "noPayments": "결제 내역이 없습니다",
+    "cancelled": "취소됨",
+    "pointCharge": "포인트 충전",
+    "orderNumber": "주문번호",
+    "failReason": "실패 사유"
   },
   "points": {
     "title": "포인트 충전",
@@ -248,21 +272,6 @@
           "title": "일부 사용한 크레딧",
           "desc": "사용한 분량은 환불 불가, 남은 크레딧은 원칙적으로 환불하지 않으며, 예외적인 서비스 장애 시에만 개별 검토"
         }
-      },
-      "subscription": {
-        "title": "구독 요금제 (월/연 단위)",
-        "active": {
-          "title": "현재 청구 기간 중 이미 활성화된 구독",
-          "desc": "사용 여부와 관계없이 중도 해지에 따른 부분 환불은 제공하지 않음"
-        },
-        "cancel": {
-          "title": "구독 취소",
-          "desc": "다음 결제부터 과금 중단을 원할 경우, 갱신일 전까지 언제든지 구독 취소 가능"
-        },
-        "error": {
-          "title": "시스템 오류·중복 결제",
-          "desc": "명백한 청구 오류가 확인될 경우, 해당 결제 건 전액 환불 또는 동일 금액 크레딧 지급"
-        }
       }
     },
     "section2": {
@@ -363,15 +372,16 @@
   },
   "footer": {
     "description": "여러 AI 모델로 한 번에 수십 장의 이미지를 생성하세요",
-    "customerSupport": "고객지원",
-    "businessHours": "평일 10:00 - 18:00",
+    "support": "고객지원",
+    "phone": "전화",
+    "hours": "평일 10:00 - 18:00",
     "companyInfo": "회사 정보",
-    "companyName": "엠제이스튜디오(MJ)",
+    "companyName": "상호명",
     "representative": "대표",
     "businessNumber": "사업자번호",
     "ecommerceNumber": "통신판매업",
     "address": "주소",
-    "termsAndPolicies": "약관 및 정책",
+    "policies": "약관 및 정책",
     "allRightsReserved": "All rights reserved."
   },
   "errors": {

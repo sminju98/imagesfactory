@@ -121,7 +121,31 @@
     "profile": "个人资料",
     "joinDate": "注册日期",
     "loginMethod": "登录方式",
-    "usageStats": "使用统计"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Purchase",
+      "usage": "Usage",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email not verified",
+    "totalUsedPoints": "Total Used",
+    "totalPurchasedPoints": "Total Purchased",
+    "charged": "charged",
+    "generationHistory": "History",
+    "totalPayments": "{{count}} payments",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order",
+    "failReason": "Reason"
   },
   "points": {
     "title": "积分充值",
@@ -247,21 +271,6 @@
         "partial": {
           "title": "部分使用的积分",
           "desc": "已使用部分不予退款，剩余积分原则上不予退款，仅在服务故障等特殊情况下个别审核"
-        }
-      },
-      "subscription": {
-        "title": "订阅套餐（月/年）",
-        "active": {
-          "title": "当前计费周期内已激活的订阅",
-          "desc": "无论是否使用，中途取消不提供部分退款"
-        },
-        "cancel": {
-          "title": "取消订阅",
-          "desc": "如果您希望从下次付款开始停止扣费，可以在续订日期前随时取消订阅"
-        },
-        "error": {
-          "title": "系统错误/重复支付",
-          "desc": "确认存在明显的计费错误时，将全额退款或提供等额积分"
         }
       }
     },

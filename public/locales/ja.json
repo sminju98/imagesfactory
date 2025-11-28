@@ -121,7 +121,31 @@
     "profile": "プロフィール",
     "joinDate": "登録日",
     "loginMethod": "ログイン方法",
-    "usageStats": "使用統計"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Purchase",
+      "usage": "Usage",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email not verified",
+    "totalUsedPoints": "Total Used",
+    "totalPurchasedPoints": "Total Purchased",
+    "charged": "charged",
+    "generationHistory": "History",
+    "totalPayments": "{{count}} payments",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order",
+    "failReason": "Reason"
   },
   "points": {
     "title": "ポイント購入",
@@ -247,21 +271,6 @@
         "partial": {
           "title": "一部使用したクレジット",
           "desc": "使用分は返金不可、残りのクレジットは原則として返金不可、例外的なサービス障害時のみ個別検討"
-        }
-      },
-      "subscription": {
-        "title": "サブスクリプション（月/年単位）",
-        "active": {
-          "title": "現在の請求期間中にすでに有効化されたサブスクリプション",
-          "desc": "使用の有無に関わらず、途中解約による部分返金は提供しません"
-        },
-        "cancel": {
-          "title": "サブスクリプションキャンセル",
-          "desc": "次回の決済から課金を停止したい場合、更新日前にいつでもサブスクリプションをキャンセルできます"
-        },
-        "error": {
-          "title": "システムエラー・重複決済",
-          "desc": "明らかな請求エラーが確認された場合、該当決済の全額返金または同額のクレジット付与"
         }
       }
     },

@@ -121,7 +121,31 @@
     "profile": "Profil",
     "joinDate": "Date d'inscription",
     "loginMethod": "Méthode de connexion",
-    "usageStats": "Statistiques d'utilisation"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Purchase",
+      "usage": "Usage",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email not verified",
+    "totalUsedPoints": "Total Used",
+    "totalPurchasedPoints": "Total Purchased",
+    "charged": "charged",
+    "generationHistory": "History",
+    "totalPayments": "{{count}} payments",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order",
+    "failReason": "Reason"
   },
   "points": {
     "title": "Acheter des points",
@@ -247,21 +271,6 @@
         "partial": {
           "title": "Crédits partiellement utilisés",
           "desc": "La partie utilisée n'est pas remboursable ; les crédits restants ne sont généralement pas remboursables, examinés individuellement uniquement en cas de défaillance du service"
-        }
-      },
-      "subscription": {
-        "title": "Forfait d'abonnement (mensuel/annuel)",
-        "active": {
-          "title": "Abonnement déjà activé pendant la période de facturation actuelle",
-          "desc": "Pas de remboursement partiel pour une résiliation en cours de période, quelle que soit l'utilisation"
-        },
-        "cancel": {
-          "title": "Annulation d'abonnement",
-          "desc": "Vous pouvez annuler votre abonnement à tout moment avant la date de renouvellement pour arrêter les frais futurs"
-        },
-        "error": {
-          "title": "Erreur système/Paiement en double",
-          "desc": "Remboursement intégral ou crédit équivalent fourni lorsqu'une erreur de facturation est confirmée"
         }
       }
     },

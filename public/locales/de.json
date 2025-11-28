@@ -121,7 +121,31 @@
     "profile": "Profil",
     "joinDate": "Beitrittsdatum",
     "loginMethod": "Anmeldemethode",
-    "usageStats": "Nutzungsstatistiken"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Purchase",
+      "usage": "Usage",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email not verified",
+    "totalUsedPoints": "Total Used",
+    "totalPurchasedPoints": "Total Purchased",
+    "charged": "charged",
+    "generationHistory": "History",
+    "totalPayments": "{{count}} payments",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order",
+    "failReason": "Reason"
   },
   "points": {
     "title": "Punkte kaufen",
@@ -247,21 +271,6 @@
         "partial": {
           "title": "Teilweise genutzte Credits",
           "desc": "Der genutzte Teil ist nicht erstattungsfähig; verbleibende Credits sind grundsätzlich nicht erstattungsfähig, werden nur bei Dienstausfall individuell geprüft"
-        }
-      },
-      "subscription": {
-        "title": "Abonnement (monatlich/jährlich)",
-        "active": {
-          "title": "Bereits aktiviertes Abonnement während des aktuellen Abrechnungszeitraums",
-          "desc": "Keine Teilerstattung bei vorzeitiger Kündigung, unabhängig von der Nutzung"
-        },
-        "cancel": {
-          "title": "Abonnementkündigung",
-          "desc": "Sie können Ihr Abonnement jederzeit vor dem Verlängerungsdatum kündigen, um zukünftige Gebühren zu stoppen"
-        },
-        "error": {
-          "title": "Systemfehler/Doppelte Zahlung",
-          "desc": "Vollständige Erstattung oder gleichwertiges Guthaben bei bestätigtem Abrechnungsfehler"
         }
       }
     },

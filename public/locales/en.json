@@ -121,7 +121,31 @@
     "profile": "Profile",
     "joinDate": "Join Date",
     "loginMethod": "Login Method",
-    "usageStats": "Usage Statistics"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Are you sure you want to logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions total",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Point Purchase",
+      "usage": "Image Generation",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email verification required",
+    "totalUsedPoints": "Total Used Points",
+    "totalPurchasedPoints": "Total Purchased Points",
+    "charged": "charged",
+    "generationHistory": "Generation History",
+    "totalPayments": "{{count}} payments total",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order Number",
+    "failReason": "Failure Reason"
   },
   "points": {
     "title": "Charge Points",
@@ -248,21 +272,6 @@
           "title": "Partially used credits",
           "desc": "Used portion is non-refundable; remaining credits are generally non-refundable, reviewed individually only in case of service failure"
         }
-      },
-      "subscription": {
-        "title": "Subscription Plan (Monthly/Annual)",
-        "active": {
-          "title": "Already activated subscription during current billing period",
-          "desc": "No partial refund for mid-term cancellation regardless of usage"
-        },
-        "cancel": {
-          "title": "Subscription Cancellation",
-          "desc": "You can cancel your subscription anytime before the renewal date to stop future charges"
-        },
-        "error": {
-          "title": "System error/Duplicate payment",
-          "desc": "Full refund or equivalent credit provided when billing error is confirmed"
-        }
       }
     },
     "section2": {
@@ -363,15 +372,16 @@
   },
   "footer": {
     "description": "Generate dozens of images at once with multiple AI models",
-    "customerSupport": "Customer Support",
-    "businessHours": "Weekdays 10:00 AM - 6:00 PM",
+    "support": "Support",
+    "phone": "Phone",
+    "hours": "Weekdays 10:00 AM - 6:00 PM",
     "companyInfo": "Company Info",
-    "companyName": "MJ Studio",
+    "companyName": "Company",
     "representative": "CEO",
     "businessNumber": "Business No.",
     "ecommerceNumber": "E-commerce No.",
     "address": "Address",
-    "termsAndPolicies": "Terms & Policies",
+    "policies": "Terms & Policies",
     "allRightsReserved": "All rights reserved."
   },
   "errors": {

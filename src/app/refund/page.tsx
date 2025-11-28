@@ -48,7 +48,7 @@ export default function RefundPolicyPage() {
               </h2>
               
               {/* 크레딧 팩 */}
-              <div className="bg-blue-50 rounded-xl p-6 mb-4">
+              <div className="bg-blue-50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-blue-900 mb-3">💳 {t('refund.section1.creditPack.title')}</h3>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
@@ -63,34 +63,6 @@ export default function RefundPolicyPage() {
                     <div>
                       <p className="font-medium text-gray-900">{t('refund.section1.creditPack.partial.title')}</p>
                       <p className="text-gray-600 text-sm">{t('refund.section1.creditPack.partial.desc')}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 구독 요금제 */}
-              <div className="bg-purple-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-purple-900 mb-3">📅 {t('refund.section1.subscription.title')}</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">{t('refund.section1.subscription.active.title')}</p>
-                      <p className="text-gray-600 text-sm">{t('refund.section1.subscription.active.desc')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">{t('refund.section1.subscription.cancel.title')}</p>
-                      <p className="text-gray-600 text-sm">{t('refund.section1.subscription.cancel.desc')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">{t('refund.section1.subscription.error.title')}</p>
-                      <p className="text-gray-600 text-sm">{t('refund.section1.subscription.error.desc')}</p>
                     </div>
                   </div>
                 </div>

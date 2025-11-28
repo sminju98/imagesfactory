@@ -121,7 +121,31 @@
     "profile": "Perfil",
     "joinDate": "Fecha de registro",
     "loginMethod": "Método de inicio de sesión",
-    "usageStats": "Estadísticas de uso"
+    "usageStats": "Usage Statistics",
+    "confirmLogout": "Logout?",
+    "expense": "Expense",
+    "income": "Income",
+    "totalTransactions": "{{count}} transactions",
+    "noTransactions": "No transactions",
+    "txType": {
+      "purchase": "Purchase",
+      "usage": "Usage",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "before": "Before",
+    "after": "After",
+    "emailNotVerified": "Email not verified",
+    "totalUsedPoints": "Total Used",
+    "totalPurchasedPoints": "Total Purchased",
+    "charged": "charged",
+    "generationHistory": "History",
+    "totalPayments": "{{count}} payments",
+    "noPayments": "No payments",
+    "cancelled": "Cancelled",
+    "pointCharge": "Point Charge",
+    "orderNumber": "Order",
+    "failReason": "Reason"
   },
   "points": {
     "title": "Comprar puntos",
@@ -247,21 +271,6 @@
         "partial": {
           "title": "Créditos parcialmente utilizados",
           "desc": "La porción utilizada no es reembolsable; los créditos restantes generalmente no son reembolsables, se revisan individualmente solo en caso de falla del servicio"
-        }
-      },
-      "subscription": {
-        "title": "Plan de suscripción (mensual/anual)",
-        "active": {
-          "title": "Suscripción ya activada durante el período de facturación actual",
-          "desc": "No hay reembolso parcial por cancelación a mitad de período, independientemente del uso"
-        },
-        "cancel": {
-          "title": "Cancelación de suscripción",
-          "desc": "Puedes cancelar tu suscripción en cualquier momento antes de la fecha de renovación para detener cargos futuros"
-        },
-        "error": {
-          "title": "Error del sistema/Pago duplicado",
-          "desc": "Reembolso completo o crédito equivalente proporcionado cuando se confirma un error de facturación"
         }
       }
     },
