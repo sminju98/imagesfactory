@@ -3,12 +3,12 @@
     "appName": "ImageFactory",
     "tagline": "by MJ工作室",
     "login": "登录",
-    "logout": "退出",
+    "logout": "退出登录",
     "signup": "注册",
     "mypage": "我的页面",
     "points": "积分",
     "currentPoints": "当前积分",
-    "chargePoints": "购买积分",
+    "chargePoints": "充值积分",
     "loading": "加载中...",
     "error": "发生错误",
     "save": "保存",
@@ -29,59 +29,62 @@
     "support": "客服",
     "terms": "服务条款",
     "privacy": "隐私政策",
-    "refund": "退款政策",
+    "refundPolicy": "退款政策",
     "email": "邮箱",
     "password": "密码",
-    "name": "姓名"
+    "name": "姓名",
+    "effectiveDate": "生效日期",
+    "backToHome": "返回首页",
+    "viewTerms": "查看服务条款"
   },
   "header": {
-    "imageGeneration": "图像生成",
+    "imageGeneration": "图片生成",
     "contentGeneration": "内容生成",
-    "gallery": "画廊",
+    "gallery": "图库",
     "history": "历史记录"
   },
   "home": {
-    "title": "AI图像生成",
-    "subtitle": "使用多个AI模型一次生成数十张图像",
-    "promptPlaceholder": "描述您想要创建的图像...",
-    "generateButton": "生成图像",
+    "title": "AI图片生成",
+    "subtitle": "使用多个AI模型一次生成数十张图片",
+    "promptPlaceholder": "描述您想要创建的图片...",
+    "generateButton": "生成图片",
     "generating": "生成中...",
     "selectModels": "选择AI模型",
     "totalCost": "总费用",
-    "totalImages": "图像总数",
+    "totalImages": "总图片数",
     "images": "张",
     "promptCorrection": "提示词优化",
     "modelRecommendation": "模型推荐",
-    "referenceImage": "参考图像",
-    "uploadReference": "上传参考图像",
+    "referenceImage": "参考图片",
+    "uploadReference": "上传参考图片",
     "insufficientPoints": "积分不足",
     "loginRequired": "需要登录",
-    "minPromptLength": "请输入至少10个字符",
+    "minPromptLength": "提示词至少需要10个字符",
     "selectAtLeastOneModel": "请至少选择一个模型"
   },
   "models": {
     "perImage": "每张",
     "max": "最多",
     "description": {
-      "midjourney": "创意艺术作品最佳·每次请求生成4张",
-      "gpt-image": "OpenAI最新·原生多模态",
-      "gemini": "Google最新·出色的提示理解能力",
-      "grok": "xAI·创意图像生成",
+      "midjourney": "创意艺术作品最强·每次请求生成4张",
+      "gpt-image": "OpenAI最新·多模态原生",
+      "gemini": "Google最新·优秀的提示词理解能力",
+      "grok": "xAI·创意图片生成",
       "leonardo": "游戏/角色专用",
       "sdxl": "Stability AI最新模型",
       "ideogram": "文字渲染专用",
       "flux": "Black Forest Labs·高质量",
       "recraft": "矢量/插画专用",
       "pixart": "快速生成",
-      "hunyuan": "腾讯AI·逼真图像",
+      "hunyuan": "腾讯AI·写实图片",
       "seedream": "Segmind·梦幻风格"
     }
   },
   "generation": {
-    "title": "图像生成结果",
+    "title": "图片生成结果",
     "status": {
       "pending": "等待中",
-      "processing": "处理中",
+      "processing": "生成中",
       "completed": "已完成",
       "failed": "失败"
     },
@@ -92,7 +95,7 @@
     "viewDetails": "查看详情",
     "failedModels": "失败的模型",
     "autoRefund": "自动退款",
-    "refundedPoints": "已退还积分"
+    "refundedPoints": "已退款积分"
   },
   "mypage": {
     "title": "我的页面",
@@ -102,17 +105,17 @@
     "paymentTab": "支付记录",
     "settingsTab": "设置",
     "currentBalance": "当前余额",
-    "totalImages": "总生成图像",
+    "totalImages": "总图片数",
     "totalGenerations": "总生成次数",
     "quickActions": "快速操作",
     "newGeneration": "新建生成",
-    "recentImages": "最近的图像",
+    "recentImages": "最近图片",
     "viewAll": "查看全部",
-    "noImages": "还没有生成任何图像",
-    "createFirst": "创建第一张图像",
+    "noImages": "还没有生成任何图片",
+    "createFirst": "创建您的第一张图片",
     "usedPoints": "已使用积分",
     "purchasedPoints": "已购买积分",
-    "approxImages": "约可生成{{count}}张",
+    "approxImages": "约可生成{{count}}张图片",
     "transactionHistory": "交易记录",
     "paymentHistory": "支付记录",
     "profile": "个人资料",
@@ -121,7 +124,7 @@
     "usageStats": "使用统计"
   },
   "points": {
-    "title": "购买积分",
+    "title": "积分充值",
     "info": "积分说明",
     "onePoint": "1积分 = $0.01（1美分）",
     "modelPrices": "模型价格：1pt～60pt/张",
@@ -131,29 +134,29 @@
     "customAmount": "自定义金额",
     "enterAmount": "输入金额（美元）",
     "youllGet": "您将获得",
-    "minMax": "$1 = 100积分（最低$1～最高$1,000）",
+    "minMax": "$1 = 100积分（最少$1～最多$1,000）",
     "orderSummary": "订单摘要",
     "amount": "金额",
     "basePoints": "基础积分",
     "bonusPoints": "奖励积分",
     "totalPoints": "总积分",
     "afterPurchase": "购买后余额",
-    "pay": "支付",
+    "pay": "立即支付",
     "selectAmount": "请选择金额",
     "beforePayment": "支付前须知",
     "nonRefundableNotice": "积分不可退款（数字内容）",
     "validityNotice": "积分有效期为5年",
     "paymentMethods": "支付方式：信用卡、PayPal",
-    "instantCredit": "支付后立即到账",
+    "instantCredit": "支付后立即充值",
     "faq": "常见问题",
     "faqExpire": "积分会过期吗？",
     "faqExpireAnswer": "是的，积分自购买之日起5年内有效。",
     "faqRefund": "可以退款吗？",
-    "faqRefundAnswer": "积分为数字内容，不可退款。",
+    "faqRefundAnswer": "积分是数字内容，不可退款。",
     "faqWhen": "什么时候到账？",
-    "faqWhenAnswer": "支付确认后立即自动到账。",
-    "faqInvoice": "可以开发票吗？",
-    "faqInvoiceAnswer": "可以，请联系webmaster@geniuscat.co.kr。",
+    "faqWhenAnswer": "支付成功后立即到账。",
+    "faqInvoice": "可以开具发票吗？",
+    "faqInvoiceAnswer": "可以，请联系客服 webmaster@geniuscat.co.kr。",
     "needHelp": "需要帮助？"
   },
   "auth": {
@@ -175,13 +178,191 @@
   },
   "terms": {
     "title": "服务条款",
-    "refundPolicy": "退款政策",
-    "effectiveDate": "生效日期",
-    "contact": "联系方式",
-    "backToHome": "返回首页"
+    "article1": {
+      "title": "第1条（目的）",
+      "content": "本条款旨在规定MJ工作室（以下简称"公司"）运营的ImageFactory（以下简称"服务"）的使用相关的公司与用户之间的权利、义务及责任事项。"
+    },
+    "article2": {
+      "title": "第2条（定义）",
+      "item1": ""服务"是指公司提供的AI图片生成平台。",
+      "item2": ""用户"是指根据本条款使用公司提供服务的会员和非会员。",
+      "item3": ""会员"是指注册会员并使用服务的人。",
+      "item4": ""积分"是指用于使用服务的虚拟资产，用于图片生成。"
+    },
+    "article3": {
+      "title": "第3条（条款的公示和修订）",
+      "item1": "公司将在服务初始页面公示本条款内容，以便用户轻松了解。",
+      "item2": "公司可以在不违反相关法律的范围内修订本条款。",
+      "item3": "条款修订时，将公告生效日期和修订原因。"
+    },
+    "article4": {
+      "title": "第4条（服务的提供与变更）",
+      "intro": "公司提供以下服务：",
+      "service1": "AI图片生成服务",
+      "service2": "积分充值和管理",
+      "service3": "生成图片的存储和下载",
+      "service4": "邮件发送服务",
+      "item2": "公司可以变更服务内容，变更时将提前公告。"
+    },
+    "article5": {
+      "title": "第5条（积分政策）",
+      "item1": "积分可通过付费购买充值。",
+      "item2": "充值积分的有效期为充值之日起5年。",
+      "item3": "积分不可兑换现金。",
+      "item4": "注销会员时，剩余积分将自动作废。"
+    },
+    "article6": {
+      "title": "第6条（版权）",
+      "item1": "生成图片的版权归用户所有。",
+      "item2": "但是，生成的图片不得用于非法目的。",
+      "item3": "公司可以将生成的图片用于统计和分析目的以改进服务。"
+    },
+    "article7": {
+      "title": "第7条（退款政策）",
+      "seeRefundPage": "详细的退款政策请参阅退款政策页面。"
+    },
+    "article8": {
+      "title": "第8条（免责条款）",
+      "item1": "因不可抗力（如自然灾害等）导致公司无法提供服务时，公司免除责任。",
+      "item2": "因用户过错导致的服务使用障碍，公司不承担责任。",
+      "item3": "因使用生成图片进行商业活动而产生的法律问题，公司不承担责任。"
+    }
+  },
+  "refund": {
+    "title": "退款政策",
+    "subtitle": "Refund Policy",
+    "principle": {
+      "title": "基本原则",
+      "item1": "由于数字内容和积分的特性，已使用的积分和已成功生成的图片原则上不予退款。",
+      "item2": "仅在"非用户过错"的情况下（如服务故障或支付错误），才会例外提供退款或积分恢复。"
+    },
+    "section1": {
+      "title": "按套餐类型的退款政策",
+      "creditPack": {
+        "title": "积分包（一次性购买）",
+        "unused": {
+          "title": "购买后完全未使用的积分",
+          "desc": "在购买后7天内申请退款，可全额退款"
+        },
+        "partial": {
+          "title": "部分使用的积分",
+          "desc": "已使用部分不予退款，剩余积分原则上不予退款，仅在服务故障等特殊情况下个别审核"
+        }
+      },
+      "subscription": {
+        "title": "订阅套餐（月/年）",
+        "active": {
+          "title": "当前计费周期内已激活的订阅",
+          "desc": "无论是否使用，中途取消不提供部分退款"
+        },
+        "cancel": {
+          "title": "取消订阅",
+          "desc": "如果您希望从下次付款开始停止扣费，可以在续订日期前随时取消订阅"
+        },
+        "error": {
+          "title": "系统错误/重复支付",
+          "desc": "确认存在明显的计费错误时，将全额退款或提供等额积分"
+        }
+      }
+    },
+    "section2": {
+      "title": "不予退款的情况",
+      "item1": "图片生成正常完成的情况：仅因对结果不满意不予退款或恢复使用量",
+      "item2": "免费积分：促销活动发放的免费积分、奖励积分、推荐奖励积分",
+      "item3": "特价商品：以折扣价购买的特价商品（有明确说明的情况）"
+    },
+    "section3": {
+      "title": "退款申请流程",
+      "intro": "请通过邮件联系客服，并提供以下信息：",
+      "item1": "账户邮箱",
+      "item2": "支付日期和金额",
+      "item3": "支付方式（卡/支付网关等）",
+      "item4": "退款原因和相关截图（如有服务故障，请附上错误页面等）",
+      "processingTime": "处理时间",
+      "processingDesc": "我们的团队将在收到申请后7个工作日内审核并回复。如获批准，将通过原支付方式退款。",
+      "processingNote": "※根据银行卡/支付机构的政策，实际到账可能需要最多14个工作日。"
+    },
+    "section4": {
+      "title": "服务故障及例外处理",
+      "content": "对于服务器故障、付款成功但积分未到账、反复失败导致无法生成图片等明显属于服务方责任的情况，我们将全额退款或提供等额以上的积分。",
+      "note": "在大规模故障等特殊情况下，我们可能会另行公告，并实施临时的使用量恢复或额外积分发放政策。"
+    },
+    "section5": {
+      "title": "政策变更",
+      "item1": "ImageFactory的退款政策可能会因服务改进而不时变更，变更内容将通过公告或邮件提前通知。",
+      "item2": "变更后的政策适用于公告的生效日期之后发生的支付。"
+    },
+    "contact": {
+      "title": "退款咨询",
+      "email": "邮箱",
+      "phone": "电话",
+      "hours": "工作日 10:00 - 18:00（周末及节假日休息）"
+    }
+  },
+  "privacy": {
+    "title": "隐私政策",
+    "article1": {
+      "title": "第1条（个人信息的处理目的）",
+      "intro": "MJ工作室（以下简称"公司"）出于以下目的处理个人信息。所处理的个人信息不会用于以下目的以外的用途，如果使用目的发生变更，将采取必要措施，如另行获得同意等。",
+      "item1": "会员注册和管理：提供会员服务、身份验证",
+      "item2": "服务提供：AI图片生成、结果邮件发送",
+      "item3": "支付和结算：积分充值、支付处理",
+      "item4": "客户支持：咨询回复、投诉处理"
+    },
+    "article2": {
+      "title": "第2条（处理的个人信息项目）",
+      "intro": "公司处理以下个人信息项目：",
+      "required": "必填项：邮箱、密码、姓名",
+      "optional": "选填项：头像",
+      "auto": "自动收集：IP地址、Cookie、服务使用记录、访问日志"
+    },
+    "article3": {
+      "title": "第3条（个人信息的保留和使用期限）",
+      "item1": "公司根据法律规定的个人信息保留和使用期限，或在收集个人信息时获得数据主体同意的保留和使用期限内处理和保留个人信息。",
+      "item2": "会员注销时立即销毁。但如有法律规定的保留理由，则在该期限内保管。"
+    },
+    "article4": {
+      "title": "第4条（向第三方提供个人信息）",
+      "intro": "公司原则上不向第三方提供用户的个人信息。但以下情况除外：",
+      "item1": "用户事先同意的情况",
+      "item2": "根据法律规定，或按照法律规定的程序和方法应调查机关要求的情况"
+    },
+    "article5": {
+      "title": "第5条（个人信息处理的委托）",
+      "intro": "公司为提供服务，将个人信息处理业务委托如下：",
+      "firebase": "Firebase（Google）：数据存储和认证",
+      "ai": "OpenAI、Replicate等：AI图片生成",
+      "email": "Gmail SMTP：邮件发送",
+      "payment": "Toss Payments：支付处理"
+    },
+    "article6": {
+      "title": "第6条（数据主体的权利、义务及行使方法）",
+      "intro": "用户可随时行使以下权利：",
+      "item1": "要求查阅个人信息",
+      "item2": "要求更正或删除个人信息",
+      "item3": "要求停止处理个人信息",
+      "item4": "注销会员（撤回同意）"
+    },
+    "article7": {
+      "title": "第7条（个人信息的销毁）",
+      "content": "当个人信息保留期限届满、处理目的达成等个人信息不再需要时，公司将立即销毁该个人信息。"
+    },
+    "article8": {
+      "title": "第8条（个人信息保护负责人）",
+      "label": "个人信息保护负责人：",
+      "name": "姓名：宋敏珠",
+      "position": "职务：代表",
+      "email": "邮箱：webmaster@geniuscat.co.kr",
+      "phone": "电话：010-8440-9820"
+    },
+    "article9": {
+      "title": "第9条（Cookie的使用及拒绝）",
+      "content": "公司使用Cookie为用户提供个性化服务。用户有权选择是否安装Cookie，可以通过设置浏览器选项来拒绝Cookie。"
+    },
+    "officer": "个人信息保护负责人"
   },
   "footer": {
-    "description": "使用多个AI模型一次生成数十张图像",
+    "description": "使用多个AI模型一次生成数十张图片",
     "customerSupport": "客户支持",
     "businessHours": "工作日 10:00 - 18:00",
     "companyInfo": "公司信息",
@@ -202,4 +383,3 @@
     "serverError": "服务器错误。"
   }
 }
-

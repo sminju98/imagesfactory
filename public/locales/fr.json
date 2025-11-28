@@ -5,7 +5,7 @@
     "login": "Connexion",
     "logout": "Déconnexion",
     "signup": "Inscription",
-    "mypage": "Mon compte",
+    "mypage": "Ma page",
     "points": "Points",
     "currentPoints": "Points actuels",
     "chargePoints": "Acheter des points",
@@ -25,14 +25,17 @@
     "search": "Rechercher",
     "settings": "Paramètres",
     "help": "Aide",
-    "contact": "Contact",
+    "contact": "Nous contacter",
     "support": "Support",
     "terms": "Conditions d'utilisation",
     "privacy": "Politique de confidentialité",
-    "refund": "Politique de remboursement",
-    "email": "Email",
+    "refundPolicy": "Politique de remboursement",
+    "email": "E-mail",
     "password": "Mot de passe",
-    "name": "Nom"
+    "name": "Nom",
+    "effectiveDate": "Date d'effet",
+    "backToHome": "Retour à l'accueil",
+    "viewTerms": "Voir les conditions d'utilisation"
   },
   "header": {
     "imageGeneration": "Génération d'images",
@@ -42,28 +45,28 @@
   },
   "home": {
     "title": "Génération d'images par IA",
-    "subtitle": "Générez des dizaines d'images en une fois avec plusieurs modèles d'IA",
-    "promptPlaceholder": "Décrivez l'image que vous souhaitez créer...",
+    "subtitle": "Générez des dizaines d'images à la fois avec plusieurs modèles d'IA",
+    "promptPlaceholder": "Décrivez l'image que vous voulez créer...",
     "generateButton": "Générer des images",
     "generating": "Génération en cours...",
     "selectModels": "Sélectionner les modèles d'IA",
     "totalCost": "Coût total",
     "totalImages": "Total des images",
     "images": "images",
-    "promptCorrection": "Amélioration du prompt",
+    "promptCorrection": "Correction de prompt",
     "modelRecommendation": "Recommandation de modèle",
     "referenceImage": "Image de référence",
     "uploadReference": "Télécharger une image de référence",
     "insufficientPoints": "Points insuffisants",
     "loginRequired": "Connexion requise",
-    "minPromptLength": "Veuillez entrer au moins 10 caractères",
+    "minPromptLength": "Le prompt doit contenir au moins 10 caractères",
     "selectAtLeastOneModel": "Veuillez sélectionner au moins un modèle"
   },
   "models": {
     "perImage": "par image",
     "max": "max",
     "description": {
-      "midjourney": "Meilleur pour l'art créatif · 4 images par requête",
+      "midjourney": "Le meilleur pour l'art créatif · 4 images par demande",
       "gpt-image": "Dernier d'OpenAI · Multimodal natif",
       "gemini": "Dernier de Google · Excellente compréhension des prompts",
       "grok": "xAI · Génération d'images créatives",
@@ -71,7 +74,7 @@
       "sdxl": "Dernier modèle de Stability AI",
       "ideogram": "Spécialisé rendu de texte",
       "flux": "Black Forest Labs · Haute qualité",
-      "recraft": "Spécialisé vecteur/illustration",
+      "recraft": "Spécialisé vecteurs/illustrations",
       "pixart": "Génération rapide",
       "hunyuan": "Tencent AI · Images réalistes",
       "seedream": "Segmind · Style onirique"
@@ -83,7 +86,7 @@
       "pending": "En attente",
       "processing": "En cours",
       "completed": "Terminé",
-      "failed": "Échec"
+      "failed": "Échoué"
     },
     "progress": "Progression",
     "download": "Télécharger",
@@ -95,11 +98,11 @@
     "refundedPoints": "Points remboursés"
   },
   "mypage": {
-    "title": "Mon compte",
+    "title": "Ma page",
     "dashboard": "Tableau de bord",
     "pointsTab": "Points",
     "historyTab": "Historique",
-    "paymentTab": "Historique des paiements",
+    "paymentTab": "Paiements",
     "settingsTab": "Paramètres",
     "currentBalance": "Solde actuel",
     "totalImages": "Total des images",
@@ -108,7 +111,7 @@
     "newGeneration": "Nouvelle génération",
     "recentImages": "Images récentes",
     "viewAll": "Voir tout",
-    "noImages": "Aucune image générée pour le moment",
+    "noImages": "Aucune image générée pour l'instant",
     "createFirst": "Créez votre première image",
     "usedPoints": "Points utilisés",
     "purchasedPoints": "Points achetés",
@@ -123,83 +126,260 @@
   "points": {
     "title": "Acheter des points",
     "info": "Informations sur les points",
-    "onePoint": "1 point = 0,01 $ (1 centime)",
-    "modelPrices": "Prix par modèle : 1pt ~ 60pt par image",
-    "validity": "Valable 5 ans à partir de l'achat",
+    "onePoint": "1 Point = 0,01 $ (1 centime)",
+    "modelPrices": "Prix par modèle : 1pt ~ 60pt/image",
+    "validity": "Validité : 5 ans à partir de l'achat",
     "nonRefundable": "Contenu numérique non remboursable",
     "packages": "Forfaits de points",
     "customAmount": "Montant personnalisé",
     "enterAmount": "Entrez le montant (USD)",
     "youllGet": "Vous recevrez",
     "minMax": "1 $ = 100 points (Min 1 $ ~ Max 1 000 $)",
-    "orderSummary": "Récapitulatif de la commande",
+    "orderSummary": "Récapitulatif de commande",
     "amount": "Montant",
     "basePoints": "Points de base",
     "bonusPoints": "Points bonus",
-    "totalPoints": "Total des points",
+    "totalPoints": "Points totaux",
     "afterPurchase": "Solde après achat",
-    "pay": "Payer",
-    "selectAmount": "Sélectionnez un montant",
-    "beforePayment": "Avant de payer",
+    "pay": "Payer maintenant",
+    "selectAmount": "Veuillez sélectionner un montant",
+    "beforePayment": "Avant le paiement",
     "nonRefundableNotice": "Les points ne sont pas remboursables (contenu numérique)",
     "validityNotice": "Les points sont valables 5 ans",
-    "paymentMethods": "Modes de paiement : Carte de crédit, PayPal",
-    "instantCredit": "Points crédités instantanément",
+    "paymentMethods": "Méthodes de paiement : Carte de crédit, PayPal",
+    "instantCredit": "Points crédités instantanément après le paiement",
     "faq": "FAQ",
     "faqExpire": "Les points expirent-ils ?",
-    "faqExpireAnswer": "Oui, les points sont valables 5 ans à partir de la date d'achat.",
+    "faqExpireAnswer": "Oui, les points sont valables 5 ans à partir de l'achat.",
     "faqRefund": "Puis-je obtenir un remboursement ?",
-    "faqRefundAnswer": "Les points ne sont pas remboursables car ils constituent du contenu numérique.",
-    "faqWhen": "Quand recevrai-je mes points ?",
-    "faqWhenAnswer": "Les points sont crédités instantanément après confirmation du paiement.",
+    "faqRefundAnswer": "Les points ne sont pas remboursables en tant que contenu numérique.",
+    "faqWhen": "Quand les points seront-ils crédités ?",
+    "faqWhenAnswer": "Les points sont crédités immédiatement après l'approbation du paiement.",
     "faqInvoice": "Puis-je obtenir une facture ?",
-    "faqInvoiceAnswer": "Oui, contactez le support à webmaster@geniuscat.co.kr",
+    "faqInvoiceAnswer": "Oui, veuillez contacter le support à webmaster@geniuscat.co.kr.",
     "needHelp": "Besoin d'aide ?"
   },
   "auth": {
     "loginTitle": "Connexion",
     "signupTitle": "Inscription",
-    "emailPlaceholder": "Adresse email",
+    "emailPlaceholder": "Adresse e-mail",
     "passwordPlaceholder": "Mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
     "namePlaceholder": "Nom",
     "loginButton": "Se connecter",
     "signupButton": "S'inscrire",
-    "googleLogin": "Continuer avec Google",
+    "googleLogin": "Se connecter avec Google",
     "googleSignup": "S'inscrire avec Google",
-    "noAccount": "Pas de compte ?",
-    "hasAccount": "Déjà un compte ?",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "hasAccount": "Vous avez déjà un compte ?",
     "forgotPassword": "Mot de passe oublié ?",
     "agreeTerms": "J'accepte les conditions d'utilisation",
     "agreePrivacy": "J'accepte la politique de confidentialité"
   },
   "terms": {
     "title": "Conditions d'utilisation",
-    "refundPolicy": "Politique de remboursement",
-    "effectiveDate": "Date d'entrée en vigueur",
-    "contact": "Contact",
-    "backToHome": "Retour à l'accueil"
+    "article1": {
+      "title": "Article 1 (Objet)",
+      "content": "Ces conditions générales ont pour objet de définir les droits, obligations et responsabilités entre MJ Studio (ci-après « Société ») et les utilisateurs concernant l'utilisation d'ImageFactory (ci-après « Service ») exploité par la Société."
+    },
+    "article2": {
+      "title": "Article 2 (Définitions)",
+      "item1": "« Service » désigne la plateforme de génération d'images par IA fournie par la Société.",
+      "item2": "« Utilisateur » désigne les membres et non-membres qui utilisent le Service fourni par la Société conformément à ces conditions.",
+      "item3": "« Membre » désigne une personne qui s'est inscrite en tant que membre et utilise le Service.",
+      "item4": "« Points » désigne les actifs virtuels pour utiliser le Service, utilisés pour la génération d'images."
+    },
+    "article3": {
+      "title": "Article 3 (Publication et modification des conditions)",
+      "item1": "La Société publiera ces conditions sur l'écran initial du Service afin que les utilisateurs puissent les comprendre facilement.",
+      "item2": "La Société peut modifier ces conditions dans la mesure où elles ne violent pas les lois applicables.",
+      "item3": "Lorsque les conditions sont modifiées, la date d'effet et le motif de la modification seront annoncés."
+    },
+    "article4": {
+      "title": "Article 4 (Fourniture et modification du service)",
+      "intro": "La Société fournit les services suivants :",
+      "service1": "Service de génération d'images par IA",
+      "service2": "Rechargement et gestion des points",
+      "service3": "Stockage et téléchargement des images générées",
+      "service4": "Service d'envoi d'e-mails",
+      "item2": "La Société peut modifier le contenu du Service et en informera les utilisateurs à l'avance."
+    },
+    "article5": {
+      "title": "Article 5 (Politique des points)",
+      "item1": "Les points peuvent être rechargés par paiement.",
+      "item2": "La période de validité des points rechargés est de 5 ans à compter de la date de rechargement.",
+      "item3": "Les points ne sont pas remboursables en espèces.",
+      "item4": "Les points restants sont automatiquement annulés lors de la résiliation de l'adhésion."
+    },
+    "article6": {
+      "title": "Article 6 (Droits d'auteur)",
+      "item1": "Les droits d'auteur des images générées appartiennent à l'utilisateur.",
+      "item2": "Cependant, les images générées ne peuvent pas être utilisées à des fins illégales.",
+      "item3": "La Société peut utiliser les images générées à des fins statistiques et analytiques pour améliorer le Service."
+    },
+    "article7": {
+      "title": "Article 7 (Politique de remboursement)",
+      "seeRefundPage": "Pour la politique de remboursement détaillée, veuillez consulter la page Politique de remboursement."
+    },
+    "article8": {
+      "title": "Article 8 (Clause de non-responsabilité)",
+      "item1": "La Société est exemptée de responsabilité si elle ne peut pas fournir le Service en raison de force majeure telle que des catastrophes naturelles.",
+      "item2": "La Société n'est pas responsable des problèmes d'utilisation du service causés par la faute de l'utilisateur.",
+      "item3": "La Société n'est pas responsable des problèmes juridiques découlant de l'utilisation commerciale des images générées."
+    }
+  },
+  "refund": {
+    "title": "Politique de remboursement",
+    "subtitle": "Refund Policy",
+    "principle": {
+      "title": "Principes de base",
+      "item1": "En raison de la nature du contenu numérique et des crédits, les remboursements ne sont généralement pas disponibles pour les crédits déjà utilisés et les images qui ont été générées avec succès.",
+      "item2": "Des exceptions pour les remboursements ou la restauration de crédits sont faites uniquement en cas de défaillances du service ou d'erreurs de paiement qui ne sont « pas de la faute de l'utilisateur »."
+    },
+    "section1": {
+      "title": "Politique de remboursement par type de forfait",
+      "creditPack": {
+        "title": "Pack de crédits (achat unique)",
+        "unused": {
+          "title": "Crédits entièrement inutilisés après l'achat",
+          "desc": "Remboursement intégral si demandé dans les 7 jours suivant la date d'achat"
+        },
+        "partial": {
+          "title": "Crédits partiellement utilisés",
+          "desc": "La partie utilisée n'est pas remboursable ; les crédits restants ne sont généralement pas remboursables, examinés individuellement uniquement en cas de défaillance du service"
+        }
+      },
+      "subscription": {
+        "title": "Forfait d'abonnement (mensuel/annuel)",
+        "active": {
+          "title": "Abonnement déjà activé pendant la période de facturation actuelle",
+          "desc": "Pas de remboursement partiel pour une résiliation en cours de période, quelle que soit l'utilisation"
+        },
+        "cancel": {
+          "title": "Annulation d'abonnement",
+          "desc": "Vous pouvez annuler votre abonnement à tout moment avant la date de renouvellement pour arrêter les frais futurs"
+        },
+        "error": {
+          "title": "Erreur système/Paiement en double",
+          "desc": "Remboursement intégral ou crédit équivalent fourni lorsqu'une erreur de facturation est confirmée"
+        }
+      }
+    },
+    "section2": {
+      "title": "Cas non remboursables",
+      "item1": "Lorsque la génération d'images est terminée avec succès : Pas de remboursement ou de restauration de crédits simplement parce que vous n'aimez pas les résultats",
+      "item2": "Crédits gratuits : Crédits promotionnels, bonus ou de récompense de parrainage",
+      "item3": "Offres spéciales : Produits achetés à des prix promotionnels/réduits (lorsque spécifié)"
+    },
+    "section3": {
+      "title": "Procédure de demande de remboursement",
+      "intro": "Contactez le support client par e-mail avec les informations suivantes :",
+      "item1": "E-mail du compte",
+      "item2": "Date et montant du paiement",
+      "item3": "Méthode de paiement (carte, passerelle de paiement, etc.)",
+      "item4": "Raison du remboursement et captures d'écran associées (écrans d'erreur s'il y a eu une défaillance du service)",
+      "processingTime": "Délai de traitement",
+      "processingDesc": "Notre équipe examinera et répondra dans les 7 jours ouvrables. Si approuvé, le remboursement sera traité vers la méthode de paiement originale.",
+      "processingNote": "※ Le remboursement effectif peut prendre jusqu'à 14 jours ouvrables selon les politiques de la société de carte/processeur de paiement."
+    },
+    "section4": {
+      "title": "Défaillances du service et exceptions",
+      "content": "En cas de responsabilité claire du service, comme des pannes de serveur, des crédits non chargés malgré le paiement ou des échecs répétés empêchant la génération d'images, nous fournirons un remboursement intégral ou des crédits équivalents.",
+      "note": "En cas de pannes majeures, nous pouvons mettre en œuvre des politiques temporaires de restauration de crédits ou de crédits supplémentaires avec des annonces séparées."
+    },
+    "section5": {
+      "title": "Modifications de la politique",
+      "item1": "La politique de remboursement d'ImageFactory peut être modifiée périodiquement pour améliorer le service, avec un préavis par annonces ou e-mail.",
+      "item2": "Les politiques modifiées s'appliquent aux paiements effectués après la date d'effet annoncée."
+    },
+    "contact": {
+      "title": "Demandes de remboursement",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "hours": "Jours ouvrables 10h00 - 18h00 (Fermé les week-ends et jours fériés)"
+    }
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "article1": {
+      "title": "Article 1 (Objectif du traitement des informations personnelles)",
+      "intro": "MJ Studio (ci-après « Société ») traite les informations personnelles aux fins suivantes. Les informations personnelles traitées ne seront pas utilisées à d'autres fins que les suivantes, et si l'objectif de l'utilisation change, des mesures nécessaires telles que l'obtention d'un consentement séparé seront mises en œuvre.",
+      "item1": "Inscription et gestion des membres : Fourniture de services d'adhésion, vérification d'identité",
+      "item2": "Fourniture de services : Génération d'images par IA, envoi d'e-mails de résultats",
+      "item3": "Paiement et règlement : Rechargement de points, traitement des paiements",
+      "item4": "Support client : Réponse aux demandes, traitement des plaintes"
+    },
+    "article2": {
+      "title": "Article 2 (Éléments d'informations personnelles traités)",
+      "intro": "La Société traite les éléments d'informations personnelles suivants :",
+      "required": "Requis : E-mail, mot de passe, nom",
+      "optional": "Optionnel : Photo de profil",
+      "auto": "Collecte automatique : Adresse IP, cookies, historique d'utilisation du service, journaux d'accès"
+    },
+    "article3": {
+      "title": "Article 3 (Période de conservation et d'utilisation des informations personnelles)",
+      "item1": "La Société traite et conserve les informations personnelles dans la période de conservation selon les lois ou dans la période convenue lors de la collecte des informations personnelles auprès des personnes concernées.",
+      "item2": "Les informations personnelles sont détruites immédiatement lors de la résiliation de l'adhésion. Cependant, s'il existe une raison de conservation en vertu des lois applicables, elles seront conservées pendant cette période."
+    },
+    "article4": {
+      "title": "Article 4 (Fourniture d'informations personnelles à des tiers)",
+      "intro": "En principe, la Société ne fournit pas les informations personnelles des utilisateurs à des tiers. Cependant, les cas suivants sont des exceptions :",
+      "item1": "Lorsque l'utilisateur a donné son consentement préalable",
+      "item2": "Lorsque requis par la loi ou lorsque demandé par des agences d'enquête conformément aux procédures et méthodes prescrites par la loi à des fins d'enquête"
+    },
+    "article5": {
+      "title": "Article 5 (Délégation du traitement des informations personnelles)",
+      "intro": "La Société délègue le traitement des informations personnelles comme suit pour fournir des services :",
+      "firebase": "Firebase (Google) : Stockage de données et authentification",
+      "ai": "OpenAI, Replicate, etc. : Génération d'images par IA",
+      "email": "Gmail SMTP : Envoi d'e-mails",
+      "payment": "Toss Payments : Traitement des paiements"
+    },
+    "article6": {
+      "title": "Article 6 (Droits et obligations des personnes concernées et comment les exercer)",
+      "intro": "Les utilisateurs peuvent exercer les droits suivants à tout moment :",
+      "item1": "Demander à consulter les informations personnelles",
+      "item2": "Demander la correction ou la suppression des informations personnelles",
+      "item3": "Demander la suspension du traitement des informations personnelles",
+      "item4": "Résiliation de l'adhésion (retrait du consentement)"
+    },
+    "article7": {
+      "title": "Article 7 (Destruction des informations personnelles)",
+      "content": "La Société détruit les informations personnelles sans délai lorsqu'elles ne sont plus nécessaires en raison de l'expiration de la période de conservation, de la réalisation de l'objectif du traitement, etc."
+    },
+    "article8": {
+      "title": "Article 8 (Responsable de la protection des informations personnelles)",
+      "label": "Responsable de la protection des informations personnelles :",
+      "name": "Nom : Minju Song",
+      "position": "Poste : PDG",
+      "email": "E-mail : webmaster@geniuscat.co.kr",
+      "phone": "Téléphone : 010-8440-9820"
+    },
+    "article9": {
+      "title": "Article 9 (Fonctionnement et refus des cookies)",
+      "content": "La Société utilise des cookies pour fournir des services personnalisés aux utilisateurs. Les utilisateurs ont le droit de choisir d'installer ou non des cookies et peuvent refuser les cookies en configurant les options de leur navigateur web."
+    },
+    "officer": "Responsable de la protection des informations personnelles"
   },
   "footer": {
-    "description": "Générez des dizaines d'images en une fois avec plusieurs modèles d'IA",
+    "description": "Générez des dizaines d'images à la fois avec plusieurs modèles d'IA",
     "customerSupport": "Support client",
-    "businessHours": "Lun-Ven 10h00 - 18h00",
+    "businessHours": "Jours ouvrables 10h00 - 18h00",
     "companyInfo": "Informations sur l'entreprise",
     "companyName": "MJ Studio",
-    "representative": "Représentant",
+    "representative": "PDG",
     "businessNumber": "Numéro d'entreprise",
-    "ecommerceNumber": "Licence e-commerce",
+    "ecommerceNumber": "Numéro e-commerce",
     "address": "Adresse",
     "termsAndPolicies": "Conditions et politiques",
     "allRightsReserved": "Tous droits réservés."
   },
   "errors": {
     "generic": "Une erreur s'est produite. Veuillez réessayer.",
-    "network": "Veuillez vérifier votre connexion internet.",
+    "network": "Veuillez vérifier votre connexion réseau.",
     "unauthorized": "Connexion requise.",
     "forbidden": "Accès refusé.",
     "notFound": "Page non trouvée.",
-    "serverError": "Erreur du serveur."
+    "serverError": "Erreur serveur."
   }
 }
-
