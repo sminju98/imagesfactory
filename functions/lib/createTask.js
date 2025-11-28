@@ -58,6 +58,8 @@ exports.createTask = (0, https_1.onCall)({
             status: 'pending',
             completedCount: 0,
         });
+        // 모든 모델 동일하게 1개 요청 = 1개 Job
+        // Midjourney는 1회 요청(600P)에 4장 생성
         for (let i = 0; i < numCount; i++) {
             jobsToCreate.push({
                 taskId: '',

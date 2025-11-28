@@ -934,6 +934,7 @@ async function generateWithMidjourney(params: GenerateImageParams): Promise<Gene
     
     if (processingState === 'done' || hasSuccessfulSlot) {
       console.log('✅ [Midjourney] 이미지 생성 완료');
+      console.log(`📋 [Midjourney] 전체 응답:`, JSON.stringify(genDetails, null, 2));
       break;
     }
 
@@ -945,17 +946,48 @@ async function generateWithMidjourney(params: GenerateImageParams): Promise<Gene
     console.log(`⏳ [Midjourney] 생성 중... (state: ${processingState})`);
   }
 
-  // processing_result.slots에서 성공한 모든 이미지 URL 추출
+  // 다양한 응답 구조에서 이미지 URL 추출
+  let imageUrls: string[] = [];
+  
+  // 1) processing_result.slots에서 찾기
   const slots = genDetails?.processing_result?.slots || [];
   const successfulSlots = slots.filter((slot: any) => slot.status === 'success' && slot.url);
+  if (successfulSlots.length > 0) {
+    imageUrls = successfulSlots.map((slot: any) => slot.url);
+    console.log(`🖼️ [Midjourney] slots에서 ${imageUrls.length}장 URL 추출`);
+  }
   
-  if (successfulSlots.length === 0) {
-    console.error('❌ [Midjourney] 응답:', JSON.stringify(genDetails));
-    throw new Error('Midjourney 이미지 생성 타임아웃 또는 실패');
+  // 2) images 배열에서 찾기
+  if (imageUrls.length === 0 && genDetails?.images?.length > 0) {
+    imageUrls = genDetails.images.filter((img: any) => typeof img === 'string' || img?.url)
+      .map((img: any) => typeof img === 'string' ? img : img.url);
+    console.log(`🖼️ [Midjourney] images에서 ${imageUrls.length}장 URL 추출`);
+  }
+  
+  // 3) result.images에서 찾기
+  if (imageUrls.length === 0 && genDetails?.result?.images?.length > 0) {
+    imageUrls = genDetails.result.images;
+    console.log(`🖼️ [Midjourney] result.images에서 ${imageUrls.length}장 URL 추출`);
+  }
+  
+  // 4) processing_result.images에서 찾기
+  if (imageUrls.length === 0 && genDetails?.processing_result?.images?.length > 0) {
+    imageUrls = genDetails.processing_result.images;
+    console.log(`🖼️ [Midjourney] processing_result.images에서 ${imageUrls.length}장 URL 추출`);
+  }
+  
+  // 5) output_url 또는 image_url 필드
+  if (imageUrls.length === 0 && (genDetails?.output_url || genDetails?.image_url)) {
+    imageUrls = [genDetails.output_url || genDetails.image_url];
+    console.log(`🖼️ [Midjourney] output_url에서 1장 URL 추출`);
+  }
+  
+  if (imageUrls.length === 0) {
+    console.error('❌ [Midjourney] URL을 찾을 수 없음. 전체 응답:', JSON.stringify(genDetails));
+    throw new Error('Midjourney 이미지 URL을 찾을 수 없습니다');
   }
 
-  const imageUrls = successfulSlots.map((slot: any) => slot.url);
-  console.log(`🖼️ [Midjourney] ${imageUrls.length}장 생성 완료`);
+  console.log(`🖼️ [Midjourney] 최종 ${imageUrls.length}장 생성 완료`);
 
   return {
     url: imageUrls[0], // 대표 이미지

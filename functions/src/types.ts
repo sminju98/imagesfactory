@@ -154,24 +154,25 @@ export interface GeneratedImage {
 /**
  * 모델별 포인트 가격
  */
+// 글로벌 가격: 1 포인트 = 1센트 ($0.01)
 export const MODEL_POINTS: Record<string, number> = {
-  'pixart': 10,
-  'flux': 10,
-  'realistic-vision': 20,
-  'sdxl': 30,
-  'kandinsky': 20,
-  'playground': 30,
-  'leonardo': 50,
-  'recraft': 40,
-  'grok': 60,
-  'ideogram': 60,
-  'gemini': 80,
-  'gpt-image': 100,
-  'firefly': 100,
-  'midjourney': 120,
-  'dall-e-3': 150,
-  'seedream': 50,
-  'hunyuan': 30,
+  'pixart': 1,
+  'flux': 1,
+  'realistic-vision': 2,
+  'sdxl': 3,
+  'kandinsky': 2,
+  'playground': 3,
+  'leonardo': 5,
+  'recraft': 4,
+  'grok': 6,
+  'ideogram': 6,
+  'gemini': 8,
+  'gpt-image': 10,
+  'firefly': 10,
+  'midjourney': 60, // 1회 요청당 4장 생성
+  'dall-e-3': 15,
+  'seedream': 5,
+  'hunyuan': 3,
 };
 
 /**

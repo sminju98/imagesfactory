@@ -211,7 +211,7 @@ async function processCompletedTask(
 
   let zipUrl: string | undefined;
   try {
-    if (imageUrls.length >= 3) {
+    if (imageUrls.length >= 1) {
       zipUrl = await createZipAndUpload(taskId, imageUrls);
       await taskRef.update({
         zipUrl,
@@ -355,7 +355,7 @@ async function addImagesToGallery(taskId: string, task: Task): Promise<void> {
       commentsCount: 0,
       isPublic: true,
       evolutionGeneration: 0,
-      parentImageId: task.evolutionSourceId,
+      parentImageId: task.evolutionSourceId || null, // undefined를 null로 변환
       createdAt: fieldValue.serverTimestamp(),
     };
 
