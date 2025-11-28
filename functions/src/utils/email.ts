@@ -51,7 +51,6 @@ interface GenerationCompleteEmailParams {
   failedImages: number;
   prompt: string;
   resultPageUrl: string;
-  imageUrls: string[];
   zipUrl?: string;
 }
 
@@ -65,13 +64,8 @@ export function getGenerationCompleteEmailHTML({
   failedImages,
   prompt,
   resultPageUrl,
-  imageUrls,
   zipUrl,
 }: GenerationCompleteEmailParams): string {
-  const previewHtml = imageUrls.slice(0, 4).map(url => 
-    `<img src="${url}" style="width:150px;height:150px;object-fit:cover;border-radius:8px;margin:4px;" alt="Generated Image" />`
-  ).join('');
-
   const failedHtml = failedImages > 0 
     ? `<p style="color: #f59e0b; font-weight: bold;">⚠️ ${failedImages}장은 생성에 실패하여 포인트가 환불되었습니다.</p>` 
     : '';
@@ -96,10 +90,6 @@ export function getGenerationCompleteEmailHTML({
         <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
           <p style="color: #6b7280; font-size: 14px; margin: 0;">프롬프트:</p>
           <p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">${prompt.substring(0, 200)}${prompt.length > 200 ? '...' : ''}</p>
-        </div>
-        
-        <div style="margin: 24px 0; text-align: center;">
-          ${previewHtml}
         </div>
         
         <div style="text-align: center; margin-top: 24px;">
