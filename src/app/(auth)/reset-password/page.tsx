@@ -35,13 +35,11 @@ export default function ResetPasswordPage() {
 
     try {
       setLoading(true);
-      await sendPasswordResetEmail(auth, email, {
-        url: window.location.origin + '/login',
-        handleCodeInApp: false,
-      });
+      // Firebase sendPasswordResetEmail - 기본 설정 사용
+      await sendPasswordResetEmail(auth, email);
       setSuccess(true);
     } catch (error: any) {
-      console.error('Password reset error:', error);
+      console.error('Password reset error:', error.code, error.message);
       
       switch (error.code) {
         case 'auth/user-not-found':
@@ -53,8 +51,16 @@ export default function ResetPasswordPage() {
         case 'auth/too-many-requests':
           setError(t('auth.tooManyRequests'));
           break;
-        default:
+        case 'auth/missing-android-pkg-name':
+        case 'auth/missing-continue-uri':
+        case 'auth/missing-ios-bundle-id':
+        case 'auth/invalid-continue-uri':
+        case 'auth/unauthorized-continue-uri':
+          // ActionCodeSettings 관련 에러는 무시하고 기본으로 진행
           setError(t('auth.resetPasswordError'));
+          break;
+        default:
+          setError(t('auth.resetPasswordError') + ` (${error.code || 'unknown'})`);
       }
     } finally {
       setLoading(false);
