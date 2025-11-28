@@ -154,9 +154,14 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
         'stats.totalImages': firestore_2.fieldValue.increment(completedJobs),
         updatedAt: firestore_2.fieldValue.serverTimestamp(),
     });
-    // 갤러리에 이미지 추가
+    // 갤러리에 이미지 추가 (에러가 발생해도 ZIP/이메일은 진행)
     if (completedJobs > 0) {
-        await addImagesToGallery(taskId, task);
+        try {
+            await addImagesToGallery(taskId, task);
+        }
+        catch (galleryError) {
+            console.error('갤러리 추가 실패 (무시하고 계속):', galleryError);
+        }
     }
     // ZIP 생성 및 이메일 발송
     if (finalStatus === 'completed' && imageUrls.length > 0) {
@@ -198,7 +203,6 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
                 failedImages: failedJobs,
                 prompt: task.prompt,
                 resultPageUrl,
-                imageUrls,
                 zipUrl,
             }),
         });
@@ -283,6 +287,7 @@ async function addImagesToGallery(taskId, task) {
             .doc(task.userId)
             .collection('images')
             .doc();
+        // galleryImage 객체 생성 (undefined 필드 제외)
         const galleryImage = {
             userId: task.userId,
             taskId,
@@ -299,9 +304,12 @@ async function addImagesToGallery(taskId, task) {
             commentsCount: 0,
             isPublic: true,
             evolutionGeneration: 0,
-            parentImageId: task.evolutionSourceId,
             createdAt: firestore_2.fieldValue.serverTimestamp(),
         };
+        // parentImageId가 있을 때만 추가
+        if (task.evolutionSourceId) {
+            galleryImage.parentImageId = task.evolutionSourceId;
+        }
         batch.set(galleryRef, galleryImage);
     });
     await batch.commit();
