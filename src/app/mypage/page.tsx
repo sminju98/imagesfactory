@@ -7,14 +7,16 @@ import { signOut } from 'firebase/auth';
 import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslation } from '@/lib/i18n';
-import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2, AlertCircle } from 'lucide-react';
+import { useTranslation, SUPPORTED_LANGUAGES, LanguageCode } from '@/lib/i18n';
+import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2, AlertCircle, Globe, ChevronDown } from 'lucide-react';
 
 export default function MyPage() {
   const router = useRouter();
   const { user, firebaseUser, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
   const [recentGenerations, setRecentGenerations] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [pointStats, setPointStats] = useState({
@@ -132,7 +134,35 @@ export default function MyPage() {
                 <p className="text-xs text-gray-500">{t('common.tagline')}</p>
               </div>
             </Link>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
+              {/* 언어 선택 */}
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Globe className="w-4 h-4 text-gray-500" />
+                  <span>{currentLang?.flag} {currentLang?.name}</span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code as LanguageCode);
+                          setLangMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''}`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">{t('common.currentPoints')}</p>
                 <p className="text-2xl font-bold text-indigo-600">{user.points.toLocaleString()}</p>

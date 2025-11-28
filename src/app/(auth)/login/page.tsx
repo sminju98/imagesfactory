@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { useTranslation } from '@/lib/i18n';
 import { Sparkles, Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,7 +32,7 @@ export default function LoginPage() {
     setError('');
 
     if (!formData.email || !formData.password) {
-      setError('이메일과 비밀번호를 입력해주세요');
+      setError(t('auth.enterEmailPassword'));
       return;
     }
 
@@ -50,15 +52,15 @@ export default function LoginPage() {
       console.error('Login error:', error);
       
       if (error.code === 'auth/user-not-found') {
-        setError('존재하지 않는 사용자입니다');
+        setError(t('auth.userNotFound'));
       } else if (error.code === 'auth/wrong-password') {
-        setError('잘못된 비밀번호입니다');
+        setError(t('auth.wrongPassword'));
       } else if (error.code === 'auth/invalid-email') {
-        setError('유효하지 않은 이메일 주소입니다');
+        setError(t('auth.invalidEmail'));
       } else if (error.code === 'auth/too-many-requests') {
-        setError('너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요');
+        setError(t('auth.tooManyRequests'));
       } else {
-        setError('로그인 중 오류가 발생했습니다');
+        setError(t('auth.loginError'));
       }
     } finally {
       setLoading(false);
@@ -79,15 +81,15 @@ export default function LoginPage() {
       console.error('Error message:', error.message);
       
       if (error.code === 'auth/popup-closed-by-user') {
-        setError('팝업이 닫혔습니다. 다시 시도해주세요');
+        setError(t('auth.popupClosed'));
       } else if (error.code === 'auth/cancelled-popup-request') {
-        setError('로그인이 취소되었습니다');
+        setError(t('auth.loginCancelled'));
       } else if (error.code === 'auth/popup-blocked') {
-        setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
+        setError(t('auth.popupBlocked'));
       } else if (error.code === 'auth/unauthorized-domain') {
-        setError('이 도메인은 승인되지 않았습니다. Firebase Console에서 localhost를 승인해주세요');
+        setError(t('auth.unauthorizedDomain'));
       } else {
-        setError(`구글 로그인 오류: ${error.code} - ${error.message}`);
+        setError(`${t('auth.googleLoginError')}: ${error.code}`);
       }
     } finally {
       setLoading(false);
@@ -99,23 +101,23 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 mb-4">
+          <Link href="/" className="inline-flex items-center space-x-2 mb-4 hover:opacity-80 transition-opacity">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-xl">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <div className="text-left">
-              <h1 className="text-3xl font-bold text-gray-900">ImageFactory</h1>
-              <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('common.appName')}</h1>
+              <p className="text-xs text-gray-500">by MJ Studio</p>
             </div>
-          </div>
+          </Link>
           <p className="text-gray-600">
-            AI 이미지 생성에 오신 것을 환영합니다
+            {t('auth.welcomeMessage')}
           </p>
         </div>
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">로그인</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('auth.login')}</h2>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2">
@@ -128,7 +130,7 @@ export default function LoginPage() {
             {/* 이메일 */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                이메일
+                {t('common.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -148,7 +150,7 @@ export default function LoginPage() {
             {/* 비밀번호 */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                비밀번호
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -168,7 +170,7 @@ export default function LoginPage() {
             {/* 비밀번호 찾기 */}
             <div className="flex justify-end">
               <Link href="/reset-password" className="text-sm text-indigo-600 hover:underline">
-                비밀번호를 잊으셨나요?
+                {t('auth.forgotPassword')}
               </Link>
             </div>
 
@@ -178,7 +180,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '로그인 중...' : '로그인'}
+              {loading ? t('auth.loggingIn') : t('auth.login')}
             </button>
           </form>
 
@@ -188,7 +190,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">또는</span>
+              <span className="px-4 bg-white text-gray-500">{t('auth.or')}</span>
             </div>
           </div>
 
@@ -217,14 +219,14 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="text-gray-700">Google로 로그인</span>
+            <span className="text-gray-700">{t('auth.googleLogin')}</span>
           </button>
 
           {/* 회원가입 링크 */}
           <p className="mt-6 text-center text-sm text-gray-600">
-            아직 계정이 없으신가요?{' '}
+            {t('auth.noAccount')}{' '}
             <Link href="/signup" className="text-indigo-600 hover:underline font-semibold">
-              회원가입
+              {t('auth.signup')}
             </Link>
           </p>
         </div>

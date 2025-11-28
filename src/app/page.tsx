@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Lightbulb, Loader2 } from 'lucide-react';
@@ -186,6 +187,7 @@ const AI_MODELS: AIModel[] = [
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
   const [prompt, setPrompt] = useState('');
   const [email, setEmail] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -298,11 +300,11 @@ export default function Home() {
           alert('추천된 모델 중 사용 가능한 모델이 없습니다.');
         }
       } else {
-        alert('모델 추천에 실패했습니다: ' + (data.error || '알 수 없는 오류'));
+        alert(t('home.modelRecommendFailed') + ': ' + (data.error || t('errors.generic')));
       }
     } catch (error) {
       console.error('GPT 추천 오류:', error);
-      alert('모델 추천 중 오류가 발생했습니다');
+      alert(t('home.modelRecommendError'));
     } finally {
       setIsRecommendingModel(false);
     }
@@ -405,7 +407,7 @@ export default function Home() {
   // 이미지 생성 요청
   const handleGenerate = async () => {
     if (!user) {
-      alert('로그인이 필요합니다');
+      alert(t('home.loginRequired'));
       window.location.href = '/login';
       return;
     }
@@ -421,7 +423,7 @@ export default function Home() {
     }
 
     if (isInsufficient) {
-      alert('포인트가 부족합니다');
+      alert(t('home.insufficientPoints'));
       return;
     }
 
@@ -493,7 +495,7 @@ export default function Home() {
       const data = await response.json();
 
       if (data.success) {
-        alert('이미지 생성이 시작되었습니다! 완료되면 이메일로 전송됩니다.');
+        alert(t('home.generationStarted'));
         // 생성 진행 화면으로 이동
         window.location.href = `/generation/${data.data.generationId}`;
       } else {
@@ -501,7 +503,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Generate error:', error);
-      alert('이미지 생성 중 오류가 발생했습니다');
+      alert(t('home.generationError'));
     }
   };
 
@@ -581,7 +583,7 @@ export default function Home() {
                   className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 hover:from-indigo-100 hover:to-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>프롬프트 교정 (GPT-5.1)</span>
+                  <span>{t('home.promptCorrection')} (GPT-5.1)</span>
                 </button>
 
                 <button
@@ -598,7 +600,7 @@ export default function Home() {
                   ) : (
                     <Lightbulb className="w-4 h-4" />
                   )}
-                  <span>모델 추천 (GPT-5.1)</span>
+                  <span>{t('home.modelRecommendation')} (GPT-5.1)</span>
                 </button>
               </div>
 
@@ -880,12 +882,12 @@ export default function Home() {
                   {uploadingImage
                     ? '이미지 업로드 중...'
                     : !user
-                    ? '로그인이 필요합니다'
+                    ? t('common.loginRequired')
                     : totalImages === 0
                     ? '모델을 선택해주세요'
                     : prompt.length < 10
                     ? '프롬프트를 입력해주세요'
-                    : `이미지 생성하기 (${totalPoints.toLocaleString()}pt)`}
+                    : `${t('home.generateButton')} (${totalPoints.toLocaleString()}pt)`}
                 </button>
               )}
 
@@ -894,8 +896,8 @@ export default function Home() {
                 <h3 className="font-bold text-gray-900 mb-2">💡 TIP</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• 여러 모델을 선택하면 다양한 스타일을 비교할 수 있어요</li>
-                  <li>• <span className="text-indigo-600 font-medium">프롬프트 교정</span>으로 더 나은 결과를 얻으세요</li>
-                  <li>• <span className="text-amber-600 font-medium">모델 추천</span>으로 최적의 AI를 선택하세요</li>
+                  <li>• <span className="text-indigo-600 font-medium">{t('home.promptCorrection')}</span> {t('home.tipCorrection')}</li>
+                  <li>• <span className="text-amber-600 font-medium">{t('home.modelRecommendation')}</span> {t('home.tipRecommend')}</li>
                   <li>• 완료되면 이메일로 자동 전송됩니다</li>
                 </ul>
               </div>
@@ -910,56 +912,36 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">ImageFactory</h3>
-              <p className="text-gray-400 text-sm">
-                여러 AI 모델로 한 번에<br />
-                수십 장의 이미지를 생성하세요
-              </p>
+              <h3 className="text-xl font-bold mb-4">{t('common.appName')}</h3>
+              <p className="text-gray-400 text-sm">{t('footer.description')}</p>
             </div>
             <div>
-              <h4 className="font-bold mb-4">고객지원</h4>
+              <h4 className="font-bold mb-4">{t('footer.support')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  이메일: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">
-                    webmaster@geniuscat.co.kr
-                  </a>
-                </li>
-                <li>
-                  전화: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">
-                    010-8440-9820
-                  </a>
-                </li>
-                <li>평일 10:00 - 18:00</li>
+                <li>{t('common.email')}: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">webmaster@geniuscat.co.kr</a></li>
+                <li>{t('footer.phone')}: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">010-8440-9820</a></li>
+                <li>{t('footer.hours')}</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">회사 정보</h4>
+              <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>상호명: 엠제이스튜디오(MJ)</li>
-                <li>대표: 송민주</li>
-                <li>사업자번호: 829-04-03406</li>
-                <li>통신판매업: 2025-서울강남-06359</li>
-                <li>주소: 서울특별시 강남구 봉은사로30길 68, 6층-S42호</li>
+                <li>{t('footer.companyName')}: MJ Studio</li>
+                <li>{t('footer.representative')}: Song Minju</li>
+                <li>{t('footer.businessNumber')}: 829-04-03406</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">약관 및 정책</h4>
+              <h4 className="font-bold mb-4">{t('footer.policies')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link href="/terms" className="hover:text-white transition-colors">
-                    이용약관
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="hover:text-white transition-colors">
-                    개인정보처리방침
-                  </Link>
-                </li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">{t('common.terms')}</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">{t('common.privacy')}</Link></li>
+                <li><Link href="/refund" className="hover:text-white transition-colors">{t('common.refundPolicy')}</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            © 2025 엠제이스튜디오. All rights reserved.
+            © 2025 MJ Studio. {t('footer.allRightsReserved')}
           </div>
         </div>
       </footer>

@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { useTranslation } from '@/lib/i18n';
 import { Sparkles, Mail, Lock, User as UserIcon, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,22 +37,22 @@ export default function SignupPage() {
 
     // 유효성 검사
     if (!formData.email || !formData.password || !formData.displayName) {
-      setError('모든 필드를 입력해주세요');
+      setError(t('auth.fillAllFields'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다');
+      setError(t('auth.passwordMismatch'));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('비밀번호는 최소 6자 이상이어야 합니다');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
     if (!agreeTerms || !agreePrivacy) {
-      setError('필수 약관에 동의해주세요');
+      setError(t('auth.agreeRequired'));
       return;
     }
 
@@ -103,20 +105,20 @@ export default function SignupPage() {
         console.error('Welcome email error:', emailError);
       }
 
-      alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급\n📧 이메일 인증 링크를 확인해주세요');
+      alert(t('auth.signupComplete'));
       router.push('/');
     } catch (error: any) {
       console.error('Signup error:', error);
       
-      // Firebase 에러 메시지 한글화
+      // Firebase 에러 메시지 처리
       if (error.code === 'auth/email-already-in-use') {
-        setError('이미 사용 중인 이메일입니다');
+        setError(t('auth.emailInUse'));
       } else if (error.code === 'auth/invalid-email') {
-        setError('유효하지 않은 이메일 주소입니다');
+        setError(t('auth.invalidEmail'));
       } else if (error.code === 'auth/weak-password') {
-        setError('비밀번호가 너무 약합니다');
+        setError(t('auth.weakPassword'));
       } else {
-        setError('회원가입 중 오류가 발생했습니다');
+        setError(t('auth.signupError'));
       }
     } finally {
       setLoading(false);
@@ -192,10 +194,10 @@ export default function SignupPage() {
           console.error('🔴 [ERROR] Welcome email error:', emailError);
         }
 
-        alert('회원가입이 완료되었습니다! 🎉\n\n✅ 가입 보너스: 1,000 포인트 지급');
+        alert(t('auth.signupCompleteGoogle'));
       } else {
         console.log('🔵 [DEBUG] 기존 사용자 로그인');
-        alert('로그인 성공! 👋');
+        alert(t('auth.loginSuccess'));
       }
 
       console.log('🔵 [DEBUG] 메인 페이지로 이동...');
@@ -209,20 +211,19 @@ export default function SignupPage() {
       // 에러 타입별 상세 로깅
       if (error.code === 'auth/popup-closed-by-user') {
         console.log('🟡 [INFO] 사용자가 팝업을 닫았습니다');
-        setError('팝업이 닫혔습니다. 다시 시도해주세요');
+        setError(t('auth.popupClosed'));
       } else if (error.code === 'auth/cancelled-popup-request') {
         console.log('🟡 [INFO] 팝업 요청이 취소되었습니다');
-        setError('로그인이 취소되었습니다');
+        setError(t('auth.loginCancelled'));
       } else if (error.code === 'auth/popup-blocked') {
         console.log('🟡 [INFO] 브라우저에서 팝업을 차단했습니다');
-        setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
+        setError(t('auth.popupBlocked'));
       } else if (error.code === 'auth/unauthorized-domain') {
         console.error('🔴 [CRITICAL] 도메인이 승인되지 않았습니다!');
-        console.error('🔴 [CRITICAL] Firebase Console > Authentication > Settings > Authorized domains에서 localhost를 추가해주세요');
-        setError('이 도메인은 승인되지 않았습니다. Firebase Console에서 localhost를 승인해주세요');
+        setError(t('auth.unauthorizedDomain'));
       } else {
         console.error('🔴 [ERROR] 알 수 없는 에러:', error.code);
-        setError(`구글 로그인 오류: ${error.code} - ${error.message}`);
+        setError(`${t('auth.googleLoginError')}: ${error.code}`);
       }
     } finally {
       setLoading(false);
@@ -234,23 +235,23 @@ export default function SignupPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 mb-4">
+          <Link href="/" className="inline-flex items-center space-x-2 mb-4 hover:opacity-80 transition-opacity">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-xl">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <div className="text-left">
-              <h1 className="text-3xl font-bold text-gray-900">ImageFactory</h1>
-              <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t('common.appName')}</h1>
+              <p className="text-xs text-gray-500">by MJ Studio</p>
             </div>
-          </div>
+          </Link>
           <p className="text-gray-600">
-            무료로 시작하고 1,000 포인트를 받으세요! 🎁
+            {t('auth.freeStartBonus')}
           </p>
         </div>
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">회원가입</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('auth.signup')}</h2>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2">
@@ -263,7 +264,7 @@ export default function SignupPage() {
             {/* 이름 */}
             <div>
               <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-                이름
+                {t('common.name')}
               </label>
               <div className="relative">
                 <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -275,7 +276,7 @@ export default function SignupPage() {
                   value={formData.displayName}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="홍길동"
+                  placeholder={t('auth.namePlaceholder')}
                 />
               </div>
             </div>
@@ -283,7 +284,7 @@ export default function SignupPage() {
             {/* 이메일 */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                이메일
+                {t('common.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -303,7 +304,7 @@ export default function SignupPage() {
             {/* 비밀번호 */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                비밀번호
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -319,13 +320,13 @@ export default function SignupPage() {
                   minLength={6}
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500">최소 6자 이상</p>
+              <p className="mt-1 text-xs text-gray-500">{t('auth.passwordMinLengthHint')}</p>
             </div>
 
             {/* 비밀번호 확인 */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                비밀번호 확인
+                {t('auth.confirmPassword')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -353,9 +354,9 @@ export default function SignupPage() {
                 />
                 <span className="text-sm text-gray-700">
                   <Link href="/terms" className="text-indigo-600 hover:underline">
-                    이용약관
+                    {t('common.terms')}
                   </Link>
-                  에 동의합니다 (필수)
+                  {t('auth.agreeRequired2')}
                 </span>
               </label>
 
@@ -368,9 +369,9 @@ export default function SignupPage() {
                 />
                 <span className="text-sm text-gray-700">
                   <Link href="/privacy" className="text-indigo-600 hover:underline">
-                    개인정보 처리방침
+                    {t('common.privacy')}
                   </Link>
-                  에 동의합니다 (필수)
+                  {t('auth.agreeRequired2')}
                 </span>
               </label>
             </div>
@@ -381,7 +382,7 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '가입 중...' : '회원가입'}
+              {loading ? t('auth.signingUp') : t('auth.signup')}
             </button>
           </form>
 
@@ -391,7 +392,7 @@ export default function SignupPage() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">또는</span>
+              <span className="px-4 bg-white text-gray-500">{t('auth.or')}</span>
             </div>
           </div>
 
@@ -420,14 +421,14 @@ export default function SignupPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="text-gray-700">Google로 로그인</span>
+            <span className="text-gray-700">{t('auth.googleSignup')}</span>
           </button>
 
           {/* 로그인 링크 */}
           <p className="mt-6 text-center text-sm text-gray-600">
-            이미 계정이 있으신가요?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link href="/login" className="text-indigo-600 hover:underline font-semibold">
-              로그인
+              {t('auth.login')}
             </Link>
           </p>
         </div>
@@ -436,24 +437,24 @@ export default function SignupPage() {
         <div className="mt-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-6 text-white">
           <h3 className="font-bold text-lg mb-3 flex items-center">
             <CheckCircle className="w-5 h-5 mr-2" />
-            가입 혜택
+            {t('auth.signupBenefits')}
           </h3>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center">
               <span className="mr-2">🎁</span>
-              가입 즉시 1,000 포인트 지급 (10장 무료)
+              {t('auth.benefitBonus')}
             </li>
             <li className="flex items-center">
               <span className="mr-2">🤖</span>
-              여러 AI 모델 무제한 사용
+              {t('auth.benefitUnlimited')}
             </li>
             <li className="flex items-center">
               <span className="mr-2">📧</span>
-              이메일로 자동 전송
+              {t('auth.benefitEmail')}
             </li>
             <li className="flex items-center">
               <span className="mr-2">💾</span>
-              히스토리 무제한 저장
+              {t('auth.benefitHistory')}
             </li>
           </ul>
         </div>
