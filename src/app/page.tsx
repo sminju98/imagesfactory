@@ -19,13 +19,27 @@ interface AIModel {
   company: string;
   logo?: string;
   maxCount?: number; // 모델별 최대 생성 수량
+  step?: number; // 수량 증감 단위 (예: 4장 단위)
 }
 
 // AI 모델 데이터 (병렬 처리 기준 최대치 설정)
 // 각 모델별 특징 및 최신 API 버전 반영
 // 🔗 API 버전 정보: name에 공식 모델명, description에 별명/버전 표기
 const AI_MODELS: AIModel[] = [
-  // ===== 👑 1. GPT-Image (OpenAI 최신) =====
+  // ===== 🎨 1. Midjourney v6.1 (BEST) =====
+  {
+    id: 'midjourney',
+    name: 'Midjourney v6.1',
+    description: '🎨 창의적 아트워크 최강 · 4장 단위 생성 (4장=600P) · API: Maginary',
+    pointsPerImage: 150,
+    badge: 'BEST',
+    color: 'bg-indigo-100 border-indigo-300',
+    company: 'Midjourney',
+    logo: '🎨',
+    maxCount: 40,
+    step: 4, // 4장 단위로만 선택 가능
+  },
+  // ===== 👑 2. GPT-Image (OpenAI 최신) =====
   {
     id: 'gpt-image',
     name: 'GPT-Image-1 (DALL·E 4)',
@@ -37,7 +51,7 @@ const AI_MODELS: AIModel[] = [
     logo: '🧠',
     maxCount: 12,
   },
-  // ===== 🍌 2. Nano Banana Pro (Google Gemini) =====
+  // ===== 🍌 3. Nano Banana Pro (Google Gemini) =====
   {
     id: 'gemini',
     name: '🍌 Nano Banana Pro',
@@ -49,7 +63,7 @@ const AI_MODELS: AIModel[] = [
     logo: '🍌',
     maxCount: 15,
   },
-  // ===== 🌟 3. Grok-2 (xAI) =====
+  // ===== 🌟 4. Grok-2 (xAI) =====
   {
     id: 'grok',
     name: 'Grok-2 Image',
@@ -61,7 +75,7 @@ const AI_MODELS: AIModel[] = [
     logo: '🌟',
     maxCount: 15,
   },
-  // ===== 🎮 4. Leonardo Phoenix =====
+  // ===== 🎮 5. Leonardo Phoenix =====
   {
     id: 'leonardo',
     name: 'Leonardo Phoenix',
@@ -73,7 +87,7 @@ const AI_MODELS: AIModel[] = [
     logo: '🎮',
     maxCount: 20,
   },
-  // ===== 🎯 5. SD 3.5 Large =====
+  // ===== 🎯 6. SD 3.5 Large =====
   {
     id: 'sdxl',
     name: 'SD 3.5 Large',
@@ -85,7 +99,7 @@ const AI_MODELS: AIModel[] = [
     logo: '🎯',
     maxCount: 20,
   },
-  // ===== 🐉 6. Hunyuan Image 3.0 =====
+  // ===== 🐉 7. Hunyuan Image 3.0 =====
   {
     id: 'hunyuan',
     name: 'Hunyuan Image 3.0',
@@ -164,17 +178,6 @@ const AI_MODELS: AIModel[] = [
     logo: '📸',
     maxCount: 24,
   },
-  {
-    id: 'midjourney',
-    name: 'Midjourney v6.1',
-    description: '🎨 창의적 아트워크 최강 · 4장 동시 생성 · API: Maginary',
-    pointsPerImage: 100,
-    badge: 'BEST',
-    color: 'bg-indigo-100 border-indigo-300',
-    company: 'Midjourney',
-    logo: '🎨',
-    maxCount: 10,
-  },
   // ===== 비활성화된 모델들 =====
   // Playground v2.5 비활성화 (Replicate API 버전 해시 필요)
   // Kandinsky 3.0 비활성화 (Replicate API 버전 해시 필요)
@@ -186,7 +189,7 @@ export default function Home() {
   const [prompt, setPrompt] = useState('');
   const [email, setEmail] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
-  // 모든 활성화된 모델 기본 선택 (각 1장씩)
+  // 모든 활성화된 모델 기본 선택 (각 1장씩, Midjourney는 4장 단위)
   const [selectedModels, setSelectedModels] = useState<Record<string, number>>({
     'pixart': 1,
     'realistic-vision': 1,
@@ -200,7 +203,7 @@ export default function Home() {
     'recraft': 1,
     'hunyuan': 1,
     'seedream': 1,
-    'midjourney': 1,
+    'midjourney': 4, // 4장 단위
   });
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');
@@ -351,17 +354,26 @@ export default function Home() {
     });
   };
 
-  // 수량 변경 (범위 초과 시 자동 조정)
+  // 수량 변경 (범위 초과 시 자동 조정, step 단위 반영)
   const updateModelCount = (modelId: string, count: number) => {
     const model = AI_MODELS.find(m => m.id === modelId);
     const maxCount = model?.maxCount || 100;
+    const step = model?.step || 1;
+    const minCount = step; // 최소값은 step 값
     
     // 범위를 벗어나면 자동으로 최소/최대로 조정
     let adjustedCount = count;
-    if (count < 1) {
-      adjustedCount = 1;
+    if (count < minCount) {
+      adjustedCount = minCount;
     } else if (count > maxCount) {
       adjustedCount = maxCount;
+    }
+    
+    // step 단위로 반올림 (예: step=4면 4, 8, 12, 16...)
+    if (step > 1) {
+      adjustedCount = Math.round(adjustedCount / step) * step;
+      if (adjustedCount < minCount) adjustedCount = minCount;
+      if (adjustedCount > maxCount) adjustedCount = Math.floor(maxCount / step) * step;
     }
     
     setSelectedModels(prev => ({
@@ -749,7 +761,7 @@ export default function Home() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateModelCount(model.id, count - 1);
+                                updateModelCount(model.id, count - (model.step || 1));
                               }}
                               className="w-8 h-8 bg-gray-200 rounded-lg hover:bg-gray-300 font-bold"
                             >
@@ -758,16 +770,17 @@ export default function Home() {
                             <input
                               type="number"
                               value={count}
-                              onChange={(e) => updateModelCount(model.id, parseInt(e.target.value) || 1)}
+                              onChange={(e) => updateModelCount(model.id, parseInt(e.target.value) || (model.step || 1))}
                               onClick={(e) => e.stopPropagation()}
                               className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-bold"
-                              min="1"
+                              min={model.step || 1}
                               max={model.maxCount || 100}
+                              step={model.step || 1}
                             />
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateModelCount(model.id, count + 1);
+                                updateModelCount(model.id, count + (model.step || 1));
                               }}
                               className="w-8 h-8 bg-gray-200 rounded-lg hover:bg-gray-300 font-bold"
                             >
