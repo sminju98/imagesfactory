@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Lightbulb, Loader2 } from 'lucide-react';
 import PromptCorrectionModal from '@/components/image-factory/PromptCorrectionModal';
+import ContentFactoryMain from '@/components/content-factory/ContentFactoryMain';
 
 // AI 모델 타입 정의
 interface AIModel {
@@ -514,27 +515,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ContentFactory 탭 (Coming Soon) */}
+        {/* ContentFactory 탭 */}
         {activeTab === 'content' && (
-          <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-200 text-center">
-            <div className="max-w-md mx-auto">
-              <div className="text-6xl mb-4">🚀</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">ContentFactory</h2>
-              <p className="text-gray-600 mb-6">
-                카드뉴스, 썸네일, 릴스/틱톡 영상 자동 생성 기능이<br />
-                곧 출시됩니다!
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 text-sm">
-                <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full">카드뉴스</span>
-                <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full">썸네일</span>
-                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full">릴스/틱톡</span>
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full">포스터</span>
-              </div>
-              <p className="text-xs text-gray-400 mt-6">
-                ImageFactory에서 생성한 이미지로 콘텐츠를 자동 제작할 수 있습니다
-              </p>
-            </div>
-          </div>
+          <ContentFactoryMain />
         )}
 
         {/* ImageFactory 탭 */}
