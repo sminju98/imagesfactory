@@ -199,10 +199,15 @@ ${ANGLE_GUIDES[opts.angle] || ''}` : ''}
 8. **구도 최적화**: 지정된 비율(${opts.ratio})에 최적화된 구도 제안
 9. **용도 맞춤**: ${opts.purpose} 플랫폼/용도에 최적화된 표현
 
+## 중요: 글자 수 제한
+- correctedPrompt는 반드시 **1000자 이하**로 작성해야 합니다.
+- 핵심 키워드 위주로 간결하게 작성하세요.
+- 불필요한 반복이나 장황한 설명은 제외하세요.
+
 ## 응답 형식 (반드시 JSON)
 {
-  "correctedPrompt": "개선된 영문 프롬프트 (이미지 생성에 직접 사용, 선택된 모든 옵션의 키워드 포함)",
-  "correctedPromptKo": "개선된 한국어 프롬프트 (사용자 참고용)",
+  "correctedPrompt": "개선된 영문 프롬프트 (1000자 이하, 핵심 키워드 위주)",
+  "correctedPromptKo": "개선된 한국어 프롬프트 (사용자 참고용, 간결하게)",
   "improvements": ["개선점 1", "개선점 2", ...],
   "suggestions": ["추가 제안 1", "추가 제안 2", ...],
   "appliedKeywords": {

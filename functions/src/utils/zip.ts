@@ -1,48 +1,13 @@
 /**
  * ZIP 파일 생성 유틸리티
- * 대용량 처리를 위한 배치 다운로드 + 스트리밍 압축
  */
 
 import JSZip from 'jszip';
 import { storage } from './firestore';
 import fetch from 'node-fetch';
 
-// 동시 다운로드 제한 (메모리 관리)
-const CONCURRENT_DOWNLOADS = 10;
-
-/**
- * 배열을 청크로 분할
- */
-function chunkArray<T>(array: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size));
-  }
-  return chunks;
-}
-
-/**
- * 이미지 다운로드 (타임아웃 포함)
- */
-async function downloadImage(url: string, timeoutMs: number = 30000): Promise<Buffer | null> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, { signal: controller.signal as any });
-    if (!response.ok) return null;
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 /**
  * ZIP 파일을 생성하고 Firebase Storage에 업로드
- * 대용량 처리를 위해 배치 다운로드 적용
  * @param taskId 작업 ID
  * @param imageUrls ZIP에 포함할 이미지 URL 목록
  * @returns 생성된 ZIP 파일의 공개 다운로드 URL
@@ -52,57 +17,46 @@ export async function createZipAndUpload(
   imageUrls: string[]
 ): Promise<string> {
   const zip = new JSZip();
-  const MAX_ZIP_SIZE_MB = 1000; // 최대 1GB
+  const MAX_ZIP_SIZE_MB = 500; // 최대 500MB
   let currentZipSize = 0;
-  let addedCount = 0;
 
   console.log(`📦 ZIP 생성 시작: Task ${taskId}, 총 ${imageUrls.length}개 이미지`);
 
-  // 이미지 URL을 청크로 분할하여 배치 다운로드
-  const urlChunks = chunkArray(imageUrls, CONCURRENT_DOWNLOADS);
-
-  for (let chunkIdx = 0; chunkIdx < urlChunks.length; chunkIdx++) {
-    const chunk = urlChunks[chunkIdx];
-    const startIdx = chunkIdx * CONCURRENT_DOWNLOADS;
-
-    console.log(`📦 배치 ${chunkIdx + 1}/${urlChunks.length} 처리 중... (${chunk.length}개)`);
-
-    // 병렬 다운로드
-    const downloads = await Promise.all(
-      chunk.map(async (url, idx) => {
-        const buffer = await downloadImage(url);
-        return { idx: startIdx + idx, buffer, url };
-      })
-    );
-
-    // ZIP에 추가
-    for (const { idx, buffer, url } of downloads) {
-      if (!buffer) {
-        console.warn(`⚠️ 이미지 ${idx + 1} 다운로드 실패`);
+  for (let i = 0; i < imageUrls.length; i++) {
+    const imageUrl = imageUrls[i];
+    
+    try {
+      const response = await fetch(imageUrl);
+      
+      if (!response.ok) {
+        console.warn(`⚠️ 이미지 ${i + 1} 다운로드 실패: ${response.statusText}`);
         continue;
       }
+      
+      const imageBuffer = await response.arrayBuffer();
+      const imageSizeKB = imageBuffer.byteLength / 1024;
 
       // ZIP 파일 크기 제한 체크
-      if ((currentZipSize + buffer.byteLength) / (1024 * 1024) > MAX_ZIP_SIZE_MB) {
-        console.warn(`⚠️ ZIP 파일 크기 제한 (${MAX_ZIP_SIZE_MB}MB) 도달. 나머지 생략.`);
+      if ((currentZipSize + imageBuffer.byteLength) / (1024 * 1024) > MAX_ZIP_SIZE_MB) {
+        console.warn(
+          `⚠️ ZIP 파일 크기 초과 (현재: ${(currentZipSize / (1024 * 1024)).toFixed(2)}MB). ` +
+          `나머지 이미지는 ZIP에 포함되지 않습니다.`
+        );
         break;
       }
 
-      // 파일명에서 모델 정보 추출
-      const modelMatch = url.match(/_([a-zA-Z0-9-]+)\.png$/);
-      const modelName = modelMatch ? modelMatch[1] : 'unknown';
-      const filename = `image_${String(idx + 1).padStart(4, '0')}_${modelName}.png`;
-      
-      zip.file(filename, buffer);
-      currentZipSize += buffer.byteLength;
-      addedCount++;
-    }
+      // 파일명에서 모델 정보 추출 또는 순번 사용
+      const filename = `image_${String(i + 1).padStart(3, '0')}.png`;
+      zip.file(filename, imageBuffer);
+      currentZipSize += imageBuffer.byteLength;
 
-    // 크기 제한 도달 시 중단
-    if ((currentZipSize / (1024 * 1024)) >= MAX_ZIP_SIZE_MB) break;
+      console.log(`📦 ZIP에 추가: ${filename} (${imageSizeKB.toFixed(2)} KB)`);
+    } catch (error) {
+      console.error(`⚠️ 이미지 ${i + 1} 처리 실패:`, error);
+    }
   }
 
-  console.log(`📦 ZIP 압축 중... (${addedCount}개 이미지, ${(currentZipSize / (1024 * 1024)).toFixed(2)}MB)`);
+  console.log('📦 ZIP 압축 중...');
   
   const zipBuffer = await zip.generateAsync({
     type: 'nodebuffer',
@@ -111,7 +65,7 @@ export async function createZipAndUpload(
   });
 
   const zipSizeMB = (zipBuffer.byteLength / (1024 * 1024)).toFixed(2);
-  console.log(`✅ ZIP 파일 생성 완료 (${zipSizeMB} MB, ${addedCount}개 이미지)`);
+  console.log(`✅ ZIP 파일 생성 완료 (${zipSizeMB} MB)`);
 
   // Firebase Storage에 업로드
   const bucket = storage.bucket();
