@@ -164,10 +164,20 @@ const AI_MODELS: AIModel[] = [
     logo: '📸',
     maxCount: 24,
   },
+  {
+    id: 'midjourney',
+    name: 'Midjourney v6.1',
+    description: '🎨 창의적 아트워크 최강 · 4장 동시 생성 · API: Maginary',
+    pointsPerImage: 100,
+    badge: 'BEST',
+    color: 'bg-indigo-100 border-indigo-300',
+    company: 'Midjourney',
+    logo: '🎨',
+    maxCount: 10,
+  },
   // ===== 비활성화된 모델들 =====
   // Playground v2.5 비활성화 (Replicate API 버전 해시 필요)
   // Kandinsky 3.0 비활성화 (Replicate API 버전 해시 필요)
-  // Midjourney 비활성화 (API 서버 문제)
   // Adobe Firefly - 권한 미획득으로 비활성화
 ];
 
@@ -190,6 +200,7 @@ export default function Home() {
     'recraft': 1,
     'hunyuan': 1,
     'seedream': 1,
+    'midjourney': 1,
   });
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');

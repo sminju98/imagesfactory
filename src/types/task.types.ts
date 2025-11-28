@@ -197,6 +197,15 @@ export const AI_MODELS: AIModel[] = [
     supportsReference: true,
     maxImages: 5,
   },
+  {
+    id: 'midjourney',
+    name: 'Midjourney v6.1',
+    description: '창의적 아트워크 최강',
+    pointsPerImage: 100,
+    category: 'premium',
+    supportsReference: false,
+    maxImages: 10,
+  },
 ];
 
 /**
