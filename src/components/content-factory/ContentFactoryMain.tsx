@@ -1,77 +1,119 @@
 'use client';
 
 import { useState } from 'react';
-import { Factory, Sparkles, Image, Film, Grid2X2, Layers, Youtube, LayoutTemplate, ArrowRight, Zap } from 'lucide-react';
+import { Factory, Sparkles, Film, Grid2X2, Layers, Youtube, LayoutTemplate, ArrowRight, Zap, Check, Image } from 'lucide-react';
 import ContentFactoryModal from './ContentFactoryModal';
 
 interface ContentFactoryMainProps {
   selectedImageIds?: string[];
 }
 
+// 글로벌 가격: 1 포인트 = $0.01 (1센트)
 const CONTENT_TYPES = [
   {
     id: 'reels',
-    name: '릴스/틱톡',
+    name: 'Reels/TikTok',
+    nameKo: '릴스/틱톡',
     icon: Film,
-    count: '10컷',
+    count: '10 cuts',
+    countKo: '10컷',
+    price: 50, // $0.50
     color: 'from-pink-500 to-rose-500',
     bgColor: 'bg-pink-50',
     textColor: 'text-pink-600',
+    borderColor: 'border-pink-400',
   },
   {
     id: 'comic',
-    name: '4컷 만화',
+    name: '4-Panel Comic',
+    nameKo: '4컷 만화',
     icon: Grid2X2,
-    count: '4컷',
+    count: '4 panels',
+    countKo: '4컷',
+    price: 30, // $0.30
     color: 'from-orange-500 to-amber-500',
     bgColor: 'bg-orange-50',
     textColor: 'text-orange-600',
+    borderColor: 'border-orange-400',
   },
   {
     id: 'cardnews',
-    name: '카드뉴스',
+    name: 'Card News',
+    nameKo: '카드뉴스',
     icon: Layers,
-    count: '5장',
+    count: '5 pages',
+    countKo: '5장',
+    price: 40, // $0.40
     color: 'from-blue-500 to-indigo-500',
     bgColor: 'bg-blue-50',
     textColor: 'text-blue-600',
+    borderColor: 'border-blue-400',
   },
   {
     id: 'banner',
-    name: '배너 광고',
+    name: 'Banner Ads',
+    nameKo: '배너 광고',
     icon: LayoutTemplate,
-    count: '2종',
+    count: '2 types',
+    countKo: '2종',
+    price: 20, // $0.20
     color: 'from-green-500 to-emerald-500',
     bgColor: 'bg-green-50',
     textColor: 'text-green-600',
+    borderColor: 'border-green-400',
   },
   {
     id: 'thumbnail',
-    name: '유튜브 썸네일',
+    name: 'YouTube Thumbnail',
+    nameKo: '유튜브 썸네일',
     icon: Youtube,
-    count: '3종',
+    count: '3 types',
+    countKo: '3종',
+    price: 25, // $0.25
     color: 'from-red-500 to-rose-500',
     bgColor: 'bg-red-50',
     textColor: 'text-red-600',
+    borderColor: 'border-red-400',
   },
   {
     id: 'detail',
-    name: '상세페이지',
+    name: 'Detail Page',
+    nameKo: '상세페이지',
     icon: Image,
-    count: '2종',
+    count: '2 types',
+    countKo: '2종',
+    price: 30, // $0.30
     color: 'from-purple-500 to-violet-500',
     bgColor: 'bg-purple-50',
     textColor: 'text-purple-600',
+    borderColor: 'border-purple-400',
   },
 ];
 
 export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFactoryMainProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+
+  const toggleContentType = (typeId: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(typeId) 
+        ? prev.filter(id => id !== typeId)
+        : [...prev, typeId]
+    );
+  };
+
+  const totalPrice = CONTENT_TYPES
+    .filter(type => selectedTypes.includes(type.id))
+    .reduce((sum, type) => sum + type.price, 0);
 
   const handleStartFactory = () => {
     if (inputPrompt.trim().length < 10) {
-      alert('프롬프트를 10자 이상 입력해주세요');
+      alert('Please enter at least 10 characters');
+      return;
+    }
+    if (selectedTypes.length === 0) {
+      alert('Please select at least one content type');
       return;
     }
     setIsModalOpen(true);
@@ -80,9 +122,9 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
   return (
     <>
       <div className="space-y-6">
-        {/* 히어로 섹션 */}
+        {/* Hero Section with Selectable Content Types */}
         <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-8 text-white relative overflow-hidden">
-          {/* 배경 패턴 */}
+          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-60 h-60 bg-white rounded-full translate-x-1/3 translate-y-1/3" />
@@ -94,70 +136,102 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                 <Factory className="w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">콘텐츠 공장</h1>
-                <p className="text-white/80 text-sm">프롬프트 하나로 하루치 콘텐츠 자동 생성</p>
+                <h1 className="text-2xl font-bold">Content Factory</h1>
+                <p className="text-white/80 text-sm">Select content types to generate</p>
               </div>
             </div>
 
+            {/* Selectable Content Type Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
-              {CONTENT_TYPES.map((type) => (
-                <div
-                  key={type.id}
-                  className="bg-white/10 backdrop-blur rounded-xl p-3 text-center hover:bg-white/20 transition-colors"
-                >
-                  <type.icon className="w-6 h-6 mx-auto mb-1" />
-                  <p className="text-sm font-medium">{type.name}</p>
-                  <p className="text-xs text-white/70">{type.count}</p>
-                </div>
-              ))}
+              {CONTENT_TYPES.map((type) => {
+                const isSelected = selectedTypes.includes(type.id);
+                return (
+                  <button
+                    key={type.id}
+                    onClick={() => toggleContentType(type.id)}
+                    className={`relative rounded-xl p-3 text-center transition-all transform hover:scale-105 ${
+                      isSelected 
+                        ? 'bg-white text-gray-900 shadow-xl ring-2 ring-white' 
+                        : 'bg-white/10 backdrop-blur hover:bg-white/20'
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    <type.icon className={`w-6 h-6 mx-auto mb-1 ${isSelected ? type.textColor : ''}`} />
+                    <p className={`text-sm font-medium ${isSelected ? '' : 'text-white'}`}>{type.nameKo}</p>
+                    <p className={`text-xs ${isSelected ? 'text-gray-500' : 'text-white/70'}`}>{type.countKo}</p>
+                    <p className={`text-xs font-bold mt-1 ${isSelected ? type.textColor : 'text-yellow-300'}`}>
+                      {type.price}P (${(type.price / 100).toFixed(2)})
+                    </p>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Selected Summary */}
+            {selectedTypes.length > 0 && (
+              <div className="mt-4 p-3 bg-white/20 backdrop-blur rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">
+                    {selectedTypes.length} content type{selectedTypes.length > 1 ? 's' : ''} selected
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold">{totalPrice}P</p>
+                  <p className="text-xs text-white/70">${(totalPrice / 100).toFixed(2)}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 입력 폼 */}
+        {/* Input Form */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-xl font-bold text-gray-900">제품/서비스 정보 입력</h2>
+            <h2 className="text-xl font-bold text-gray-900">Product/Service Information</h2>
           </div>
 
           <textarea
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
-            placeholder="생성하고 싶은 콘텐츠의 제품/서비스 정보를 입력하세요&#10;&#10;예시: 피부과 전문 병원의 여드름 치료 프로그램을 홍보하고 싶어요. 타겟은 20-30대 여성이고, 트렌디하고 신뢰감 있는 이미지로 SNS 마케팅을 하려고 합니다. 특장점은 비침습적 시술, 빠른 효과, 합리적인 가격입니다."
+            placeholder="Enter your product/service information to generate content&#10;&#10;Example: I want to promote a dermatology clinic's acne treatment program. Target audience is women in their 20s-30s, and I want a trendy and trustworthy image for SNS marketing. Key features are non-invasive treatment, fast results, and reasonable pricing."
             className="w-full h-36 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
             maxLength={2000}
           />
 
           <div className="flex items-center justify-between mt-3">
-            <p className="text-sm text-gray-500">{inputPrompt.length} / 2,000자</p>
+            <p className="text-sm text-gray-500">{inputPrompt.length} / 2,000</p>
             <button
               onClick={handleStartFactory}
-              disabled={inputPrompt.trim().length < 10}
+              disabled={inputPrompt.trim().length < 10 || selectedTypes.length === 0}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                inputPrompt.trim().length >= 10
+                inputPrompt.trim().length >= 10 && selectedTypes.length > 0
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg'
                   : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             >
               <Zap className="w-5 h-5" />
-              콘텐츠 생성 시작
+              Start ({totalPrice}P)
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* 생성 과정 설명 */}
+        {/* Process Explanation */}
         <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">🏭 콘텐츠 공장 5단계 프로세스</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">🏭 5-Step Content Factory Process</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {[
-              { step: 1, name: '콘셉트', desc: 'AI가 제품 분석 및 전략 수립', emoji: '💡' },
-              { step: 2, name: '메시지', desc: '메인/서브 카피 자동 생성', emoji: '💬' },
-              { step: 3, name: '대본', desc: '릴스, 만화, 카드뉴스 시나리오', emoji: '📝' },
-              { step: 4, name: '카피', desc: '각 포맷별 문구 확정', emoji: '✍️' },
-              { step: 5, name: '생산', desc: '28장 이미지 자동 생성', emoji: '🏭' },
+              { step: 1, name: 'Concept', desc: 'AI product analysis & strategy', emoji: '💡' },
+              { step: 2, name: 'Message', desc: 'Auto-generate main/sub copy', emoji: '💬' },
+              { step: 3, name: 'Script', desc: 'Reels, comic, card news scenarios', emoji: '📝' },
+              { step: 4, name: 'Copy', desc: 'Finalize text for each format', emoji: '✍️' },
+              { step: 5, name: 'Production', desc: 'Auto-generate all images', emoji: '🏭' },
             ].map((item, index) => (
               <div key={item.step} className="relative">
                 <div className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow h-full">
@@ -180,47 +254,63 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
           </div>
         </div>
 
-        {/* 생성되는 콘텐츠 미리보기 */}
+        {/* Pricing Summary */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">📦 한 번에 생성되는 콘텐츠</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Content Pricing</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {CONTENT_TYPES.map((type) => (
               <div
                 key={type.id}
-                className={`${type.bgColor} rounded-xl p-4 text-center border border-transparent hover:border-gray-200 transition-all`}
+                className={`${type.bgColor} rounded-xl p-4 text-center border-2 transition-all cursor-pointer ${
+                  selectedTypes.includes(type.id) ? type.borderColor : 'border-transparent'
+                }`}
+                onClick={() => toggleContentType(type.id)}
               >
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mx-auto mb-3 text-white shadow-lg`}>
                   <type.icon className="w-6 h-6" />
                 </div>
-                <h4 className={`font-semibold ${type.textColor}`}>{type.name}</h4>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{type.count}</p>
+                <h4 className={`font-semibold ${type.textColor}`}>{type.nameKo}</h4>
+                <p className="text-sm text-gray-600 mt-1">{type.countKo}</p>
+                <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
+                <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Zap className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-indigo-900">총 28장의 콘텐츠가 자동 생성됩니다</p>
-                <p className="text-sm text-indigo-700">예상 소요 시간: 약 3-5분 • 생산 완료 후 갤러리에 자동 저장</p>
+          {selectedTypes.length > 0 && (
+            <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Zap className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-indigo-900">
+                      {selectedTypes.length} content type{selectedTypes.length > 1 ? 's' : ''} selected
+                    </p>
+                    <p className="text-sm text-indigo-700">Estimated time: 2-5 minutes</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-indigo-900">{totalPrice}P</p>
+                  <p className="text-sm text-indigo-600">${(totalPrice / 100).toFixed(2)}</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 콘텐츠 생성 모달 */}
+      {/* Content Generation Modal */}
       <ContentFactoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialPrompt={inputPrompt}
         referenceImageIds={selectedImageIds}
+        selectedContentTypes={selectedTypes}
+        totalPrice={totalPrice}
       />
     </>
   );
 }
-

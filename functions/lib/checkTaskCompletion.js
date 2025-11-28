@@ -65,7 +65,11 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
         switch (job.status) {
             case 'completed':
                 completedJobs++;
-                if (job.imageUrl) {
+                // Midjourney는 imageUrls 배열 사용 (4장)
+                if (job.imageUrls && job.imageUrls.length > 0) {
+                    imageUrls.push(...job.imageUrls);
+                }
+                else if (job.imageUrl) {
                     imageUrls.push(job.imageUrl);
                 }
                 break;
@@ -169,7 +173,7 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
     const taskRef = firestore_2.db.collection('tasks').doc(taskId);
     let zipUrl;
     try {
-        if (imageUrls.length >= 3) {
+        if (imageUrls.length >= 1) {
             zipUrl = await (0, zip_1.createZipAndUpload)(taskId, imageUrls);
             await taskRef.update({
                 zipUrl,

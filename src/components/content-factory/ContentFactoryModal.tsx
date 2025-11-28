@@ -24,6 +24,8 @@ interface ContentFactoryModalProps {
   onClose: () => void;
   initialPrompt?: string;
   referenceImageIds?: string[];
+  selectedContentTypes?: string[];
+  totalPrice?: number;
 }
 
 export default function ContentFactoryModal({
@@ -31,6 +33,8 @@ export default function ContentFactoryModal({
   onClose,
   initialPrompt = '',
   referenceImageIds = [],
+  selectedContentTypes = [],
+  totalPrice = 0,
 }: ContentFactoryModalProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);

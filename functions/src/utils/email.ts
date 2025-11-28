@@ -43,3 +43,143 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
     throw error;
   }
 }
+
+interface GenerationCompleteEmailParams {
+  displayName: string;
+  totalImages: number;
+  successImages: number;
+  failedImages: number;
+  prompt: string;
+  resultPageUrl: string;
+  imageUrls: string[];
+  zipUrl?: string;
+}
+
+/**
+ * 이미지 생성 완료 이메일 HTML
+ */
+export function getGenerationCompleteEmailHTML({
+  displayName,
+  totalImages,
+  successImages,
+  failedImages,
+  prompt,
+  resultPageUrl,
+  imageUrls,
+  zipUrl,
+}: GenerationCompleteEmailParams): string {
+  const previewHtml = imageUrls.slice(0, 4).map(url => 
+    `<img src="${url}" style="width:150px;height:150px;object-fit:cover;border-radius:8px;margin:4px;" alt="Generated Image" />`
+  ).join('');
+
+  const failedHtml = failedImages > 0 
+    ? `<p style="color: #f59e0b; font-weight: bold;">⚠️ ${failedImages}장은 생성에 실패하여 포인트가 환불되었습니다.</p>` 
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>이미지 생성 완료</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 20px;">
+      <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h1 style="color: #6366f1; margin-bottom: 24px;">🎨 이미지 생성 완료!</h1>
+        
+        <p style="color: #374151; font-size: 16px;">안녕하세요, <strong>${displayName}</strong>님!</p>
+        
+        <p style="color: #374151; font-size: 16px;">요청하신 이미지 중 <strong>${successImages}장</strong>이 성공적으로 생성되었습니다.</p>
+        
+        ${failedHtml}
+        
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">프롬프트:</p>
+          <p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">${prompt.substring(0, 200)}${prompt.length > 200 ? '...' : ''}</p>
+        </div>
+        
+        <div style="margin: 24px 0; text-align: center;">
+          ${previewHtml}
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+          ${zipUrl ? `<a href="${zipUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-right: 8px;">
+            📥 ZIP 다운로드
+          </a>` : ''}
+          <a href="${resultPageUrl}" style="display: inline-block; background: ${zipUrl ? '#374151' : '#6366f1'}; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            🖼️ 결과 보기
+          </a>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+        
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+          이 메일은 ImageFactory에서 발송되었습니다.
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+interface GenerationFailedEmailParams {
+  displayName: string;
+  prompt: string;
+  reason: string;
+  refundedPoints?: number;
+}
+
+/**
+ * 이미지 생성 실패 이메일 HTML
+ */
+export function getGenerationFailedEmailHTML({
+  displayName,
+  prompt,
+  reason,
+  refundedPoints,
+}: GenerationFailedEmailParams): string {
+  const refundHtml = refundedPoints && refundedPoints > 0 
+    ? `<p style="color: #22c55e; font-weight: bold;">💰 ${refundedPoints} 포인트가 자동 환불되었습니다.</p>` 
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>이미지 생성 실패</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; padding: 20px;">
+      <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h1 style="color: #ef4444; margin-bottom: 24px;">😢 이미지 생성 실패</h1>
+        
+        <p style="color: #374151; font-size: 16px;">안녕하세요, <strong>${displayName}</strong>님!</p>
+        
+        <p style="color: #374151; font-size: 16px;">죄송합니다. 요청하신 이미지 생성에 실패하였습니다.</p>
+        
+        ${refundHtml}
+        
+        <div style="background: #fef2f2; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #991b1b; font-size: 14px; margin: 0;">실패 사유:</p>
+          <p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">${reason}</p>
+        </div>
+        
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">프롬프트:</p>
+          <p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">${prompt.substring(0, 200)}${prompt.length > 200 ? '...' : ''}</p>
+        </div>
+        
+        <p style="color: #374151; font-size: 14px;">
+          문제가 지속되면 고객센터로 문의해 주세요.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+        
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+          이 메일은 ImageFactory에서 발송되었습니다.
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+}

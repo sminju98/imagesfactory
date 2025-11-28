@@ -25,26 +25,26 @@ interface AIModel {
 // AI 모델 데이터 (병렬 처리 기준 최대치 설정)
 // 각 모델별 특징 및 최신 API 버전 반영
 // 🔗 API 버전 정보: name에 공식 모델명, description에 별명/버전 표기
+// 글로벌 가격: 1 포인트 = $0.01 (1센트)
 const AI_MODELS: AIModel[] = [
   // ===== 🎨 1. Midjourney v6.1 (BEST) =====
   {
     id: 'midjourney',
     name: 'Midjourney v6.1',
-    description: '창의적 아트워크 최강 · 4장 단위 생성 (4장=600P) · API: Maginary',
-    pointsPerImage: 150,
+    description: 'Best for creative artwork · 4 images per request · API: Maginary',
+    pointsPerImage: 60, // 1 request = 4 images = $0.60
     badge: 'BEST',
     color: 'bg-indigo-100 border-indigo-300',
     company: 'Midjourney',
     logo: '🎨',
-    maxCount: 40,
-    step: 4, // 4장 단위로만 선택 가능
+    maxCount: 10,
   },
   // ===== 👑 2. GPT-Image (OpenAI 최신) =====
   {
     id: 'gpt-image',
     name: 'GPT-Image-1 (DALL·E 4)',
-    description: 'OpenAI 최신 · 멀티모달 네이티브 · API: gpt-image-1',
-    pointsPerImage: 100,
+    description: 'OpenAI latest · Multimodal native · API: gpt-image-1',
+    pointsPerImage: 10,
     badge: 'NEW',
     color: 'bg-violet-50 border-violet-200',
     company: 'OpenAI',
@@ -55,8 +55,8 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'gemini',
     name: '🍌 Nano Banana Pro',
-    description: 'Gemini 3 Pro Image · 고해상도 1K/2K/4K · API: gemini-3-pro-image-preview',
-    pointsPerImage: 80,
+    description: 'Gemini 3 Pro Image · HD 1K/2K/4K · API: gemini-3-pro-image-preview',
+    pointsPerImage: 8,
     badge: 'Google',
     color: 'bg-yellow-50 border-yellow-300',
     company: 'Google DeepMind',
@@ -67,8 +67,8 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'grok',
     name: 'Grok-2 Image',
-    description: 'xAI 이미지 생성 · 밈/유머 강점 · API: grok-2-image',
-    pointsPerImage: 60,
+    description: 'xAI image generation · Meme/humor style · API: grok-2-image',
+    pointsPerImage: 6,
     badge: 'xAI',
     color: 'bg-pink-50 border-pink-200',
     company: 'xAI (Elon Musk)',
@@ -79,9 +79,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'leonardo',
     name: 'Leonardo Phoenix',
-    description: '게임/캐릭터 특화 · Alchemy 엔진 · API: 6b645e3a-d64f-4341',
-    pointsPerImage: 50,
-    badge: '게임아트',
+    description: 'Game/Character art · Alchemy engine · API: 6b645e3a-d64f-4341',
+    pointsPerImage: 5,
+    badge: 'Game Art',
     color: 'bg-orange-50 border-orange-200',
     company: 'Leonardo.ai',
     logo: '🎮',
@@ -91,9 +91,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'sdxl',
     name: 'SD 3.5 Large',
-    description: 'MMDiT 최신 아키텍처 · 타이포그래피 향상 · API: stable-diffusion-3.5-large',
-    pointsPerImage: 40,
-    badge: '최신',
+    description: 'MMDiT latest architecture · Enhanced typography · API: stable-diffusion-3.5-large',
+    pointsPerImage: 4,
+    badge: 'Latest',
     color: 'bg-blue-50 border-blue-200',
     company: 'Stability AI',
     logo: '🎯',
@@ -103,21 +103,21 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'hunyuan',
     name: 'Hunyuan Image 3.0',
-    description: 'Tencent AI · 아시아 인물 특화 · API: tencent/hunyuan-image-3',
-    pointsPerImage: 30,
+    description: 'Tencent AI · Asian portrait specialist · API: tencent/hunyuan-image-3',
+    pointsPerImage: 3,
     badge: 'Tencent',
     color: 'bg-blue-100 border-blue-300',
-    company: 'Tencent (텐센트)',
+    company: 'Tencent',
     logo: '🐉',
     maxCount: 24,
   },
-  // ===== 나머지 모델들 =====
+  // ===== More Models =====
   {
     id: 'flux',
     name: 'Flux 1.1 Pro',
-    description: '원조 Black Forest Labs · 품질/프롬프트 최고 · API: flux-1.1-pro',
-    pointsPerImage: 30,
-    badge: '공식',
+    description: 'Black Forest Labs · Best quality/prompt · API: flux-1.1-pro',
+    pointsPerImage: 3,
+    badge: 'Official',
     color: 'bg-green-50 border-green-200',
     company: 'Black Forest Labs',
     logo: '⚡',
@@ -126,9 +126,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'ideogram',
     name: 'Ideogram V3 Turbo',
-    description: '텍스트 렌더링 최강 · 포스터/로고 · API: V_3_TURBO',
-    pointsPerImage: 60,
-    badge: '텍스트특화',
+    description: 'Best text rendering · Poster/Logo · API: V_3_TURBO',
+    pointsPerImage: 6,
+    badge: 'Text',
     color: 'bg-rose-50 border-rose-200',
     company: 'Ideogram AI',
     logo: '✍️',
@@ -137,9 +137,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'recraft',
     name: 'Recraft V3',
-    description: '벡터/일러스트 특화 · 스타일 일관성 · API: recraft-ai/recraft-v3',
-    pointsPerImage: 40,
-    badge: '디자인',
+    description: 'Vector/Illustration · Style consistency · API: recraft-ai/recraft-v3',
+    pointsPerImage: 4,
+    badge: 'Design',
     color: 'bg-amber-50 border-amber-200',
     company: 'Recraft AI',
     logo: '🖌️',
@@ -148,8 +148,8 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'seedream',
     name: 'Seedream 4.0',
-    description: '4K 고해상도 · 포스터/배너 특화 · API: segmind/seedream-4',
-    pointsPerImage: 50,
+    description: '4K high resolution · Poster/Banner · API: segmind/seedream-4',
+    pointsPerImage: 5,
     badge: '4K',
     color: 'bg-green-100 border-green-300',
     company: 'Segmind',
@@ -159,9 +159,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'pixart',
     name: 'PixArt-Σ (Sigma)',
-    description: '1-2초 생성 · Transformer 기반 · API: cjwbw/pixart-sigma',
-    pointsPerImage: 10,
-    badge: '최저가',
+    description: '1-2sec generation · Transformer · API: cjwbw/pixart-sigma',
+    pointsPerImage: 1,
+    badge: 'Cheapest',
     color: 'bg-emerald-50 border-emerald-200',
     company: 'Huawei Noah\'s Ark Lab',
     logo: '🎨',
@@ -170,9 +170,9 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'realistic-vision',
     name: 'Realistic Vision v6.0',
-    description: '인물/피부 질감 최고 · SD1.5 기반 · API: adirik/realistic-vision-v6.0',
-    pointsPerImage: 20,
-    badge: '인물특화',
+    description: 'Best skin texture · SD1.5 based · API: adirik/realistic-vision-v6.0',
+    pointsPerImage: 2,
+    badge: 'Portrait',
     color: 'bg-cyan-50 border-cyan-200',
     company: 'SG_161222 (Civitai)',
     logo: '📸',
@@ -203,7 +203,7 @@ export default function Home() {
     'recraft': 1,
     'hunyuan': 1,
     'seedream': 1,
-    'midjourney': 4, // 4장 단위
+    'midjourney': 1, // 1회 요청 = 4장 생성
   });
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');

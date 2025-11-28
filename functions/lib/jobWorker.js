@@ -53,44 +53,53 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
             height: 1024,
         });
         console.log(`🎨 이미지 생성 완료: ${generatedImage.url.substring(0, 50)}...`);
-        // 2. 생성된 이미지 다운로드 (base64인 경우 직접 변환)
-        let imageBuffer;
-        if (generatedImage.isBase64) {
-            // base64 데이터를 직접 Buffer로 변환
-            console.log(`📦 [Base64] 직접 변환 중...`);
-            imageBuffer = Buffer.from(generatedImage.url, 'base64');
-        }
-        else {
-            // URL에서 이미지 다운로드
-            const imageResponse = await (0, node_fetch_1.default)(generatedImage.url);
-            if (!imageResponse.ok) {
-                throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
-            }
-            imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-        }
-        // 3. Firebase Storage에 업로드
         const bucket = firestore_2.storage.bucket();
-        const filename = `generations/${taskId}/${jobId}_${generatedImage.modelId}.png`;
-        const file = bucket.file(filename);
-        await file.save(Buffer.from(imageBuffer), {
-            contentType: 'image/png',
-            metadata: {
-                cacheControl: 'public, max-age=2592000',
-                metadata: { taskId, jobId, modelId: generatedImage.modelId },
-            },
-        });
-        await file.makePublic();
-        const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
-        console.log(`☁️ Storage 업로드 완료: ${imageUrl}`);
+        const uploadedUrls = [];
+        // Midjourney는 여러 이미지를 반환 (urls 배열)
+        const imagesToProcess = generatedImage.urls || [generatedImage.url];
+        console.log(`📦 ${imagesToProcess.length}장 이미지 처리 중...`);
+        for (let i = 0; i < imagesToProcess.length; i++) {
+            const imgUrl = imagesToProcess[i];
+            let imageBuffer;
+            if (generatedImage.isBase64) {
+                // base64 데이터를 직접 Buffer로 변환
+                console.log(`📦 [Base64] 직접 변환 중...`);
+                imageBuffer = Buffer.from(imgUrl, 'base64');
+            }
+            else {
+                // URL에서 이미지 다운로드
+                const imageResponse = await (0, node_fetch_1.default)(imgUrl);
+                if (!imageResponse.ok) {
+                    throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
+                }
+                imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+            }
+            // Firebase Storage에 업로드
+            const suffix = imagesToProcess.length > 1 ? `_${i + 1}` : '';
+            const filename = `generations/${taskId}/${jobId}${suffix}_${generatedImage.modelId}.png`;
+            const file = bucket.file(filename);
+            await file.save(Buffer.from(imageBuffer), {
+                contentType: 'image/png',
+                metadata: {
+                    cacheControl: 'public, max-age=2592000',
+                    metadata: { taskId, jobId, modelId: generatedImage.modelId },
+                },
+            });
+            await file.makePublic();
+            const uploadedUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+            uploadedUrls.push(uploadedUrl);
+            console.log(`☁️ Storage 업로드 완료 (${i + 1}/${imagesToProcess.length}): ${uploadedUrl}`);
+        }
         // 4. Job 상태 업데이트: completed
         await snapshot.ref.update({
             status: 'completed',
-            imageUrl,
-            thumbnailUrl: imageUrl,
+            imageUrl: uploadedUrls[0], // 대표 이미지
+            imageUrls: uploadedUrls, // 모든 이미지 (Midjourney 4장)
+            thumbnailUrl: uploadedUrls[0],
             finishedAt: firestore_2.fieldValue.serverTimestamp(),
             updatedAt: firestore_2.fieldValue.serverTimestamp(),
         });
-        console.log(`✅ Job ${jobId} 완료`);
+        console.log(`✅ Job ${jobId} 완료 (${uploadedUrls.length}장)`);
     }
     catch (error) {
         console.error(`❌ Job ${jobId} 실패:`, error);
@@ -98,26 +107,12 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (retries <= MAX_RETRIES) {
             console.log(`🔄 Job ${jobId} 재시도 (${retries}/${MAX_RETRIES})`);
-            const taskRef = firestore_2.db.collection('tasks').doc(taskId);
-            const newJobRef = taskRef.collection('jobs').doc();
-            await firestore_2.db.runTransaction(async (transaction) => {
-                transaction.update(snapshot.ref, {
-                    status: 'failed',
-                    errorMessage: `재시도 중... (${retries}/${MAX_RETRIES})`,
-                    updatedAt: firestore_2.fieldValue.serverTimestamp(),
-                });
-                transaction.set(newJobRef, {
-                    taskId,
-                    userId: jobData.userId,
-                    prompt: jobData.prompt,
-                    modelId: jobData.modelId,
-                    status: 'pending',
-                    retries,
-                    pointsCost: jobData.pointsCost,
-                    referenceImageUrl: jobData.referenceImageUrl,
-                    createdAt: firestore_2.fieldValue.serverTimestamp(),
-                    updatedAt: firestore_2.fieldValue.serverTimestamp(),
-                });
+            // 기존 Job을 pending으로 되돌려서 재시도 (새 Job 생성하지 않음)
+            await snapshot.ref.update({
+                status: 'pending',
+                retries,
+                errorMessage: `재시도 예정... (${retries}/${MAX_RETRIES})`,
+                updatedAt: firestore_2.fieldValue.serverTimestamp(),
             });
         }
         else {

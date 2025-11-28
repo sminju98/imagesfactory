@@ -123,28 +123,12 @@ export const jobWorker = onDocumentCreated(
       if (retries <= MAX_RETRIES) {
         console.log(`🔄 Job ${jobId} 재시도 (${retries}/${MAX_RETRIES})`);
         
-        const taskRef = db.collection('tasks').doc(taskId);
-        const newJobRef = taskRef.collection('jobs').doc();
-        
-        await db.runTransaction(async (transaction) => {
-          transaction.update(snapshot.ref, {
-            status: 'failed',
-            errorMessage: `재시도 중... (${retries}/${MAX_RETRIES})`,
-            updatedAt: fieldValue.serverTimestamp(),
-          });
-
-          transaction.set(newJobRef, {
-            taskId,
-            userId: jobData.userId,
-            prompt: jobData.prompt,
-            modelId: jobData.modelId,
-            status: 'pending',
-            retries,
-            pointsCost: jobData.pointsCost,
-            referenceImageUrl: jobData.referenceImageUrl,
-            createdAt: fieldValue.serverTimestamp(),
-            updatedAt: fieldValue.serverTimestamp(),
-          });
+        // 기존 Job을 pending으로 되돌려서 재시도 (새 Job 생성하지 않음)
+        await snapshot.ref.update({
+          status: 'pending',
+          retries,
+          errorMessage: `재시도 예정... (${retries}/${MAX_RETRIES})`,
+          updatedAt: fieldValue.serverTimestamp(),
         });
 
       } else {
