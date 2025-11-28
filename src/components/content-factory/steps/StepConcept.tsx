@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Loader2, RefreshCw, Sparkles, Search, Edit3 } from 'lucide-react';
 import { ConceptData } from '@/types/content.types';
+import { useTranslation } from '@/lib/i18n';
 
 interface StepConceptProps {
   prompt: string;
@@ -25,13 +26,14 @@ export default function StepConcept({
   setError,
   referenceImageIds = [],
 }: StepConceptProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedConcept, setEditedConcept] = useState<ConceptData | null>(null);
 
   // 콘셉트 생성 API 호출
   const generateConcept = async () => {
     if (!prompt.trim()) {
-      setError('프롬프트를 입력해주세요');
+      setError(t('contentFactory.stepConcept.enterPrompt'));
       return;
     }
 
@@ -54,10 +56,10 @@ export default function StepConcept({
         setConcept(data.data);
         setEditedConcept(data.data);
       } else {
-        setError(data.error || '콘셉트 생성에 실패했습니다');
+        setError(data.error || t('contentFactory.stepConcept.generateFailed'));
       }
     } catch (err) {
-      setError('콘셉트 생성 중 오류가 발생했습니다');
+      setError(t('contentFactory.stepConcept.generateError'));
     } finally {
       setIsLoading(false);
     }
@@ -76,12 +78,12 @@ export default function StepConcept({
       {/* 프롬프트 입력 */}
       <div className="space-y-3">
         <label className="block text-sm font-semibold text-gray-700">
-          💡 제품/서비스 정보 입력
+          {t('contentFactory.stepConcept.inputLabel')}
         </label>
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="예시: 피부과 전문 병원의 여드름 치료 프로그램을 홍보하고 싶어요. 타겟은 20-30대 여성이고, 트렌디하고 신뢰감 있는 이미지로 SNS 마케팅을 하려고 합니다."
+          placeholder={t('contentFactory.stepConcept.placeholder')}
           className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-400"
           disabled={isLoading}
         />
@@ -97,12 +99,12 @@ export default function StepConcept({
           {isLoading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Perplexity + GPT로 분석 중...
+              {t('contentFactory.stepConcept.analyzing')}
             </>
           ) : (
             <>
               <Search className="w-5 h-5" />
-              콘셉트 분석하기
+              {t('contentFactory.stepConcept.analyze')}
             </>
           )}
         </button>
@@ -114,7 +116,7 @@ export default function StepConcept({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-indigo-600" />
-              콘셉트 분석 결과
+              {t('contentFactory.stepConcept.result')}
             </h3>
             <div className="flex gap-2">
               <button
@@ -122,7 +124,7 @@ export default function StepConcept({
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
-                수정
+                {t('contentFactory.stepConcept.edit')}
               </button>
               <button
                 onClick={generateConcept}
@@ -130,23 +132,23 @@ export default function StepConcept({
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                재생성
+                {t('contentFactory.stepConcept.regenerate')}
               </button>
             </div>
           </div>
 
           <div className="grid gap-4">
-            <ConceptField label="📦 제품명" value={concept.productName} />
-            <ConceptField label="✨ USP (장점)" value={concept.usp} />
-            <ConceptField label="🎯 타겟" value={concept.target} />
-            <ConceptField label="🎨 톤앤매너" value={concept.toneAndManner} />
-            <ConceptField label="📊 전략 방향" value={concept.strategy} />
+            <ConceptField label={t('contentFactory.stepConcept.productName')} value={concept.productName} />
+            <ConceptField label={t('contentFactory.stepConcept.usp')} value={concept.usp} />
+            <ConceptField label={t('contentFactory.stepConcept.target')} value={concept.target} />
+            <ConceptField label={t('contentFactory.stepConcept.toneAndManner')} value={concept.toneAndManner} />
+            <ConceptField label={t('contentFactory.stepConcept.strategy')} value={concept.strategy} />
             {concept.marketTrend && (
-              <ConceptField label="📈 시장 트렌드" value={concept.marketTrend} />
+              <ConceptField label={t('contentFactory.stepConcept.marketTrend')} value={concept.marketTrend} />
             )}
             {concept.keywords && concept.keywords.length > 0 && (
               <div className="bg-white rounded-xl p-4">
-                <span className="text-sm font-medium text-gray-600">🏷️ 키워드</span>
+                <span className="text-sm font-medium text-gray-600">{t('contentFactory.stepConcept.keywords')}</span>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {concept.keywords.map((keyword, index) => (
                     <span
@@ -167,7 +169,7 @@ export default function StepConcept({
       {concept && isEditing && editedConcept && (
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900">✏️ 콘셉트 수정</h3>
+            <h3 className="text-lg font-bold text-gray-900">{t('contentFactory.stepConcept.editTitle')}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => {
@@ -176,41 +178,41 @@ export default function StepConcept({
                 }}
                 className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                취소
+                {t('contentFactory.stepConcept.cancel')}
               </button>
               <button
                 onClick={handleSaveEdit}
                 className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                저장
+                {t('contentFactory.stepConcept.save')}
               </button>
             </div>
           </div>
 
           <div className="space-y-4">
             <EditField
-              label="제품명"
+              label={t('contentFactory.stepConcept.productName').replace(/^[^\s]+\s*/, '')}
               value={editedConcept.productName}
               onChange={(v) => setEditedConcept({ ...editedConcept, productName: v })}
             />
             <EditField
-              label="USP (장점)"
+              label={t('contentFactory.stepConcept.usp').replace(/^[^\s]+\s*/, '')}
               value={editedConcept.usp}
               onChange={(v) => setEditedConcept({ ...editedConcept, usp: v })}
               multiline
             />
             <EditField
-              label="타겟"
+              label={t('contentFactory.stepConcept.target').replace(/^[^\s]+\s*/, '')}
               value={editedConcept.target}
               onChange={(v) => setEditedConcept({ ...editedConcept, target: v })}
             />
             <EditField
-              label="톤앤매너"
+              label={t('contentFactory.stepConcept.toneAndManner').replace(/^[^\s]+\s*/, '')}
               value={editedConcept.toneAndManner}
               onChange={(v) => setEditedConcept({ ...editedConcept, toneAndManner: v })}
             />
             <EditField
-              label="전략 방향"
+              label={t('contentFactory.stepConcept.strategy').replace(/^[^\s]+\s*/, '')}
               value={editedConcept.strategy}
               onChange={(v) => setEditedConcept({ ...editedConcept, strategy: v })}
               multiline

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, RefreshCw, Type, Edit3, Check } from 'lucide-react';
 import { ConceptData, MessageData, ScriptData, CopyData } from '@/types/content.types';
+import { useTranslation } from '@/lib/i18n';
 
 interface StepCopyProps {
   concept: ConceptData;
@@ -25,6 +26,7 @@ export default function StepCopy({
   setIsLoading,
   setError,
 }: StepCopyProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedCopy, setEditedCopy] = useState<CopyData | null>(null);
 
@@ -52,10 +54,10 @@ export default function StepCopy({
         setCopy(data.data);
         setEditedCopy(data.data);
       } else {
-        setError(data.error || '카피 생성에 실패했습니다');
+        setError(data.error || t('contentFactory.stepCopy.generateFailed'));
       }
     } catch (err) {
-      setError('카피 생성 중 오류가 발생했습니다');
+      setError(t('contentFactory.stepCopy.generateError'));
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +74,8 @@ export default function StepCopy({
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
-        <p className="text-gray-600 font-medium">GPT가 카피를 확정하고 있어요...</p>
-        <p className="text-sm text-gray-400 mt-1">각 포맷별 최종 문구 정리 중</p>
+        <p className="text-gray-600 font-medium">{t('contentFactory.stepCopy.loading')}</p>
+        <p className="text-sm text-gray-400 mt-1">{t('contentFactory.stepCopy.loadingDesc')}</p>
       </div>
     );
   }
@@ -85,10 +87,10 @@ export default function StepCopy({
         <div>
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <Type className="w-5 h-5 text-green-600" />
-            카피 확정
+            {t('contentFactory.stepCopy.title')}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            각 콘텐츠에 들어갈 최종 문구를 확인하세요
+            {t('contentFactory.stepCopy.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -99,7 +101,7 @@ export default function StepCopy({
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 <Edit3 className="w-4 h-4" />
-                수정
+                {t('contentFactory.stepCopy.edit')}
               </button>
               <button
                 onClick={generateCopy}
@@ -107,7 +109,7 @@ export default function StepCopy({
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                재생성
+                {t('contentFactory.stepCopy.regenerate')}
               </button>
             </>
           )}
@@ -118,24 +120,24 @@ export default function StepCopy({
         <div className="space-y-4">
           {/* 릴스 자막 */}
           <CopySection
-            title="🎬 릴스 자막"
+            title={t('contentFactory.stepCopy.reelsCaptions')}
             items={copy.reelsCaptions}
-            itemLabel="컷"
+            itemLabel={t('contentFactory.stepCopy.cut')}
           />
 
           {/* 카드뉴스 */}
           <CopySection
-            title="📱 카드뉴스 문구"
+            title={t('contentFactory.stepCopy.cardnewsCopies')}
             items={copy.cardNewsCopies}
-            itemLabel="장"
+            itemLabel={t('contentFactory.stepCopy.page')}
           />
 
           {/* 단일 카피들 */}
           <div className="grid grid-cols-2 gap-4">
-            <SingleCopyCard title="🖼️ 배너 문구" content={copy.bannerCopy} />
-            <SingleCopyCard title="📲 스토리 문구" content={copy.storyCopy} />
-            <SingleCopyCard title="🎥 썸네일 제목" content={copy.thumbnailTitle} />
-            <SingleCopyCard title="📄 상세페이지 헤드라인" content={copy.detailPageHeadline} />
+            <SingleCopyCard title={t('contentFactory.stepCopy.bannerCopy')} content={copy.bannerCopy} />
+            <SingleCopyCard title={t('contentFactory.stepCopy.storyCopy')} content={copy.storyCopy} />
+            <SingleCopyCard title={t('contentFactory.stepCopy.thumbnailTitle')} content={copy.thumbnailTitle} />
+            <SingleCopyCard title={t('contentFactory.stepCopy.detailPageHeadline')} content={copy.detailPageHeadline} />
           </div>
         </div>
       )}
@@ -144,7 +146,7 @@ export default function StepCopy({
       {copy && isEditing && editedCopy && (
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg max-h-[50vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4 sticky top-0 bg-white pb-2">
-            <h3 className="text-lg font-bold text-gray-900">✏️ 카피 수정</h3>
+            <h3 className="text-lg font-bold text-gray-900">{t('contentFactory.stepCopy.editTitle')}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => {
@@ -153,13 +155,13 @@ export default function StepCopy({
                 }}
                 className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                취소
+                {t('contentFactory.stepCopy.cancel')}
               </button>
               <button
                 onClick={handleSaveEdit}
                 className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                저장
+                {t('contentFactory.stepCopy.save')}
               </button>
             </div>
           </div>
@@ -167,10 +169,10 @@ export default function StepCopy({
           <div className="space-y-6">
             {/* 릴스 자막 편집 */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">릴스 자막</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t('contentFactory.stepCopy.reelsCaptionsLabel')}</label>
               {editedCopy.reelsCaptions.map((caption, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-gray-500 w-8">{index + 1}컷</span>
+                  <span className="text-xs text-gray-500 w-8">{index + 1}{t('contentFactory.stepCopy.cut')}</span>
                   <input
                     type="text"
                     value={caption}
@@ -187,10 +189,10 @@ export default function StepCopy({
 
             {/* 카드뉴스 편집 */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">카드뉴스 문구</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t('contentFactory.stepCopy.cardnewsCopiesLabel')}</label>
               {editedCopy.cardNewsCopies.map((copyText, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-gray-500 w-8">{index + 1}장</span>
+                  <span className="text-xs text-gray-500 w-8">{index + 1}{t('contentFactory.stepCopy.page')}</span>
                   <input
                     type="text"
                     value={copyText}
@@ -208,22 +210,22 @@ export default function StepCopy({
             {/* 단일 카피들 */}
             <div className="grid grid-cols-2 gap-4">
               <EditField
-                label="배너 문구"
+                label={t('contentFactory.stepCopy.bannerCopyLabel')}
                 value={editedCopy.bannerCopy}
                 onChange={(v) => setEditedCopy({ ...editedCopy, bannerCopy: v })}
               />
               <EditField
-                label="스토리 문구"
+                label={t('contentFactory.stepCopy.storyCopyLabel')}
                 value={editedCopy.storyCopy}
                 onChange={(v) => setEditedCopy({ ...editedCopy, storyCopy: v })}
               />
               <EditField
-                label="썸네일 제목"
+                label={t('contentFactory.stepCopy.thumbnailTitleLabel')}
                 value={editedCopy.thumbnailTitle}
                 onChange={(v) => setEditedCopy({ ...editedCopy, thumbnailTitle: v })}
               />
               <EditField
-                label="상세페이지 헤드라인"
+                label={t('contentFactory.stepCopy.detailPageHeadlineLabel')}
                 value={editedCopy.detailPageHeadline}
                 onChange={(v) => setEditedCopy({ ...editedCopy, detailPageHeadline: v })}
               />

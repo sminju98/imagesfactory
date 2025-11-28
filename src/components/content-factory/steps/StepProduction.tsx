@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Factory, Play, CheckCircle, XCircle, Image, Film, Grid2X2, Layers, Youtube, FileImage, LayoutTemplate } from 'lucide-react';
 import { ConceptData, MessageData, ScriptData, CopyData, CONTENT_SIZES, ContentType } from '@/types/content.types';
+import { useTranslation } from '@/lib/i18n';
 
 interface StepProductionProps {
   concept: ConceptData;
@@ -39,14 +40,15 @@ export default function StepProduction({
   setError,
   referenceImageIds = [],
 }: StepProductionProps) {
+  const { t } = useTranslation();
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([
-    { id: 'reels', name: '릴스/틱톡 컷씬', icon: <Film className="w-5 h-5" />, count: 10, status: 'pending', progress: 0 },
-    { id: 'comic', name: '4컷 만화', icon: <Grid2X2 className="w-5 h-5" />, count: 4, status: 'pending', progress: 0 },
-    { id: 'card_news', name: '카드뉴스', icon: <Layers className="w-5 h-5" />, count: 5, status: 'pending', progress: 0 },
-    { id: 'banner', name: '배너 광고', icon: <LayoutTemplate className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
-    { id: 'story', name: '스토리 광고', icon: <Image className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
-    { id: 'thumbnail', name: '유튜브 썸네일', icon: <Youtube className="w-5 h-5" />, count: 3, status: 'pending', progress: 0 },
-    { id: 'detail_header', name: '상세페이지 헤더', icon: <FileImage className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
+    { id: 'reels', name: t('contentFactory.stepProduction.reelsLine'), icon: <Film className="w-5 h-5" />, count: 10, status: 'pending', progress: 0 },
+    { id: 'comic', name: t('contentFactory.stepProduction.comicLine'), icon: <Grid2X2 className="w-5 h-5" />, count: 4, status: 'pending', progress: 0 },
+    { id: 'card_news', name: t('contentFactory.stepProduction.cardnewsLine'), icon: <Layers className="w-5 h-5" />, count: 5, status: 'pending', progress: 0 },
+    { id: 'banner', name: t('contentFactory.stepProduction.bannerLine'), icon: <LayoutTemplate className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
+    { id: 'story', name: t('contentFactory.stepProduction.storyLine'), icon: <Image className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
+    { id: 'thumbnail', name: t('contentFactory.stepProduction.thumbnailLine'), icon: <Youtube className="w-5 h-5" />, count: 3, status: 'pending', progress: 0 },
+    { id: 'detail_header', name: t('contentFactory.stepProduction.detailLine'), icon: <FileImage className="w-5 h-5" />, count: 2, status: 'pending', progress: 0 },
   ]);
   const [isStarted, setIsStarted] = useState(false);
   const [overallProgress, setOverallProgress] = useState(0);
@@ -77,11 +79,11 @@ export default function StepProduction({
         // 시뮬레이션: 실제로는 SSE나 polling으로 진행 상황 업데이트
         simulateProduction();
       } else {
-        setError(data.error || '생산 시작에 실패했습니다');
+        setError(data.error || t('contentFactory.stepProduction.startFailed'));
         setIsStarted(false);
       }
     } catch (err) {
-      setError('생산 시작 중 오류가 발생했습니다');
+      setError(t('contentFactory.stepProduction.startError'));
       setIsStarted(false);
     } finally {
       setIsLoading(false);
@@ -139,9 +141,9 @@ export default function StepProduction({
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4">
           <Factory className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900">자동 콘텐츠 생산</h3>
+        <h3 className="text-xl font-bold text-gray-900">{t('contentFactory.stepProduction.title')}</h3>
         <p className="text-sm text-gray-500 mt-1">
-          총 {totalImages}장의 콘텐츠가 생성됩니다
+          {t('contentFactory.stepProduction.totalImages', { count: totalImages })}
         </p>
       </div>
 
@@ -150,15 +152,15 @@ export default function StepProduction({
         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-8 text-center border border-indigo-100">
           <div className="space-y-4 mb-6">
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <span className="px-3 py-1 bg-white rounded-full">🎬 릴스 10장</span>
-              <span className="px-3 py-1 bg-white rounded-full">📖 만화 4장</span>
-              <span className="px-3 py-1 bg-white rounded-full">📱 카드뉴스 5장</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.reels10')}</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.comic4')}</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.cardnews5')}</span>
             </div>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <span className="px-3 py-1 bg-white rounded-full">🖼️ 배너 2장</span>
-              <span className="px-3 py-1 bg-white rounded-full">📲 스토리 2장</span>
-              <span className="px-3 py-1 bg-white rounded-full">🎥 썸네일 3장</span>
-              <span className="px-3 py-1 bg-white rounded-full">📄 상세페이지 2장</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.banner2')}</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.story2')}</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.thumbnail3')}</span>
+              <span className="px-3 py-1 bg-white rounded-full">{t('contentFactory.stepProduction.detail2')}</span>
             </div>
           </div>
 
@@ -170,18 +172,18 @@ export default function StepProduction({
             {isLoading ? (
               <>
                 <Loader2 className="w-6 h-6 animate-spin" />
-                준비 중...
+                {t('contentFactory.stepProduction.preparing')}
               </>
             ) : (
               <>
                 <Play className="w-6 h-6" />
-                생산 시작하기
+                {t('contentFactory.stepProduction.startProduction')}
               </>
             )}
           </button>
 
           <p className="text-xs text-gray-400 mt-4">
-            약 3-5분 소요 예상 • 생산 완료 후 갤러리에 자동 저장
+            {t('contentFactory.stepProduction.estimatedTime')}
           </p>
         </div>
       )}
@@ -192,7 +194,7 @@ export default function StepProduction({
           {/* 전체 진행률 */}
           <div className="bg-white rounded-xl p-4 border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">전체 진행률</span>
+              <span className="text-sm font-medium text-gray-700">{t('contentFactory.stepProduction.overallProgress')}</span>
               <span className="text-sm font-bold text-indigo-600">{overallProgress}%</span>
             </div>
             <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -206,7 +208,7 @@ export default function StepProduction({
           {/* 생산 라인들 */}
           <div className="space-y-3">
             {productionLines.map((line) => (
-              <ProductionLineCard key={line.id} line={line} />
+              <ProductionLineCard key={line.id} line={line} imagesLabel={t('contentFactory.stepProduction.images')} completedLabel={t('contentFactory.stepProduction.completed')} />
             ))}
           </div>
 
@@ -214,11 +216,11 @@ export default function StepProduction({
           {allCompleted && (
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 text-center border border-green-200">
               <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <h4 className="text-lg font-bold text-gray-900 mb-1">🎉 생산 완료!</h4>
+              <h4 className="text-lg font-bold text-gray-900 mb-1">{t('contentFactory.stepProduction.completeTitle')}</h4>
               <p className="text-sm text-gray-600">
-                {totalImages}장의 콘텐츠가 성공적으로 생성되었습니다.
+                {t('contentFactory.stepProduction.completeDesc', { count: totalImages })}
                 <br />
-                갤러리에서 확인하고 다운로드하세요.
+                {t('contentFactory.stepProduction.completeGuide')}
               </p>
             </div>
           )}
@@ -229,7 +231,7 @@ export default function StepProduction({
 }
 
 // 생산 라인 카드
-function ProductionLineCard({ line }: { line: ProductionLine }) {
+function ProductionLineCard({ line, imagesLabel, completedLabel }: { line: ProductionLine; imagesLabel: string; completedLabel: string }) {
   const statusColors = {
     pending: 'bg-gray-100 text-gray-500',
     processing: 'bg-blue-100 text-blue-600',
@@ -263,7 +265,7 @@ function ProductionLineCard({ line }: { line: ProductionLine }) {
           <div className="flex items-center justify-between mb-1">
             <span className="font-medium text-gray-900">{line.name}</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">{line.count}장</span>
+              <span className="text-xs text-gray-500">{line.count}{imagesLabel}</span>
               {statusIcons[line.status]}
             </div>
           </div>
@@ -279,7 +281,7 @@ function ProductionLineCard({ line }: { line: ProductionLine }) {
           )}
 
           {line.status === 'completed' && (
-            <span className="text-xs text-green-600">완료</span>
+            <span className="text-xs text-green-600">{completedLabel}</span>
           )}
         </div>
       </div>
