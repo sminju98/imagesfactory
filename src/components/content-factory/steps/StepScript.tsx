@@ -296,3 +296,4 @@ function CardNewsScriptView({ pages }: { pages: CardNewsPage[] }) {
   );
 }
 
+

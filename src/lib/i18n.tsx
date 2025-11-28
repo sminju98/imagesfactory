@@ -24,12 +24,30 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-// 번역 데이터 캐시
-const translationsCache: Record<string, Record<string, string>> = {};
+// 번역 데이터 캐시 (중첩 객체 저장)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const translationsCache: Record<string, any> = {};
+
+// 중첩 객체에서 dot notation으로 값 가져오기
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getNestedValue = (obj: any, path: string): string | undefined => {
+  const keys = path.split('.');
+  let current = obj;
+  
+  for (const key of keys) {
+    if (current === undefined || current === null) {
+      return undefined;
+    }
+    current = current[key];
+  }
+  
+  return typeof current === 'string' ? current : undefined;
+};
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<LanguageCode>('en');
-  const [translations, setTranslations] = useState<Record<string, string>>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [translations, setTranslations] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
 
   // 언어 로드
@@ -45,8 +63,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       translationsCache[lang] = data;
       setTranslations(data);
+      console.log(`✅ Loaded ${lang} translations:`, Object.keys(data));
     } catch (error) {
-      console.error(`Failed to load ${lang} translations:`, error);
+      console.error(`❌ Failed to load ${lang} translations:`, error);
       // 폴백: 영어 로드
       if (lang !== 'en') {
         await loadTranslations('en');
@@ -88,9 +107,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
-  // 번역 함수
+  // 번역 함수 (dot notation 지원)
   const t = (key: string, params?: Record<string, string | number>): string => {
-    let text = translations[key] || key;
+    // 중첩 객체에서 값 가져오기 (예: 'terms.article1.title')
+    let text = getNestedValue(translations, key) || key;
     
     // 파라미터 치환 {{name}}
     if (params) {
@@ -116,4 +136,5 @@ export function useTranslation() {
   }
   return context;
 }
+
 
