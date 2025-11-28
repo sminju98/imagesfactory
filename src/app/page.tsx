@@ -339,17 +339,23 @@ export default function Home() {
     });
   };
 
-  // 수량 변경 (최소 1장)
+  // 수량 변경 (범위 초과 시 자동 조정)
   const updateModelCount = (modelId: string, count: number) => {
     const model = AI_MODELS.find(m => m.id === modelId);
     const maxCount = model?.maxCount || 100;
     
-    if (count >= 1 && count <= maxCount) {
-      setSelectedModels(prev => ({
-        ...prev,
-        [modelId]: count,
-      }));
+    // 범위를 벗어나면 자동으로 최소/최대로 조정
+    let adjustedCount = count;
+    if (count < 1) {
+      adjustedCount = 1;
+    } else if (count > maxCount) {
+      adjustedCount = maxCount;
     }
+    
+    setSelectedModels(prev => ({
+      ...prev,
+      [modelId]: adjustedCount,
+    }));
   };
 
   // 총 비용 계산

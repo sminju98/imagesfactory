@@ -71,6 +71,7 @@ export const checkTaskCompletion = onDocumentUpdated(
     let pendingJobs = 0;
     let processingJobs = 0;
     let requeuedJobs = 0;
+    let failedPoints = 0; // 실패한 Job들의 포인트 합계
     const imageUrls: string[] = [];
     
     jobsSnapshot.forEach(doc => {
@@ -85,6 +86,7 @@ export const checkTaskCompletion = onDocumentUpdated(
           break;
         case 'failed':
           failedJobs++;
+          failedPoints += job.pointsCost || 0; // 실패한 포인트 누적
           break;
         case 'pending':
           pendingJobs++;
@@ -128,15 +130,24 @@ export const checkTaskCompletion = onDocumentUpdated(
     // Task 최종 상태 결정
     let finalStatus: Task['status'];
     let failedReason: string | undefined;
+    let refundedPoints = 0;
 
     if (completedJobs === 0) {
       finalStatus = 'failed';
       failedReason = '모든 이미지 생성에 실패했습니다.';
+      refundedPoints = task.totalPoints; // 전액 환불
     } else {
       finalStatus = 'completed';
       if (failedJobs > 0) {
-        failedReason = `${failedJobs}개 이미지 생성 실패 (자동 환불됨)`;
+        refundedPoints = failedPoints; // 부분 환불
+        failedReason = `${failedJobs}개 이미지 생성 실패 (${refundedPoints} 포인트 자동 환불됨)`;
       }
+    }
+
+    // 부분/전액 환불 처리
+    if (refundedPoints > 0) {
+      await processRefund(task.userId, taskId, refundedPoints, failedJobs, task.totalImages);
+      console.log(`💰 ${refundedPoints} 포인트 환불 완료 (실패: ${failedJobs}개)`);
     }
 
     // 결과 페이지 URL
@@ -175,9 +186,9 @@ export const checkTaskCompletion = onDocumentUpdated(
 
     // ZIP 생성 및 이메일 발송
     if (finalStatus === 'completed' && imageUrls.length > 0) {
-      await processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs);
+      await processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs, refundedPoints);
     } else if (finalStatus === 'failed') {
-      await processFailedTask(task);
+      await processFailedTask(task, refundedPoints);
     }
   }
 );
@@ -190,7 +201,8 @@ async function processCompletedTask(
   task: Task,
   imageUrls: string[],
   resultPageUrl: string,
-  failedJobs: number
+  failedJobs: number,
+  refundedPoints: number
 ): Promise<void> {
   const taskRef = db.collection('tasks').doc(taskId);
 
@@ -235,7 +247,7 @@ async function processCompletedTask(
 /**
  * 실패한 Task 처리 (이메일 발송)
  */
-async function processFailedTask(task: Task): Promise<void> {
+async function processFailedTask(task: Task, refundedPoints: number): Promise<void> {
   const userDoc = await db.collection('users').doc(task.userId).get();
   const userData = userDoc.data() as User;
 
@@ -247,13 +259,59 @@ async function processFailedTask(task: Task): Promise<void> {
         displayName: userData?.displayName || '사용자',
         prompt: task.prompt,
         reason: '서버 오류로 인해 이미지 생성에 실패했습니다.',
-        refundedPoints: task.totalPoints,
+        refundedPoints: refundedPoints,
       }),
     });
     console.log(`📧 실패 이메일 발송: ${task.userEmail}`);
   } catch (error) {
     console.error('이메일 발송 실패:', error);
   }
+}
+
+/**
+ * 부분/전액 환불 처리
+ */
+async function processRefund(
+  userId: string,
+  taskId: string,
+  refundPoints: number,
+  failedCount: number,
+  totalCount: number
+): Promise<void> {
+  const userRef = db.collection('users').doc(userId);
+  const userDoc = await userRef.get();
+  
+  if (!userDoc.exists) {
+    console.error(`환불 실패: 사용자 ${userId} 없음`);
+    return;
+  }
+
+  const userData = userDoc.data() as User;
+  const currentPoints = userData.points || 0;
+  const newPoints = currentPoints + refundPoints;
+
+  // 사용자 포인트 증가
+  await userRef.update({
+    points: newPoints,
+    updatedAt: fieldValue.serverTimestamp(),
+  });
+
+  // 환불 트랜잭션 기록
+  const transactionRef = db.collection('pointTransactions').doc();
+  await transactionRef.set({
+    userId,
+    type: 'refund',
+    amount: refundPoints,
+    balanceBefore: currentPoints,
+    balanceAfter: newPoints,
+    description: failedCount === totalCount
+      ? `이미지 생성 전체 실패 환불 (${failedCount}개)`
+      : `이미지 생성 부분 실패 환불 (${failedCount}/${totalCount}개 실패)`,
+    relatedTaskId: taskId,
+    createdAt: fieldValue.serverTimestamp(),
+  });
+
+  console.log(`💰 환불 트랜잭션 기록: ${refundPoints}P (${currentPoints} → ${newPoints})`);
 }
 
 /**

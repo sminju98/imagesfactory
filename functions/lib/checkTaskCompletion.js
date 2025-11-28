@@ -58,6 +58,7 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
     let pendingJobs = 0;
     let processingJobs = 0;
     let requeuedJobs = 0;
+    let failedPoints = 0; // 실패한 Job들의 포인트 합계
     const imageUrls = [];
     jobsSnapshot.forEach(doc => {
         const job = doc.data();
@@ -70,6 +71,7 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
                 break;
             case 'failed':
                 failedJobs++;
+                failedPoints += job.pointsCost || 0; // 실패한 포인트 누적
                 break;
             case 'pending':
                 pendingJobs++;
@@ -106,15 +108,23 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
     // Task 최종 상태 결정
     let finalStatus;
     let failedReason;
+    let refundedPoints = 0;
     if (completedJobs === 0) {
         finalStatus = 'failed';
         failedReason = '모든 이미지 생성에 실패했습니다.';
+        refundedPoints = task.totalPoints; // 전액 환불
     }
     else {
         finalStatus = 'completed';
         if (failedJobs > 0) {
-            failedReason = `${failedJobs}개 이미지 생성 실패 (자동 환불됨)`;
+            refundedPoints = failedPoints; // 부분 환불
+            failedReason = `${failedJobs}개 이미지 생성 실패 (${refundedPoints} 포인트 자동 환불됨)`;
         }
+    }
+    // 부분/전액 환불 처리
+    if (refundedPoints > 0) {
+        await processRefund(task.userId, taskId, refundedPoints, failedJobs, task.totalImages);
+        console.log(`💰 ${refundedPoints} 포인트 환불 완료 (실패: ${failedJobs}개)`);
     }
     // 결과 페이지 URL
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://imagefactory.co.kr';
@@ -146,16 +156,16 @@ exports.checkTaskCompletion = (0, firestore_1.onDocumentUpdated)({
     }
     // ZIP 생성 및 이메일 발송
     if (finalStatus === 'completed' && imageUrls.length > 0) {
-        await processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs);
+        await processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs, refundedPoints);
     }
     else if (finalStatus === 'failed') {
-        await processFailedTask(task);
+        await processFailedTask(task, refundedPoints);
     }
 });
 /**
  * 완료된 Task 처리 (ZIP 생성 + 이메일 발송)
  */
-async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs) {
+async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, failedJobs, refundedPoints) {
     const taskRef = firestore_2.db.collection('tasks').doc(taskId);
     let zipUrl;
     try {
@@ -197,7 +207,7 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
 /**
  * 실패한 Task 처리 (이메일 발송)
  */
-async function processFailedTask(task) {
+async function processFailedTask(task, refundedPoints) {
     const userDoc = await firestore_2.db.collection('users').doc(task.userId).get();
     const userData = userDoc.data();
     try {
@@ -208,7 +218,7 @@ async function processFailedTask(task) {
                 displayName: userData?.displayName || '사용자',
                 prompt: task.prompt,
                 reason: '서버 오류로 인해 이미지 생성에 실패했습니다.',
-                refundedPoints: task.totalPoints,
+                refundedPoints: refundedPoints,
             }),
         });
         console.log(`📧 실패 이메일 발송: ${task.userEmail}`);
@@ -216,6 +226,40 @@ async function processFailedTask(task) {
     catch (error) {
         console.error('이메일 발송 실패:', error);
     }
+}
+/**
+ * 부분/전액 환불 처리
+ */
+async function processRefund(userId, taskId, refundPoints, failedCount, totalCount) {
+    const userRef = firestore_2.db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+        console.error(`환불 실패: 사용자 ${userId} 없음`);
+        return;
+    }
+    const userData = userDoc.data();
+    const currentPoints = userData.points || 0;
+    const newPoints = currentPoints + refundPoints;
+    // 사용자 포인트 증가
+    await userRef.update({
+        points: newPoints,
+        updatedAt: firestore_2.fieldValue.serverTimestamp(),
+    });
+    // 환불 트랜잭션 기록
+    const transactionRef = firestore_2.db.collection('pointTransactions').doc();
+    await transactionRef.set({
+        userId,
+        type: 'refund',
+        amount: refundPoints,
+        balanceBefore: currentPoints,
+        balanceAfter: newPoints,
+        description: failedCount === totalCount
+            ? `이미지 생성 전체 실패 환불 (${failedCount}개)`
+            : `이미지 생성 부분 실패 환불 (${failedCount}/${totalCount}개 실패)`,
+        relatedTaskId: taskId,
+        createdAt: firestore_2.fieldValue.serverTimestamp(),
+    });
+    console.log(`💰 환불 트랜잭션 기록: ${refundPoints}P (${currentPoints} → ${newPoints})`);
 }
 /**
  * 갤러리에 이미지 추가
