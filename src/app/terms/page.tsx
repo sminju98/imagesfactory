@@ -79,7 +79,69 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">제 7 조 (면책조항)</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">제 7 조 (환불 정책)</h2>
+              
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">1. 기본 원칙</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>디지털 콘텐츠·크레딧 특성상, 이미 사용한 크레딧과 생성 완료된 이미지에 대해서는 원칙적으로 환불이 불가합니다.</li>
+                <li>서비스 장애나 결제 오류 등 &quot;사용자 과실이 아닌 경우&quot;에 한해 예외적으로 환불 또는 크레딧 복구를 제공합니다.</li>
+              </ul>
+
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">2. 요금제 유형별 환불 정책</h3>
+              <div className="ml-4 space-y-3">
+                <div>
+                  <p className="font-medium text-gray-700">크레딧 팩(일회성 구매)</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4 text-gray-600">
+                    <li>결제 후 전혀 사용하지 않은 크레딧: 결제일로부터 7일 이내 환불 요청 시 전액 환불.</li>
+                    <li>일부 사용한 크레딧: 사용한 분량은 환불 불가, 남은 크레딧은 원칙적으로 환불하지 않으며, 예외적인 서비스 장애 시에만 개별 검토.</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">구독 요금제(월/연 단위)</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4 text-gray-600">
+                    <li>현재 청구 기간 중 이미 활성화된 구독: 사용 여부와 관계없이 중도 해지에 따른 부분 환불은 제공하지 않음.</li>
+                    <li>다음 결제부터 과금 중단을 원할 경우, 갱신일 전까지 언제든지 구독 취소 가능.</li>
+                    <li>시스템 오류·중복 결제 등 명백한 청구 오류가 확인될 경우, 해당 결제 건 전액 환불 또는 동일 금액 크레딧 지급.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">3. 환불 불가 기준</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>이미지 생성이 정상적으로 완료된 경우: 결과물이 마음에 들지 않는다는 이유만으로는 환불/사용량 복구 불가.</li>
+                <li>프로모션·이벤트로 지급된 무료 크레딧, 보너스 크레딧, 추천 보상 크레딧.</li>
+                <li>세일/할인 가격으로 구입한 특가 상품(명시된 경우).</li>
+              </ul>
+
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">4. 환불 요청 절차</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>앱 내 &quot;결제/청구&quot; 메뉴 또는 고객센터 이메일로 아래 정보를 포함해 문의:
+                  <ul className="list-disc list-inside ml-6 mt-1 text-gray-600">
+                    <li>계정 이메일</li>
+                    <li>결제 일시 및 금액</li>
+                    <li>결제 수단(카드·PG사 등)</li>
+                    <li>환불 사유 및 관련 스크린샷(서비스 장애가 있었다면 에러 화면 등)</li>
+                  </ul>
+                </li>
+                <li>운영팀은 접수 후 통상 7영업일 이내에 승인 여부를 안내하며, 승인 시 원 결제 수단으로 환불을 진행합니다.</li>
+                <li>카드사·결제사 정책에 따라 실제 입금까지 최대 14영업일 정도 소요될 수 있습니다.</li>
+              </ul>
+
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">5. 서비스 장애 및 예외 처리</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>서버 장애, 결제는 됐으나 크레딧이 충전되지 않은 경우, 반복적인 실패로 이미지 생성 자체가 되지 않은 경우 등 서비스 책임이 명확한 상황에서는 전액 환불 또는 동일 금액 이상의 크레딧 지급을 원칙으로 합니다.</li>
+                <li>대규모 장애 등 특별한 상황에서는 별도의 공지와 함께 일시적인 사용량 복구나 추가 크레딧 지급 정책을 시행할 수 있습니다.</li>
+              </ul>
+
+              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">6. 정책 변경</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>ImageFactory 환불 정책은 서비스 개선을 위해 수시로 변경될 수 있으며, 변경 사항은 공지사항 또는 이메일을 통해 사전 안내합니다.</li>
+                <li>변경된 정책은 공지된 시행일 이후 발생한 결제 건부터 적용됩니다.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">제 8 조 (면책조항)</h2>
               <ol className="list-decimal list-inside space-y-2">
                 <li>회사는 천재지변 또는 이에 준하는 불가항력으로 인해 서비스를 제공할 수 없는 경우 책임이 면제됩니다.</li>
                 <li>회사는 이용자의 귀책사유로 인한 서비스 이용 장애에 대하여 책임을 지지 않습니다.</li>
