@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface GenerationData {
   id: string;
@@ -25,6 +25,12 @@ interface GenerationData {
   zipUrl?: string;
   completedAt?: any;
   failedReason?: string;
+}
+
+interface FailedJob {
+  modelId: string;
+  pointsCost: number;
+  errorMessage?: string;
 }
 
 const MODEL_NAMES: Record<string, string> = {
@@ -65,6 +71,8 @@ export default function GenerationPage() {
   const router = useRouter();
   const generationId = params.id as string;
   const [generation, setGeneration] = useState<GenerationData | null>(null);
+  const [failedJobs, setFailedJobs] = useState<FailedJob[]>([]);
+  const [refundedPoints, setRefundedPoints] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // 다시 생성하기 - 같은 프롬프트, 모델, 수량으로 메인페이지 이동
@@ -95,15 +103,41 @@ export default function GenerationPage() {
     // Firestore 실시간 리스너 (tasks 컬렉션 사용)
     const unsubscribe = onSnapshot(
       doc(db, 'tasks', generationId),
-      (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
+      async (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
           // modelConfigs가 배열이 아니면 빈 배열로 초기화
           setGeneration({ 
-            id: doc.id, 
+            id: docSnapshot.id, 
             ...data,
             modelConfigs: Array.isArray(data.modelConfigs) ? data.modelConfigs : []
           } as GenerationData);
+
+          // 완료/실패 상태일 때 실패한 jobs 조회
+          if (data.status === 'completed' || data.status === 'failed') {
+            try {
+              const jobsSnapshot = await getDocs(collection(db, 'tasks', generationId, 'jobs'));
+              const failed: FailedJob[] = [];
+              let totalRefund = 0;
+
+              jobsSnapshot.forEach((jobDoc) => {
+                const job = jobDoc.data();
+                if (job.status === 'failed') {
+                  failed.push({
+                    modelId: job.modelId,
+                    pointsCost: job.pointsCost || 0,
+                    errorMessage: job.errorMessage,
+                  });
+                  totalRefund += job.pointsCost || 0;
+                }
+              });
+
+              setFailedJobs(failed);
+              setRefundedPoints(totalRefund);
+            } catch (err) {
+              console.error('Failed to fetch jobs:', err);
+            }
+          }
         }
         setLoading(false);
       },
@@ -204,11 +238,36 @@ export default function GenerationPage() {
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-gray-900 mb-2">🎉 이미지 생성 완료!</h2>
               <p className="text-gray-600 mb-2">
-                총 {generation.totalImages}장의 이미지가 생성되었습니다
+                총 {generation.imageUrls?.length || 0}장의 이미지가 생성되었습니다
+                {failedJobs.length > 0 && (
+                  <span className="text-orange-600"> ({failedJobs.length}개 실패)</span>
+                )}
               </p>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-gray-500 mb-4">
                 {generation.email}으로 전송되었습니다
               </p>
+
+              {/* 실패한 모델 및 환불 정보 */}
+              {failedJobs.length > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertTriangle className="w-5 h-5 text-orange-500" />
+                    <span className="font-semibold text-orange-800">실패한 모델 ({failedJobs.length}개)</span>
+                  </div>
+                  <ul className="text-sm text-orange-700 space-y-1 mb-3">
+                    {failedJobs.map((job, idx) => (
+                      <li key={idx} className="flex justify-between">
+                        <span>• {MODEL_NAMES[job.modelId] || job.modelId}</span>
+                        <span className="text-orange-600">-{job.pointsCost}P</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="border-t border-orange-200 pt-2 flex justify-between items-center">
+                    <span className="font-medium text-orange-800">💰 자동 환불</span>
+                    <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-center space-x-4 flex-wrap gap-3">
                 {generation.zipUrl && (
@@ -242,12 +301,38 @@ export default function GenerationPage() {
             <div className="text-center">
               <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-gray-900 mb-2">생성 실패</h2>
-              <p className="text-red-600 mb-6">
+              <p className="text-red-600 mb-4">
                 {generation.failedReason || '알 수 없는 오류가 발생했습니다'}
               </p>
-              <p className="text-sm text-gray-600 mb-6">
-                사용하신 포인트는 자동으로 환불되었습니다
-              </p>
+
+              {/* 실패한 모델 및 환불 정보 */}
+              {failedJobs.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <span className="font-semibold text-red-800">실패한 모델 ({failedJobs.length}개)</span>
+                  </div>
+                  <ul className="text-sm text-red-700 space-y-1 mb-3">
+                    {failedJobs.map((job, idx) => (
+                      <li key={idx} className="flex justify-between">
+                        <span>• {MODEL_NAMES[job.modelId] || job.modelId}</span>
+                        <span className="text-red-600">-{job.pointsCost}P</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="border-t border-red-200 pt-2 flex justify-between items-center">
+                    <span className="font-medium text-red-800">💰 자동 환불</span>
+                    <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                  </div>
+                </div>
+              )}
+
+              {refundedPoints === 0 && (
+                <p className="text-sm text-gray-600 mb-6">
+                  사용하신 포인트는 자동으로 환불되었습니다
+                </p>
+              )}
+
               <div className="flex justify-center space-x-4">
                 <button
                   onClick={handleRegenerate}

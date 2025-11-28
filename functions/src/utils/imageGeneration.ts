@@ -238,7 +238,8 @@ async function generateWithGrok(params: GenerateImageParams): Promise<GeneratedI
 
 /**
  * Replicate API를 통한 이미지 생성 (SDXL, Flux, PixArt 등)
- * model: 모델 ID (예: 'jyoung105/playground-v2.5') 또는 버전 해시
+ * model: 모델 ID (예: 'owner/model-name') 또는 버전 해시
+ * 새로운 API 엔드포인트: /v1/models/{owner}/{name}/predictions 사용
  */
 async function generateWithReplicate(
   params: GenerateImageParams,
@@ -262,23 +263,35 @@ async function generateWithReplicate(
     input.prompt_strength = 0.8;
   }
 
-  // Prediction 생성 (model 필드 사용 - 최신 API 방식)
-  // 버전 해시인 경우 version 필드, 모델 ID인 경우 model 필드 사용
+  // 버전 해시인지 모델 ID (owner/name)인지 판별
   const isVersionHash = model.length === 64 && /^[a-f0-9]+$/.test(model);
-  const requestBody = isVersionHash 
-    ? { version: model, input }
-    : { model, input };
-
-  const response = await axios.post(
-    'https://api.replicate.com/v1/predictions',
-    requestBody,
-    {
-      headers: {
-        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  
+  let response;
+  if (isVersionHash) {
+    // 버전 해시인 경우 기존 /v1/predictions 엔드포인트 사용
+    response = await axios.post(
+      'https://api.replicate.com/v1/predictions',
+      { version: model, input },
+      {
+        headers: {
+          'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } else {
+    // owner/name 형태인 경우 새로운 /v1/models/{owner}/{name}/predictions 엔드포인트 사용
+    response = await axios.post(
+      `https://api.replicate.com/v1/models/${model}/predictions`,
+      { input },
+      {
+        headers: {
+          'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 
   const predictionId = response.data.id;
   let prediction = response.data;
