@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Factory, Sparkles, Film, Grid2X2, Layers, Youtube, LayoutTemplate, ArrowRight, Zap, Check, Image } from 'lucide-react';
 import ContentFactoryModal from './ContentFactoryModal';
+import { useTranslation } from '@/lib/i18n';
 
 interface ContentFactoryMainProps {
   selectedImageIds?: string[];
@@ -91,6 +92,7 @@ const CONTENT_TYPES = [
 ];
 
 export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFactoryMainProps) {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -109,14 +111,23 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
 
   const handleStartFactory = () => {
     if (inputPrompt.trim().length < 10) {
-      alert('Please enter at least 10 characters');
+      alert(t('contentFactory.minChars'));
       return;
     }
     if (selectedTypes.length === 0) {
-      alert('Please select at least one content type');
+      alert(t('contentFactory.selectContentType'));
       return;
     }
     setIsModalOpen(true);
+  };
+
+  // 콘텐츠 타입 이름 번역 헬퍼
+  const getContentTypeName = (typeId: string) => {
+    return t(`contentFactory.contentTypes.${typeId}`);
+  };
+
+  const getContentTypeCount = (typeId: string) => {
+    return t(`contentFactory.contentTypes.${typeId}Count`);
   };
 
   return (
@@ -136,8 +147,8 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                 <Factory className="w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Content Factory</h1>
-                <p className="text-white/80 text-sm">Select content types to generate</p>
+                <h1 className="text-2xl font-bold">{t('contentFactory.title')}</h1>
+                <p className="text-white/80 text-sm">{t('contentFactory.subtitle')}</p>
               </div>
             </div>
 
@@ -161,8 +172,8 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                       </div>
                     )}
                     <type.icon className={`w-6 h-6 mx-auto mb-1 ${isSelected ? type.textColor : ''}`} />
-                    <p className={`text-sm font-medium ${isSelected ? '' : 'text-white'}`}>{type.nameKo}</p>
-                    <p className={`text-xs ${isSelected ? 'text-gray-500' : 'text-white/70'}`}>{type.countKo}</p>
+                    <p className={`text-sm font-medium ${isSelected ? '' : 'text-white'}`}>{getContentTypeName(type.id)}</p>
+                    <p className={`text-xs ${isSelected ? 'text-gray-500' : 'text-white/70'}`}>{getContentTypeCount(type.id)}</p>
                     <p className={`text-xs font-bold mt-1 ${isSelected ? type.textColor : 'text-yellow-300'}`}>
                       {type.price}P (${(type.price / 100).toFixed(2)})
                     </p>
@@ -176,7 +187,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
               <div className="mt-4 p-3 bg-white/20 backdrop-blur rounded-xl flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">
-                    {selectedTypes.length} content type{selectedTypes.length > 1 ? 's' : ''} selected
+                    {selectedTypes.length} {t('contentFactory.selected')}
                   </p>
                 </div>
                 <div className="text-right">
@@ -192,13 +203,13 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-xl font-bold text-gray-900">Product/Service Information</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('contentFactory.productInfo')}</h2>
           </div>
 
           <textarea
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
-            placeholder="Enter your product/service information to generate content&#10;&#10;Example: I want to promote a dermatology clinic's acne treatment program. Target audience is women in their 20s-30s, and I want a trendy and trustworthy image for SNS marketing. Key features are non-invasive treatment, fast results, and reasonable pricing."
+            placeholder={t('contentFactory.productInfoPlaceholder')}
             className="w-full h-36 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
             maxLength={2000}
           />
@@ -215,7 +226,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
               }`}
             >
               <Zap className="w-5 h-5" />
-              Start ({totalPrice}P)
+              {t('contentFactory.start')} ({totalPrice}P)
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -223,15 +234,15 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
 
         {/* Process Explanation */}
         <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">🏭 5-Step Content Factory Process</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('contentFactory.processTitle')}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {[
-              { step: 1, name: 'Concept', desc: 'AI product analysis & strategy', emoji: '💡' },
-              { step: 2, name: 'Message', desc: 'Auto-generate main/sub copy', emoji: '💬' },
-              { step: 3, name: 'Script', desc: 'Reels, comic, card news scenarios', emoji: '📝' },
-              { step: 4, name: 'Copy', desc: 'Finalize text for each format', emoji: '✍️' },
-              { step: 5, name: 'Production', desc: 'Auto-generate all images', emoji: '🏭' },
+              { step: 1, name: t('contentFactory.step1Name'), desc: t('contentFactory.step1Desc'), emoji: '💡' },
+              { step: 2, name: t('contentFactory.step2Name'), desc: t('contentFactory.step2Desc'), emoji: '💬' },
+              { step: 3, name: t('contentFactory.step3Name'), desc: t('contentFactory.step3Desc'), emoji: '📝' },
+              { step: 4, name: t('contentFactory.step4Name'), desc: t('contentFactory.step4Desc'), emoji: '✍️' },
+              { step: 5, name: t('contentFactory.step5Name'), desc: t('contentFactory.step5Desc'), emoji: '🏭' },
             ].map((item, index) => (
               <div key={item.step} className="relative">
                 <div className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-shadow h-full">
@@ -256,7 +267,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
 
         {/* Pricing Summary */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Content Pricing</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('contentFactory.pricingTitle')}</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {CONTENT_TYPES.map((type) => (
@@ -270,8 +281,8 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mx-auto mb-3 text-white shadow-lg`}>
                   <type.icon className="w-6 h-6" />
                 </div>
-                <h4 className={`font-semibold ${type.textColor}`}>{type.nameKo}</h4>
-                <p className="text-sm text-gray-600 mt-1">{type.countKo}</p>
+                <h4 className={`font-semibold ${type.textColor}`}>{getContentTypeName(type.id)}</h4>
+                <p className="text-sm text-gray-600 mt-1">{getContentTypeCount(type.id)}</p>
                 <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
                 <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
               </div>
@@ -287,9 +298,9 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                   </div>
                   <div>
                     <p className="font-semibold text-indigo-900">
-                      {selectedTypes.length} content type{selectedTypes.length > 1 ? 's' : ''} selected
+                      {selectedTypes.length} {t('contentFactory.selected')}
                     </p>
-                    <p className="text-sm text-indigo-700">Estimated time: 2-5 minutes</p>
+                    <p className="text-sm text-indigo-700">{t('contentFactory.estimatedTime')}</p>
                   </div>
                 </div>
                 <div className="text-right">

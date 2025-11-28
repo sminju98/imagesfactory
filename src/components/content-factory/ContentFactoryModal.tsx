@@ -11,6 +11,7 @@ import {
   CopyData,
   ContentProject 
 } from '@/types/content.types';
+import { useTranslation } from '@/lib/i18n';
 
 // Step 컴포넌트들
 import StepConcept from './steps/StepConcept';
@@ -36,6 +37,7 @@ export default function ContentFactoryModal({
   selectedContentTypes = [],
   totalPrice = 0,
 }: ContentFactoryModalProps) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,8 +202,8 @@ export default function ContentFactoryModal({
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">콘텐츠 공장</h2>
-                <p className="text-xs text-white/80">하루 콘텐츠 자동 생성</p>
+                <h2 className="text-lg font-bold text-white">{t('contentFactory.modal.title')}</h2>
+                <p className="text-xs text-white/80">{t('contentFactory.modal.subtitle')}</p>
               </div>
             </div>
             <button
@@ -287,7 +289,7 @@ export default function ContentFactoryModal({
             }`}
           >
             <ChevronLeft className="w-4 h-4" />
-            이전 단계
+            {t('contentFactory.modal.prevStep')}
           </button>
 
           <div className="flex items-center gap-3">
@@ -304,11 +306,11 @@ export default function ContentFactoryModal({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    생성 중...
+                    {t('contentFactory.modal.generating')}
                   </>
                 ) : (
                   <>
-                    다음 단계
+                    {t('contentFactory.modal.nextStep')}
                     <ChevronRight className="w-4 h-4" />
                   </>
                 )}
@@ -324,7 +326,7 @@ export default function ContentFactoryModal({
                 }`}
               >
                 <Check className="w-4 h-4" />
-                완료
+                {t('contentFactory.modal.complete')}
               </button>
             )}
           </div>
