@@ -129,9 +129,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (totalImages > 1000) {
+    if (totalImages > 100) {
       return NextResponse.json(
-        { success: false, error: '한 번에 최대 1000장까지 생성 가능합니다.' },
+        { success: false, error: '한 번에 최대 100장까지 생성 가능합니다.' },
         { status: 400 }
       );
     }
