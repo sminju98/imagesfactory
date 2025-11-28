@@ -945,20 +945,21 @@ async function generateWithMidjourney(params: GenerateImageParams): Promise<Gene
     console.log(`⏳ [Midjourney] 생성 중... (state: ${processingState})`);
   }
 
-  // processing_result.slots에서 성공한 첫 번째 이미지 URL 추출
+  // processing_result.slots에서 성공한 모든 이미지 URL 추출
   const slots = genDetails?.processing_result?.slots || [];
-  const successfulSlot = slots.find((slot: any) => slot.status === 'success' && slot.url);
+  const successfulSlots = slots.filter((slot: any) => slot.status === 'success' && slot.url);
   
-  if (!successfulSlot) {
+  if (successfulSlots.length === 0) {
     console.error('❌ [Midjourney] 응답:', JSON.stringify(genDetails));
     throw new Error('Midjourney 이미지 생성 타임아웃 또는 실패');
   }
 
-  const imageUrl = successfulSlot.url;
-  console.log(`🖼️ [Midjourney] 이미지 URL: ${imageUrl}`);
+  const imageUrls = successfulSlots.map((slot: any) => slot.url);
+  console.log(`🖼️ [Midjourney] ${imageUrls.length}장 생성 완료`);
 
   return {
-    url: imageUrl,
+    url: imageUrls[0], // 대표 이미지
+    urls: imageUrls,   // 모든 이미지 (4장)
     modelId: 'midjourney',
   };
 }

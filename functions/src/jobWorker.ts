@@ -59,50 +59,60 @@ export const jobWorker = onDocumentCreated(
 
       console.log(`🎨 이미지 생성 완료: ${generatedImage.url.substring(0, 50)}...`);
 
-      // 2. 생성된 이미지 다운로드 (base64인 경우 직접 변환)
-      let imageBuffer: Buffer;
-      
-      if (generatedImage.isBase64) {
-        // base64 데이터를 직접 Buffer로 변환
-        console.log(`📦 [Base64] 직접 변환 중...`);
-        imageBuffer = Buffer.from(generatedImage.url, 'base64');
-      } else {
-        // URL에서 이미지 다운로드
-        const imageResponse = await fetch(generatedImage.url);
-        if (!imageResponse.ok) {
-          throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
-        }
-        imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-      }
-
-      // 3. Firebase Storage에 업로드
       const bucket = storage.bucket();
-      const filename = `generations/${taskId}/${jobId}_${generatedImage.modelId}.png`;
-      const file = bucket.file(filename);
+      const uploadedUrls: string[] = [];
 
-      await file.save(Buffer.from(imageBuffer), {
-        contentType: 'image/png',
-        metadata: {
-          cacheControl: 'public, max-age=2592000',
-          metadata: { taskId, jobId, modelId: generatedImage.modelId },
-        },
-      });
+      // Midjourney는 여러 이미지를 반환 (urls 배열)
+      const imagesToProcess = generatedImage.urls || [generatedImage.url];
+      console.log(`📦 ${imagesToProcess.length}장 이미지 처리 중...`);
 
-      await file.makePublic();
-      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+      for (let i = 0; i < imagesToProcess.length; i++) {
+        const imgUrl = imagesToProcess[i];
+        let imageBuffer: Buffer;
 
-      console.log(`☁️ Storage 업로드 완료: ${imageUrl}`);
+        if (generatedImage.isBase64) {
+          // base64 데이터를 직접 Buffer로 변환
+          console.log(`📦 [Base64] 직접 변환 중...`);
+          imageBuffer = Buffer.from(imgUrl, 'base64');
+        } else {
+          // URL에서 이미지 다운로드
+          const imageResponse = await fetch(imgUrl);
+          if (!imageResponse.ok) {
+            throw new Error(`이미지 다운로드 실패: ${imageResponse.statusText}`);
+          }
+          imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+        }
+
+        // Firebase Storage에 업로드
+        const suffix = imagesToProcess.length > 1 ? `_${i + 1}` : '';
+        const filename = `generations/${taskId}/${jobId}${suffix}_${generatedImage.modelId}.png`;
+        const file = bucket.file(filename);
+
+        await file.save(Buffer.from(imageBuffer), {
+          contentType: 'image/png',
+          metadata: {
+            cacheControl: 'public, max-age=2592000',
+            metadata: { taskId, jobId, modelId: generatedImage.modelId },
+          },
+        });
+
+        await file.makePublic();
+        const uploadedUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+        uploadedUrls.push(uploadedUrl);
+        console.log(`☁️ Storage 업로드 완료 (${i + 1}/${imagesToProcess.length}): ${uploadedUrl}`);
+      }
 
       // 4. Job 상태 업데이트: completed
       await snapshot.ref.update({
         status: 'completed',
-        imageUrl,
-        thumbnailUrl: imageUrl,
+        imageUrl: uploadedUrls[0], // 대표 이미지
+        imageUrls: uploadedUrls,   // 모든 이미지 (Midjourney 4장)
+        thumbnailUrl: uploadedUrls[0],
         finishedAt: fieldValue.serverTimestamp(),
         updatedAt: fieldValue.serverTimestamp(),
       });
 
-      console.log(`✅ Job ${jobId} 완료`);
+      console.log(`✅ Job ${jobId} 완료 (${uploadedUrls.length}장)`);
 
     } catch (error) {
       console.error(`❌ Job ${jobId} 실패:`, error);

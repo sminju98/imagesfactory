@@ -30,7 +30,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'midjourney',
     name: 'Midjourney v6.1',
-    description: '🎨 창의적 아트워크 최강 · 4장 단위 생성 (4장=600P) · API: Maginary',
+    description: '창의적 아트워크 최강 · 4장 단위 생성 (4장=600P) · API: Maginary',
     pointsPerImage: 150,
     badge: 'BEST',
     color: 'bg-indigo-100 border-indigo-300',
@@ -43,7 +43,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'gpt-image',
     name: 'GPT-Image-1 (DALL·E 4)',
-    description: '🧠 OpenAI 최신 · 멀티모달 네이티브 · API: gpt-image-1',
+    description: 'OpenAI 최신 · 멀티모달 네이티브 · API: gpt-image-1',
     pointsPerImage: 100,
     badge: 'NEW',
     color: 'bg-violet-50 border-violet-200',
@@ -55,19 +55,19 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'gemini',
     name: '🍌 Nano Banana Pro',
-    description: '🍌 Gemini 3 Pro Image · 고해상도 1K/2K/4K · API: gemini-3-pro-image-preview',
+    description: 'Gemini 3 Pro Image · 고해상도 1K/2K/4K · API: gemini-3-pro-image-preview',
     pointsPerImage: 80,
     badge: 'Google',
     color: 'bg-yellow-50 border-yellow-300',
     company: 'Google DeepMind',
-    logo: '🍌',
+    logo: '',
     maxCount: 15,
   },
   // ===== 🌟 4. Grok-2 (xAI) =====
   {
     id: 'grok',
     name: 'Grok-2 Image',
-    description: '🌟 xAI 이미지 생성 · 밈/유머 강점 · API: grok-2-image',
+    description: 'xAI 이미지 생성 · 밈/유머 강점 · API: grok-2-image',
     pointsPerImage: 60,
     badge: 'xAI',
     color: 'bg-pink-50 border-pink-200',
@@ -79,7 +79,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'leonardo',
     name: 'Leonardo Phoenix',
-    description: '🎮 게임/캐릭터 특화 · Alchemy 엔진 · API: 6b645e3a-d64f-4341',
+    description: '게임/캐릭터 특화 · Alchemy 엔진 · API: 6b645e3a-d64f-4341',
     pointsPerImage: 50,
     badge: '게임아트',
     color: 'bg-orange-50 border-orange-200',
@@ -91,7 +91,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'sdxl',
     name: 'SD 3.5 Large',
-    description: '🎯 MMDiT 최신 아키텍처 · 타이포그래피 향상 · API: stable-diffusion-3.5-large',
+    description: 'MMDiT 최신 아키텍처 · 타이포그래피 향상 · API: stable-diffusion-3.5-large',
     pointsPerImage: 40,
     badge: '최신',
     color: 'bg-blue-50 border-blue-200',
@@ -103,7 +103,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'hunyuan',
     name: 'Hunyuan Image 3.0',
-    description: '🐉 Tencent AI · 아시아 인물 특화 · API: tencent/hunyuan-image-3',
+    description: 'Tencent AI · 아시아 인물 특화 · API: tencent/hunyuan-image-3',
     pointsPerImage: 30,
     badge: 'Tencent',
     color: 'bg-blue-100 border-blue-300',
@@ -115,7 +115,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'flux',
     name: 'Flux 1.1 Pro',
-    description: '⚡ 원조 Black Forest Labs · 품질/프롬프트 최고 · API: flux-1.1-pro',
+    description: '원조 Black Forest Labs · 품질/프롬프트 최고 · API: flux-1.1-pro',
     pointsPerImage: 30,
     badge: '공식',
     color: 'bg-green-50 border-green-200',
@@ -126,7 +126,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'ideogram',
     name: 'Ideogram V3 Turbo',
-    description: '✍️ 텍스트 렌더링 최강 · 포스터/로고 · API: V_3_TURBO',
+    description: '텍스트 렌더링 최강 · 포스터/로고 · API: V_3_TURBO',
     pointsPerImage: 60,
     badge: '텍스트특화',
     color: 'bg-rose-50 border-rose-200',
@@ -137,7 +137,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'recraft',
     name: 'Recraft V3',
-    description: '🖌️ 벡터/일러스트 특화 · 스타일 일관성 · API: recraft-ai/recraft-v3',
+    description: '벡터/일러스트 특화 · 스타일 일관성 · API: recraft-ai/recraft-v3',
     pointsPerImage: 40,
     badge: '디자인',
     color: 'bg-amber-50 border-amber-200',
@@ -148,7 +148,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'seedream',
     name: 'Seedream 4.0',
-    description: '🌱 4K 고해상도 · 포스터/배너 특화 · API: segmind/seedream-4',
+    description: '4K 고해상도 · 포스터/배너 특화 · API: segmind/seedream-4',
     pointsPerImage: 50,
     badge: '4K',
     color: 'bg-green-100 border-green-300',
@@ -159,7 +159,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'pixart',
     name: 'PixArt-Σ (Sigma)',
-    description: '⚡ 1-2초 생성 · Transformer 기반 · API: cjwbw/pixart-sigma',
+    description: '1-2초 생성 · Transformer 기반 · API: cjwbw/pixart-sigma',
     pointsPerImage: 10,
     badge: '최저가',
     color: 'bg-emerald-50 border-emerald-200',
@@ -170,7 +170,7 @@ const AI_MODELS: AIModel[] = [
   {
     id: 'realistic-vision',
     name: 'Realistic Vision v6.0',
-    description: '📸 인물/피부 질감 최고 · SD1.5 기반 · API: adirik/realistic-vision-v6.0',
+    description: '인물/피부 질감 최고 · SD1.5 기반 · API: adirik/realistic-vision-v6.0',
     pointsPerImage: 20,
     badge: '인물특화',
     color: 'bg-cyan-50 border-cyan-200',
