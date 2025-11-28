@@ -248,26 +248,42 @@ export default function GenerationPage() {
               </p>
 
               {/* 실패한 모델 및 환불 정보 */}
-              {failedJobs.length > 0 && (
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
-                  <div className="flex items-center gap-2 mb-3">
-                    <AlertTriangle className="w-5 h-5 text-orange-500" />
-                    <span className="font-semibold text-orange-800">실패한 모델 ({failedJobs.length}개)</span>
+              {failedJobs.length > 0 && (() => {
+                // 모델별로 그룹화
+                const groupedFailures = failedJobs.reduce((acc, job) => {
+                  if (!acc[job.modelId]) {
+                    acc[job.modelId] = { count: 0, totalPoints: 0 };
+                  }
+                  acc[job.modelId].count += 1;
+                  acc[job.modelId].totalPoints += job.pointsCost;
+                  return acc;
+                }, {} as Record<string, { count: number; totalPoints: number }>);
+                
+                const uniqueModels = Object.keys(groupedFailures);
+                
+                return (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-5 h-5 text-orange-500" />
+                      <span className="font-semibold text-orange-800">
+                        실패한 모델 ({uniqueModels.length}개 모델, {failedJobs.length}장)
+                      </span>
+                    </div>
+                    <ul className="text-sm text-orange-700 space-y-1 mb-3">
+                      {uniqueModels.map((modelId) => (
+                        <li key={modelId} className="flex justify-between">
+                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count}장)</span>
+                          <span className="text-orange-600">-{groupedFailures[modelId].totalPoints}P</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t border-orange-200 pt-2 flex justify-between items-center">
+                      <span className="font-medium text-orange-800">💰 자동 환불</span>
+                      <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                    </div>
                   </div>
-                  <ul className="text-sm text-orange-700 space-y-1 mb-3">
-                    {failedJobs.map((job, idx) => (
-                      <li key={idx} className="flex justify-between">
-                        <span>• {MODEL_NAMES[job.modelId] || job.modelId}</span>
-                        <span className="text-orange-600">-{job.pointsCost}P</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="border-t border-orange-200 pt-2 flex justify-between items-center">
-                    <span className="font-medium text-orange-800">💰 자동 환불</span>
-                    <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
               
               <div className="flex justify-center space-x-4 flex-wrap gap-3">
                 {generation.zipUrl && (
@@ -306,26 +322,42 @@ export default function GenerationPage() {
               </p>
 
               {/* 실패한 모델 및 환불 정보 */}
-              {failedJobs.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
-                  <div className="flex items-center gap-2 mb-3">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold text-red-800">실패한 모델 ({failedJobs.length}개)</span>
+              {failedJobs.length > 0 && (() => {
+                // 모델별로 그룹화
+                const groupedFailures = failedJobs.reduce((acc, job) => {
+                  if (!acc[job.modelId]) {
+                    acc[job.modelId] = { count: 0, totalPoints: 0 };
+                  }
+                  acc[job.modelId].count += 1;
+                  acc[job.modelId].totalPoints += job.pointsCost;
+                  return acc;
+                }, {} as Record<string, { count: number; totalPoints: number }>);
+                
+                const uniqueModels = Object.keys(groupedFailures);
+                
+                return (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                      <span className="font-semibold text-red-800">
+                        실패한 모델 ({uniqueModels.length}개 모델, {failedJobs.length}장)
+                      </span>
+                    </div>
+                    <ul className="text-sm text-red-700 space-y-1 mb-3">
+                      {uniqueModels.map((modelId) => (
+                        <li key={modelId} className="flex justify-between">
+                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count}장)</span>
+                          <span className="text-red-600">-{groupedFailures[modelId].totalPoints}P</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t border-red-200 pt-2 flex justify-between items-center">
+                      <span className="font-medium text-red-800">💰 자동 환불</span>
+                      <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                    </div>
                   </div>
-                  <ul className="text-sm text-red-700 space-y-1 mb-3">
-                    {failedJobs.map((job, idx) => (
-                      <li key={idx} className="flex justify-between">
-                        <span>• {MODEL_NAMES[job.modelId] || job.modelId}</span>
-                        <span className="text-red-600">-{job.pointsCost}P</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="border-t border-red-200 pt-2 flex justify-between items-center">
-                    <span className="font-medium text-red-800">💰 자동 환불</span>
-                    <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {refundedPoints === 0 && (
                 <p className="text-sm text-gray-600 mb-6">

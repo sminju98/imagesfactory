@@ -200,11 +200,11 @@ export const AI_MODELS: AIModel[] = [
   {
     id: 'midjourney',
     name: 'Midjourney v6.1',
-    description: '창의적 아트워크 최강',
-    pointsPerImage: 100,
+    description: '창의적 아트워크 최강 (4장 단위)',
+    pointsPerImage: 150,
     category: 'premium',
     supportsReference: false,
-    maxImages: 10,
+    maxImages: 40,
   },
 ];
 
