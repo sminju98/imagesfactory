@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useTranslation } from '@/lib/i18n';
 import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface GenerationData {
@@ -69,6 +70,7 @@ function extractModelFromUrl(url: string): string {
 export default function GenerationPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useTranslation();
   const generationId = params.id as string;
   const [generation, setGeneration] = useState<GenerationData | null>(null);
   const [failedJobs, setFailedJobs] = useState<FailedJob[]>([]);
@@ -163,9 +165,9 @@ export default function GenerationPage() {
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">생성 작업을 찾을 수 없습니다</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('generation.notFound')}</h2>
           <Link href="/" className="text-indigo-600 hover:underline">
-            홈으로 돌아가기
+            {t('common.backToHome')}
           </Link>
         </div>
       </div>
@@ -178,21 +180,21 @@ export default function GenerationPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
               <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2 rounded-lg">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">ImageFactory</h1>
-                <p className="text-xs text-gray-500">by 엠제이스튜디오</p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('common.appName')}</h1>
+                <p className="text-xs text-gray-500">{t('common.tagline')}</p>
               </div>
-            </div>
+            </Link>
             <Link
               href="/"
               className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <Home className="w-5 h-5" />
-              <span>홈으로</span>
+              <span>{t('common.home')}</span>
             </Link>
           </div>
         </div>
@@ -205,16 +207,16 @@ export default function GenerationPage() {
           {generation.status === 'pending' && (
             <div className="text-center">
               <Clock className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-pulse" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">대기 중...</h2>
-              <p className="text-gray-600">곧 이미지 생성을 시작합니다</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('generation.pending')}</h2>
+              <p className="text-gray-600">{t('generation.pendingDesc')}</p>
             </div>
           )}
 
           {generation.status === 'processing' && (
             <div className="text-center">
               <Loader2 className="w-16 h-16 text-indigo-600 mx-auto mb-4 animate-spin" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">🎨 AI가 열심히 그리고 있어요!</h2>
-              <p className="text-gray-600 mb-6">생성이 완료되면 이메일로 전송됩니다</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">🎨 {t('generation.processing')}</h2>
+              <p className="text-gray-600 mb-6">{t('generation.processingDesc')}</p>
               
               {/* Progress Bar */}
               <div className="mb-6">
@@ -228,7 +230,7 @@ export default function GenerationPage() {
               </div>
 
               <p className="text-sm text-gray-500">
-                예상 남은 시간: 약 {Math.ceil((100 - generation.progress) / 100 * generation.totalImages * 30 / 60)}분
+                {t('generation.estimatedTime')}: ~{Math.ceil((100 - generation.progress) / 100 * generation.totalImages * 30 / 60)} {t('generation.minutes')}
               </p>
             </div>
           )}
@@ -236,15 +238,15 @@ export default function GenerationPage() {
           {generation.status === 'completed' && (
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">🎉 이미지 생성 완료!</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">🎉 {t('generation.completed')}</h2>
               <p className="text-gray-600 mb-2">
-                총 {generation.imageUrls?.length || 0}장의 이미지가 생성되었습니다
+                {t('generation.totalGenerated', { count: generation.imageUrls?.length || 0 })}
                 {failedJobs.length > 0 && (
-                  <span className="text-orange-600"> ({failedJobs.length}개 실패)</span>
+                  <span className="text-orange-600"> ({failedJobs.length} {t('generation.failed')})</span>
                 )}
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                {generation.email}으로 전송되었습니다
+                {t('generation.sentTo', { email: generation.email })}
               </p>
 
               {/* 실패한 모델 및 환불 정보 */}
@@ -266,20 +268,20 @@ export default function GenerationPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-5 h-5 text-orange-500" />
                       <span className="font-semibold text-orange-800">
-                        실패한 모델 ({uniqueModels.length}개 모델, {failedJobs.length}장)
+                        {t('generation.failedModels')} ({uniqueModels.length} {t('generation.models')}, {failedJobs.length} {t('home.images')})
                       </span>
                     </div>
                     <ul className="text-sm text-orange-700 space-y-1 mb-3">
                       {uniqueModels.map((modelId) => (
                         <li key={modelId} className="flex justify-between">
-                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count}장)</span>
+                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count} {t('home.images')})</span>
                           <span className="text-orange-600">-{groupedFailures[modelId].totalPoints}P</span>
                         </li>
                       ))}
                     </ul>
                     <div className="border-t border-orange-200 pt-2 flex justify-between items-center">
-                      <span className="font-medium text-orange-800">💰 자동 환불</span>
-                      <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                      <span className="font-medium text-orange-800">💰 {t('generation.autoRefund')}</span>
+                      <span className="font-bold text-green-600">+{refundedPoints} {t('common.points')}</span>
                     </div>
                   </div>
                 );
@@ -293,7 +295,7 @@ export default function GenerationPage() {
                     rel="noopener noreferrer"
                     className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors font-semibold shadow-lg"
                   >
-                    📦 ZIP 파일 다운로드
+                    📦 {t('generation.downloadZip')}
                   </a>
                 )}
                 <button
@@ -301,13 +303,13 @@ export default function GenerationPage() {
                   className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-lg"
                 >
                   <RefreshCw className="w-5 h-5" />
-                  <span>다시 생성하기</span>
+                  <span>{t('generation.regenerate')}</span>
                 </button>
                 <Link
                   href="/"
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
                 >
-                  새로운 이미지 생성
+                  {t('generation.newGeneration')}
                 </Link>
               </div>
             </div>
@@ -316,9 +318,9 @@ export default function GenerationPage() {
           {generation.status === 'failed' && (
             <div className="text-center">
               <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">생성 실패</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('generation.failedTitle')}</h2>
               <p className="text-red-600 mb-4">
-                {generation.failedReason || '알 수 없는 오류가 발생했습니다'}
+                {generation.failedReason || t('generation.unknownError')}
               </p>
 
               {/* 실패한 모델 및 환불 정보 */}
@@ -340,20 +342,20 @@ export default function GenerationPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-5 h-5 text-red-500" />
                       <span className="font-semibold text-red-800">
-                        실패한 모델 ({uniqueModels.length}개 모델, {failedJobs.length}장)
+                        {t('generation.failedModels')} ({uniqueModels.length} {t('generation.models')}, {failedJobs.length} {t('home.images')})
                       </span>
                     </div>
                     <ul className="text-sm text-red-700 space-y-1 mb-3">
                       {uniqueModels.map((modelId) => (
                         <li key={modelId} className="flex justify-between">
-                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count}장)</span>
+                          <span>• {MODEL_NAMES[modelId] || modelId} ({groupedFailures[modelId].count} {t('home.images')})</span>
                           <span className="text-red-600">-{groupedFailures[modelId].totalPoints}P</span>
                         </li>
                       ))}
                     </ul>
                     <div className="border-t border-red-200 pt-2 flex justify-between items-center">
-                      <span className="font-medium text-red-800">💰 자동 환불</span>
-                      <span className="font-bold text-green-600">+{refundedPoints} 포인트</span>
+                      <span className="font-medium text-red-800">💰 {t('generation.autoRefund')}</span>
+                      <span className="font-bold text-green-600">+{refundedPoints} {t('common.points')}</span>
                     </div>
                   </div>
                 );
@@ -361,7 +363,7 @@ export default function GenerationPage() {
 
               {refundedPoints === 0 && (
                 <p className="text-sm text-gray-600 mb-6">
-                  사용하신 포인트는 자동으로 환불되었습니다
+                  {t('generation.pointsRefunded')}
                 </p>
               )}
 
@@ -371,13 +373,13 @@ export default function GenerationPage() {
                   className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-lg"
                 >
                   <RefreshCw className="w-5 h-5" />
-                  <span>다시 생성하기</span>
+                  <span>{t('generation.regenerate')}</span>
                 </button>
                 <Link
                   href="/"
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
                 >
-                  새로운 이미지 생성
+                  {t('generation.newGeneration')}
                 </Link>
               </div>
             </div>
@@ -386,14 +388,14 @@ export default function GenerationPage() {
 
         {/* Prompt Info */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
-          <h3 className="font-bold text-gray-900 mb-3">📝 프롬프트</h3>
+          <h3 className="font-bold text-gray-900 mb-3">📝 {t('generation.prompt')}</h3>
           <p className="text-gray-700 whitespace-pre-wrap">{generation.prompt}</p>
         </div>
 
         {/* Generated Images - 완료 시에만 표시 */}
         {generation.status === 'completed' && generation.imageUrls && generation.imageUrls.length > 0 && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-            <h3 className="font-bold text-gray-900 mb-4">🎨 생성된 이미지 ({generation.imageUrls.length}장)</h3>
+            <h3 className="font-bold text-gray-900 mb-4">🎨 {t('generation.generatedImages')} ({generation.imageUrls.length} {t('home.images')})</h3>
             
             {/* 이미지 그리드 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -401,7 +403,7 @@ export default function GenerationPage() {
                 <div key={index} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow">
                   <img
                     src={url}
-                    alt={`생성된 이미지 ${index + 1}`}
+                    alt={`${t('generation.generatedImage')} ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
@@ -411,7 +413,7 @@ export default function GenerationPage() {
                       rel="noopener noreferrer"
                       className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:bg-gray-100"
                     >
-                      🔗 원본 보기
+                      🔗 {t('generation.viewOriginal')}
                     </a>
                   </div>
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
@@ -423,12 +425,12 @@ export default function GenerationPage() {
 
             {/* 다운로드 링크 목록 */}
             <div className="border-t border-gray-200 pt-6">
-              <h4 className="font-bold text-gray-900 mb-3">📥 다운로드 링크</h4>
+              <h4 className="font-bold text-gray-900 mb-3">📥 {t('generation.downloadLinks')}</h4>
               <div className="space-y-2 max-h-60 overflow-y-auto bg-gray-50 rounded-lg p-4">
                 {generation.imageUrls.map((url, index) => (
                   <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200 hover:border-indigo-300 transition-colors">
                     <span className="text-sm text-gray-600 truncate flex-1 mr-4">
-                      🖼️ 이미지 {index + 1} - {extractModelFromUrl(url) || '알 수 없음'}
+                      🖼️ {t('generation.image')} {index + 1} - {extractModelFromUrl(url) || t('generation.unknown')}
                     </span>
                     <a
                       href={url}
@@ -436,7 +438,7 @@ export default function GenerationPage() {
                       rel="noopener noreferrer"
                       className="text-indigo-600 hover:text-indigo-700 text-sm font-medium whitespace-nowrap"
                     >
-                      다운로드 →
+                      {t('generation.download')} →
                     </a>
                   </div>
                 ))}
@@ -447,13 +449,13 @@ export default function GenerationPage() {
 
         {/* Notice */}
         <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-6">
-          <h3 className="font-bold text-indigo-900 mb-2">💡 안내</h3>
+          <h3 className="font-bold text-indigo-900 mb-2">💡 {t('generation.notice')}</h3>
           <ul className="text-sm text-indigo-700 space-y-1">
-            <li>• 이 페이지를 닫아도 생성은 계속됩니다</li>
-            <li>• 완료되면 {generation.email}으로 자동 전송됩니다</li>
-            <li>• 마이페이지 {'>'} 히스토리에서 언제든지 확인 가능합니다</li>
+            <li>• {t('generation.noticeContinue')}</li>
+            <li>• {t('generation.noticeEmail', { email: generation.email })}</li>
+            <li>• {t('generation.noticeHistory')}</li>
             {generation.status === 'completed' && (
-              <li>• 이미지 링크는 30일간 유효합니다</li>
+              <li>• {t('generation.noticeValidity')}</li>
             )}
           </ul>
         </div>

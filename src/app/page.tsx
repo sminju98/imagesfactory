@@ -294,10 +294,10 @@ export default function Home() {
         
         if (Object.keys(newSelectedModels).length > 0) {
           setSelectedModels(newSelectedModels);
-          setGptRecommendation(data.data.explanation || '추천이 적용되었습니다.');
-          alert(`💡 ${data.data.explanation || 'AI가 추천한 모델이 선택되었습니다!'}`);
+          setGptRecommendation(data.data.explanation || t('home.recommendApplied'));
+          alert(`💡 ${data.data.explanation || t('home.aiRecommendedModels')}`);
         } else {
-          alert('추천된 모델 중 사용 가능한 모델이 없습니다.');
+          alert(t('home.noAvailableModels'));
         }
       } else {
         alert(t('home.modelRecommendFailed') + ': ' + (data.error || t('errors.generic')));
@@ -316,13 +316,13 @@ export default function Home() {
     if (file) {
       // 파일 크기 체크 (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('이미지 크기는 10MB 이하여야 합니다');
+        alert(t('home.imageSizeLimit'));
         return;
       }
 
       // 이미지 파일 타입 체크
       if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다');
+        alert(t('home.imageFileOnly'));
         return;
       }
 
@@ -413,12 +413,12 @@ export default function Home() {
     }
 
     if (totalImages === 0) {
-      alert('최소 1개의 모델을 선택해주세요');
+      alert(t('home.selectAtLeastOneModel'));
       return;
     }
 
     if (prompt.length < 10) {
-      alert('프롬프트를 10자 이상 입력해주세요');
+      alert(t('home.minPromptLength'));
       return;
     }
 
@@ -428,7 +428,7 @@ export default function Home() {
     }
 
     const confirmed = confirm(
-      `총 ${totalImages}장의 이미지를 ${totalPoints.toLocaleString()} 포인트로 생성하시겠습니까?`
+      t('home.confirmGeneration', { images: totalImages, points: totalPoints.toLocaleString() })
     );
 
     if (!confirmed) return;
@@ -453,8 +453,8 @@ export default function Home() {
           console.log('✅ 참고 이미지 업로드 완료:', referenceImageUrl);
         } catch (uploadError) {
           console.error('❌ 참고 이미지 업로드 실패:', uploadError);
-          alert('참고 이미지 업로드에 실패했습니다. 이미지 없이 생성하시겠습니까?');
-          if (!confirm('계속하시겠습니까?')) {
+          alert(t('home.uploadFailed'));
+          if (!confirm(t('home.continueWithoutImage'))) {
             setUploadingImage(false);
             return;
           }
@@ -472,7 +472,7 @@ export default function Home() {
       console.log('🔵 ID Token:', idToken ? '✅ 가져옴' : '❌ 없음');
 
       if (!idToken) {
-        alert('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
+        alert(t('home.authTokenError'));
         return;
       }
 
@@ -499,7 +499,7 @@ export default function Home() {
         // 생성 진행 화면으로 이동
         window.location.href = `/generation/${data.data.generationId}`;
       } else {
-        alert('생성 실패: ' + data.error);
+        alert(t('home.generationFailed') + ': ' + data.error);
       }
     } catch (error) {
       console.error('Generate error:', error);
@@ -554,23 +554,23 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
                 <Sparkles className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-xl font-bold text-gray-900">프롬프트 입력</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('home.promptInput')}</h2>
               </div>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="생성하고 싶은 이미지를 자세히 설명해주세요...&#10;&#10;예시: a beautiful sunset over the ocean, with vibrant orange and pink colors, peaceful atmosphere, photorealistic"
+                placeholder={t('home.promptPlaceholder')}
                 className="w-full h-40 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
                 maxLength={1000}
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-sm text-gray-500">
-                  {prompt.length} / 1,000자
+                  {prompt.length} / 1,000
                 </p>
                 {prompt.length >= 10 && (
                   <p className="text-sm text-green-600 flex items-center">
                     <CheckCircle className="w-4 h-4 mr-1" />
-                    좋은 프롬프트예요!
+                    {t('home.goodPrompt')}
                   </p>
                 )}
               </div>
@@ -608,7 +608,7 @@ export default function Home() {
               {correctionInfo && (
                 <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
                   <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded">
-                    ✨ {correctionInfo.purpose} 용도로 교정됨
+                    ✨ {correctionInfo.purpose} {t('home.correctedFor')}
                   </span>
                   <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
                     {correctionInfo.size}
@@ -620,7 +620,7 @@ export default function Home() {
               {gptRecommendation && (
                 <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <p className="text-sm text-amber-800">
-                    💡 <span className="font-medium">AI 추천:</span> {gptRecommendation}
+                    💡 <span className="font-medium">{t('home.aiRecommendation')}:</span> {gptRecommendation}
                   </p>
                 </div>
               )}
@@ -630,10 +630,10 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
                 <ImageIcon className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-xl font-bold text-gray-900">참고 이미지 (선택)</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('home.referenceImageOptional')}</h2>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                이미지를 업로드하면 유사한 스타일로 생성됩니다
+                {t('home.referenceImageDesc')}
               </p>
 
               {referenceImagePreview ? (
@@ -641,7 +641,7 @@ export default function Home() {
                   <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-indigo-200">
                     <img
                       src={referenceImagePreview}
-                      alt="참고 이미지"
+                      alt={t('home.referenceImage')}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -662,10 +662,10 @@ export default function Home() {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all">
                     <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-700 font-medium mb-1">
-                      클릭하여 이미지 업로드
+                      {t('home.clickToUpload')}
                     </p>
                     <p className="text-sm text-gray-500">
-                      PNG, JPG, WEBP (최대 10MB)
+                      {t('home.imageFormats')}
                     </p>
                   </div>
                   <input
@@ -682,7 +682,7 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
                 <Mail className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-xl font-bold text-gray-900">결과 받을 이메일</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('home.resultEmail')}</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <input
@@ -695,7 +695,7 @@ export default function Home() {
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                💡 생성 완료 시 이메일로 ZIP 파일을 보내드립니다
+                💡 {t('home.emailTip')}
               </p>
             </div>
 
@@ -703,10 +703,10 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center space-x-2 mb-4">
                 <ImageIcon className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-xl font-bold text-gray-900">AI 모델 선택 및 수량</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('home.modelSelectionTitle')}</h2>
               </div>
               <p className="text-sm text-gray-600 mb-6">
-                여러 모델을 동시에 선택하여 다양한 스타일의 이미지를 한 번에 생성하세요 (병렬 처리로 빠른 생성!)
+                {t('home.modelSelectionDesc')}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -750,7 +750,7 @@ export default function Home() {
                           <p className="text-xs text-gray-500 mb-1">by {model.company}</p>
                           <p className="text-sm text-gray-600">{model.description}</p>
                           <p className="text-sm font-semibold text-indigo-600 mt-1">
-                            {model.pointsPerImage}pt / 장
+                            {model.pointsPerImage}pt / {t('home.perImage')}
                           </p>
                         </div>
                       </div>
@@ -758,7 +758,7 @@ export default function Home() {
                       {/* Count Selector */}
                       {isSelected && (
                         <div className="flex items-center space-x-3 mt-4 pt-4 border-t border-gray-200">
-                          <label className="text-sm font-medium text-gray-700">수량:</label>
+                          <label className="text-sm font-medium text-gray-700">{t('home.quantity')}:</label>
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={(e) => {
@@ -788,10 +788,10 @@ export default function Home() {
                             >
                               +
                             </button>
-                            <span className="text-sm text-gray-600">장</span>
+                            <span className="text-sm text-gray-600">{t('home.images')}</span>
                           </div>
                           <div className="ml-auto text-right">
-                            <p className="text-sm text-gray-600">소계</p>
+                            <p className="text-sm text-gray-600">{t('home.subtotal')}</p>
                             <p className="font-bold text-indigo-600">
                               {(model.pointsPerImage * count).toLocaleString()}pt
                             </p>
@@ -812,7 +812,7 @@ export default function Home() {
               <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
                 <div className="flex items-center space-x-2 mb-4">
                   <Zap className="w-5 h-5" />
-                  <h2 className="text-xl font-bold">예상 비용</h2>
+                  <h2 className="text-xl font-bold">{t('home.estimatedCost')}</h2>
                 </div>
 
                 <div className="space-y-3 mb-6">
@@ -822,7 +822,7 @@ export default function Home() {
 
                     return (
                       <div key={modelId} className="flex justify-between text-sm">
-                        <span>{model.name}: {count}장</span>
+                        <span>{model.name}: {count} {t('home.images')}</span>
                         <span className="font-semibold">
                           {(model.pointsPerImage * count).toLocaleString()}pt
                         </span>
@@ -833,28 +833,28 @@ export default function Home() {
 
                 <div className="border-t border-white/30 pt-4 space-y-2">
                   <div className="flex justify-between text-lg">
-                    <span>총 이미지</span>
-                    <span className="font-bold">{totalImages}장</span>
+                    <span>{t('home.totalImages')}</span>
+                    <span className="font-bold">{totalImages} {t('home.images')}</span>
                   </div>
                   <div className="flex justify-between text-2xl font-bold">
-                    <span>총 비용</span>
+                    <span>{t('home.totalCost')}</span>
                     <span>{totalPoints.toLocaleString()}pt</span>
                   </div>
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-white/30">
                   <div className="flex justify-between text-sm mb-2">
-                    <span>현재 포인트</span>
+                    <span>{t('home.currentPoints')}</span>
                     <span className="font-semibold">{currentPoints.toLocaleString()}pt</span>
                   </div>
                   {isInsufficient ? (
                     <div className="bg-red-500 rounded-lg p-3 text-center">
-                      <p className="font-bold">포인트 부족</p>
-                      <p className="text-sm">{(totalPoints - currentPoints).toLocaleString()}pt 부족</p>
+                      <p className="font-bold">{t('home.insufficientPoints')}</p>
+                      <p className="text-sm">{(totalPoints - currentPoints).toLocaleString()}pt {t('home.pointsShort')}</p>
                     </div>
                   ) : (
                     <div className="bg-white/20 rounded-lg p-3 text-center">
-                      <p className="font-semibold">잔여 포인트</p>
+                      <p className="font-semibold">{t('home.remainingPoints')}</p>
                       <p className="text-lg font-bold">{(currentPoints - totalPoints).toLocaleString()}pt</p>
                     </div>
                   )}
@@ -867,7 +867,7 @@ export default function Home() {
                   onClick={() => window.location.href = '/points'}
                   className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold text-lg hover:bg-yellow-600 transition-all shadow-lg"
                 >
-                  포인트 충전하기
+                  {t('home.chargePoints')}
                 </button>
               ) : (
                 <button
@@ -880,25 +880,25 @@ export default function Home() {
                   }`}
                 >
                   {uploadingImage
-                    ? '이미지 업로드 중...'
+                    ? t('home.uploadingImage')
                     : !user
-                    ? t('common.loginRequired')
+                    ? t('home.loginRequired')
                     : totalImages === 0
-                    ? '모델을 선택해주세요'
+                    ? t('home.selectModel')
                     : prompt.length < 10
-                    ? '프롬프트를 입력해주세요'
+                    ? t('home.enterPrompt')
                     : `${t('home.generateButton')} (${totalPoints.toLocaleString()}pt)`}
                 </button>
               )}
 
               {/* Info */}
               <div className="bg-white rounded-xl p-4 border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-2">💡 TIP</h3>
+                <h3 className="font-bold text-gray-900 mb-2">💡 {t('home.tipTitle')}</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 여러 모델을 선택하면 다양한 스타일을 비교할 수 있어요</li>
+                  <li>• {t('home.tip1')}</li>
                   <li>• <span className="text-indigo-600 font-medium">{t('home.promptCorrection')}</span> {t('home.tipCorrection')}</li>
                   <li>• <span className="text-amber-600 font-medium">{t('home.modelRecommendation')}</span> {t('home.tipRecommend')}</li>
-                  <li>• 완료되면 이메일로 자동 전송됩니다</li>
+                  <li>• {t('home.tip4')}</li>
                 </ul>
               </div>
             </div>

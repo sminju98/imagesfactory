@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (prompt.length < 10 || prompt.length > 1000) {
       return NextResponse.json(
-        { success: false, error: '프롬프트는 10자 이상 1000자 이하여야 합니다' },
+        { success: false, error: 'PROMPT_LENGTH_ERROR', message: 'Prompt must be between 10-1000 characters' },
         { status: 400 }
       );
     }
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     // 포인트 확인
     if (currentPoints < totalPoints) {
       return NextResponse.json(
-        { success: false, error: `포인트가 부족합니다. (현재: ${currentPoints}pt, 필요: ${totalPoints}pt)` },
+        { success: false, error: 'INSUFFICIENT_POINTS', message: `Insufficient points (Current: ${currentPoints}pt, Required: ${totalPoints}pt)` },
         { status: 400 }
       );
     }

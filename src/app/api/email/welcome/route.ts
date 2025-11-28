@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, getWelcomeEmailHTML } from '@/lib/email';
+import { detectLanguage, getEmailTranslation, SupportedLanguage } from '@/lib/server-i18n';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, displayName, points } = await request.json();
+    const { email, displayName, points, language } = await request.json();
 
     if (!email || !displayName) {
       return NextResponse.json(
@@ -12,13 +13,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 언어 감지 (요청 본문 > Accept-Language 헤더 > 기본값 영어)
+    const acceptLanguage = request.headers.get('accept-language');
+    const detectedLang: SupportedLanguage = language || detectLanguage(acceptLanguage);
+    const t = getEmailTranslation(detectedLang);
+
     // 환영 이메일 발송
     await sendEmail({
       to: email,
-      subject: '🎉 imagesfactory에 오신 것을 환영합니다!',
+      subject: t.welcome.subject,
       html: getWelcomeEmailHTML({
         displayName,
         points: points || 1000,
+        language: detectedLang,
       }),
     });
 

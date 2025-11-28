@@ -6,18 +6,20 @@ import Link from 'next/link';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { useTranslation } from '@/lib/i18n';
-import { Sparkles, Mail, Lock, AlertCircle } from 'lucide-react';
+import { useTranslation, SUPPORTED_LANGUAGES, LanguageCode } from '@/lib/i18n';
+import { Sparkles, Mail, Lock, AlertCircle, Globe, ChevronDown } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -97,7 +99,38 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 relative">
+      {/* 언어 선택 - 우상단 고정 */}
+      <div className="absolute top-4 right-4">
+        <div className="relative">
+          <button
+            onClick={() => setLangMenuOpen(!langMenuOpen)}
+            className="flex items-center space-x-1 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm shadow-sm"
+          >
+            <Globe className="w-4 h-4 text-gray-500" />
+            <span>{currentLang?.flag} {currentLang?.name}</span>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </button>
+          {langMenuOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    setLanguage(lang.code as LanguageCode);
+                    setLangMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''}`}
+                >
+                  <span>{lang.flag}</span>
+                  <span>{lang.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
