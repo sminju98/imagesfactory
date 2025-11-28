@@ -426,7 +426,7 @@ export default function MyPage() {
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
                   <h2 className="text-2xl font-bold mb-2">현재 포인트</h2>
                   <p className="text-5xl font-bold mb-4">{user.points.toLocaleString()}</p>
-                  <p className="text-indigo-100 mb-6">약 {Math.floor(user.points / 100)}장의 이미지 생성 가능</p>
+                  <p className="text-indigo-100 mb-6">약 {Math.floor(user.points / 5).toLocaleString()}장의 이미지 생성 가능</p>
                   <Link
                     href="/points"
                     className="inline-block px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-colors shadow-lg"
@@ -446,7 +446,7 @@ export default function MyPage() {
                       {pointStats.totalUsed.toLocaleString()}pt
                     </p>
                     <p className="text-sm text-gray-600">
-                      약 {Math.floor(pointStats.totalUsed / 30)}장 생성
+                      약 {Math.floor(pointStats.totalUsed / 5).toLocaleString()}장 생성
                     </p>
                   </div>
 
@@ -459,7 +459,7 @@ export default function MyPage() {
                       {pointStats.totalPurchased.toLocaleString()}pt
                     </p>
                     <p className="text-sm text-gray-600">
-                      약 {Math.floor(pointStats.totalPurchased / 30)}장 생성 가능
+                      약 {Math.floor(pointStats.totalPurchased / 5).toLocaleString()}장 생성 가능
                     </p>
                   </div>
                 </div>
@@ -664,7 +664,7 @@ export default function MyPage() {
                         <span className="text-sm text-gray-600 ml-1">pt</span>
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        약 {Math.floor(pointStats.totalUsed / 100)}장 생성
+                        약 {Math.floor(pointStats.totalUsed / 5).toLocaleString()}장 생성
                       </p>
                     </div>
                     <div>
@@ -674,7 +674,7 @@ export default function MyPage() {
                         <span className="text-sm text-gray-600 ml-1">pt</span>
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {(pointStats.totalPurchased / 1).toLocaleString()}원 충전
+                        ${(pointStats.totalPurchased / 100).toLocaleString()} charged
                       </p>
                     </div>
                   </div>

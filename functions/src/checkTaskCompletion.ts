@@ -7,7 +7,7 @@ import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { db, fieldValue } from './utils/firestore';
 import { createZipAndUpload } from './utils/zip';
 import { sendEmail, getGenerationCompleteEmailHTML, getGenerationFailedEmailHTML } from './utils/email';
-import { Task, Job, User, GalleryImage } from './types';
+import { Task, Job, User } from './types';
 
 /**
  * Job 업데이트 시 Task 완료 여부 확인 (v2)
@@ -342,7 +342,8 @@ async function addImagesToGallery(taskId: string, task: Task): Promise<void> {
       .collection('images')
       .doc();
 
-    const galleryImage: GalleryImage = {
+    // galleryImage 객체 생성 (undefined 필드 제외)
+    const galleryImage: Record<string, any> = {
       userId: task.userId,
       taskId,
       jobId: doc.id,
@@ -358,9 +359,13 @@ async function addImagesToGallery(taskId: string, task: Task): Promise<void> {
       commentsCount: 0,
       isPublic: true,
       evolutionGeneration: 0,
-      parentImageId: task.evolutionSourceId || null, // undefined를 null로 변환
       createdAt: fieldValue.serverTimestamp(),
     };
+    
+    // parentImageId가 있을 때만 추가
+    if (task.evolutionSourceId) {
+      galleryImage.parentImageId = task.evolutionSourceId;
+    }
 
     batch.set(galleryRef, galleryImage);
   });
