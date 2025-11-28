@@ -77,17 +77,38 @@ export const createTask = onCall(
         completedCount: 0,
       });
 
-      for (let i = 0; i < numCount; i++) {
-        jobsToCreate.push({
-          taskId: '',
-          userId,
-          prompt,
-          modelId,
-          status: 'pending',
-          retries: 0,
-          pointsCost: pointsPerImage,
-          referenceImageUrl: referenceImageUrl || null,
-        });
+      // Midjourney는 한 번 호출에 4장 생성되므로 job 수를 4로 나눔
+      if (modelId === 'midjourney') {
+        const numJobs = Math.ceil(numCount / 4);
+        for (let i = 0; i < numJobs; i++) {
+          // 마지막 job은 남은 이미지 수만큼
+          const imagesInThisJob = Math.min(4, numCount - (i * 4));
+          jobsToCreate.push({
+            taskId: '',
+            userId,
+            prompt,
+            modelId,
+            status: 'pending',
+            retries: 0,
+            pointsCost: pointsPerImage * imagesInThisJob, // 4장분 포인트
+            referenceImageUrl: referenceImageUrl || null,
+            imageCount: imagesInThisJob, // Midjourney job당 생성할 이미지 수
+          });
+        }
+      } else {
+        // 다른 모델들은 1장씩 생성
+        for (let i = 0; i < numCount; i++) {
+          jobsToCreate.push({
+            taskId: '',
+            userId,
+            prompt,
+            modelId,
+            status: 'pending',
+            retries: 0,
+            pointsCost: pointsPerImage,
+            referenceImageUrl: referenceImageUrl || null,
+          });
+        }
       }
     }
 

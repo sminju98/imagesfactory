@@ -80,7 +80,10 @@ export const checkTaskCompletion = onDocumentUpdated(
       switch (job.status) {
         case 'completed':
           completedJobs++;
-          if (job.imageUrl) {
+          // Midjourney는 imageUrls 배열 사용 (4장)
+          if (job.imageUrls && job.imageUrls.length > 0) {
+            imageUrls.push(...job.imageUrls);
+          } else if (job.imageUrl) {
             imageUrls.push(job.imageUrl);
           }
           break;

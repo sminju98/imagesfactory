@@ -59,10 +59,12 @@ export interface Job {
   status: JobStatus;
   retries: number;
   imageUrl?: string;
+  imageUrls?: string[]; // Midjourney처럼 여러 이미지 생성 시
   thumbnailUrl?: string;
   errorMessage?: string;
   pointsCost: number;
   referenceImageUrl?: string | null;
+  imageCount?: number; // Midjourney: 한 job에 몇 장 생성할지 (기본 4)
   // 대기열 관련 필드
   queuedAt?: admin.firestore.FieldValue;
   queueReason?: string;
@@ -144,6 +146,7 @@ export interface GenerateImageParams {
  */
 export interface GeneratedImage {
   url: string;
+  urls?: string[];     // Midjourney처럼 여러 이미지 반환 시
   modelId: string;
   isBase64?: boolean;  // base64 데이터인 경우 true
 }
