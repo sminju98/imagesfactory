@@ -182,9 +182,13 @@ export const checkTaskCompletion = onDocumentUpdated(
       updatedAt: fieldValue.serverTimestamp(),
     });
 
-    // 갤러리에 이미지 추가
+    // 갤러리에 이미지 추가 (에러가 발생해도 ZIP/이메일은 진행)
     if (completedJobs > 0) {
-      await addImagesToGallery(taskId, task);
+      try {
+        await addImagesToGallery(taskId, task);
+      } catch (galleryError) {
+        console.error('갤러리 추가 실패 (무시하고 계속):', galleryError);
+      }
     }
 
     // ZIP 생성 및 이메일 발송
@@ -237,7 +241,6 @@ async function processCompletedTask(
         failedImages: failedJobs,
         prompt: task.prompt,
         resultPageUrl,
-        imageUrls,
         zipUrl,
       }),
     });
