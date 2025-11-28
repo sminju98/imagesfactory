@@ -154,10 +154,8 @@ async function translatePromptToEnglish(prompt: string): Promise<string> {
 async function generateWithDALLE3(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024, referenceImageUrl } = params;
 
-  // 민감한 키워드 우회 처리
-  const sanitizedPrompt = sanitizePrompt(prompt);
-  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
-  finalPrompt = sanitizePrompt(finalPrompt);
+  // 먼저 원본 프롬프트로 번역만 수행
+  let finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
 
   if (referenceImageUrl) {
     finalPrompt = `${finalPrompt}, in a similar style and composition to the reference image, maintaining consistent aesthetic`;
@@ -166,22 +164,40 @@ async function generateWithDALLE3(params: GenerateImageParams): Promise<Generate
 
   const size = width === height ? '1024x1024' : width > height ? '1792x1024' : '1024x1792';
 
-  const response = await axios.post(
-    'https://api.openai.com/v1/images/generations',
-    {
-      model: 'dall-e-3',
-      prompt: finalPrompt,
-      n: 1,
-      size,
-      quality: 'standard',
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+  // API 호출 함수
+  const callAPI = async (promptToUse: string) => {
+    return axios.post(
+      'https://api.openai.com/v1/images/generations',
+      {
+        model: 'dall-e-3',
+        prompt: promptToUse,
+        n: 1,
+        size,
+        quality: 'standard',
       },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  };
+
+  let response;
+  try {
+    // 1차 시도: 원본 프롬프트로 시도
+    response = await callAPI(finalPrompt);
+  } catch (error: any) {
+    // 정책 위반 오류(400, 403)인 경우 민감단어 우회 후 재시도
+    if (error.response?.status === 400 || error.response?.status === 403) {
+      console.log('⚠️ [DALL-E 3] 정책 위반 감지, 민감단어 우회 후 재시도...');
+      const sanitizedPrompt = sanitizePrompt(finalPrompt);
+      response = await callAPI(sanitizedPrompt);
+    } else {
+      throw error;
     }
-  );
+  }
 
   if (!response.data?.data?.[0]?.url) {
     throw new Error('DALL-E 3 API 응답 오류');
@@ -632,15 +648,13 @@ async function generateWithLeonardo(params: GenerateImageParams): Promise<Genera
 /**
  * GPT-Image-1 이미지 생성 (OpenAI 최신 이미지 모델)
  * 참고: https://platform.openai.com/docs/api-reference/images/create
+ * 실패 시 민감단어 우회 처리 후 재시도
  */
 async function generateWithGPTImage(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024, referenceImageUrl } = params;
 
-  // 민감한 키워드 우회 처리
-  const sanitizedPrompt = sanitizePrompt(prompt);
-  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
-  // 번역 후에도 한번 더 우회 처리
-  finalPrompt = sanitizePrompt(finalPrompt);
+  // 먼저 원본 프롬프트로 번역만 수행
+  let finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
 
   if (referenceImageUrl) {
     finalPrompt = `${finalPrompt}, in a similar style and composition to the reference image, maintaining consistent aesthetic`;
@@ -652,22 +666,40 @@ async function generateWithGPTImage(params: GenerateImageParams): Promise<Genera
 
   console.log(`🎨 [GPT-Image-1] 이미지 생성 시작 (size: ${size})`);
 
-  const response = await axios.post(
-    'https://api.openai.com/v1/images/generations',
-    {
-      model: 'gpt-image-1',
-      prompt: finalPrompt,
-      n: 1,
-      size,
-      quality: 'high',
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+  // API 호출 함수
+  const callAPI = async (promptToUse: string) => {
+    return axios.post(
+      'https://api.openai.com/v1/images/generations',
+      {
+        model: 'gpt-image-1',
+        prompt: promptToUse,
+        n: 1,
+        size,
+        quality: 'high',
       },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  };
+
+  let response;
+  try {
+    // 1차 시도: 원본 프롬프트로 시도
+    response = await callAPI(finalPrompt);
+  } catch (error: any) {
+    // 정책 위반 오류(400, 403)인 경우 민감단어 우회 후 재시도
+    if (error.response?.status === 400 || error.response?.status === 403) {
+      console.log('⚠️ [GPT-Image-1] 정책 위반 감지, 민감단어 우회 후 재시도...');
+      const sanitizedPrompt = sanitizePrompt(finalPrompt);
+      response = await callAPI(sanitizedPrompt);
+    } else {
+      throw error;
     }
-  );
+  }
 
   // gpt-image-1은 b64_json 또는 url 반환
   const imageData = response.data?.data?.[0];
@@ -715,38 +747,53 @@ async function generateWithGPTImage(params: GenerateImageParams): Promise<Genera
 async function generateWithGemini(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024 } = params;
 
-  // 민감한 키워드 우회 처리
-  const sanitizedPrompt = sanitizePrompt(prompt);
-  let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
-  finalPrompt = sanitizePrompt(finalPrompt);
+  // 먼저 원본 프롬프트로 번역만 수행
+  let finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
 
   // 가로세로 비율 계산
   const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
 
   console.log(`💎 [Gemini Imagen 4.0] 이미지 생성 시작 (aspectRatio: ${aspectRatio})`);
 
-  // Gemini Imagen API (x-goog-api-key 헤더 사용)
-  const response = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict',
-    {
-      instances: [
-        {
-          prompt: finalPrompt,
+  // API 호출 함수
+  const callAPI = async (promptToUse: string) => {
+    return axios.post(
+      'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict',
+      {
+        instances: [
+          {
+            prompt: promptToUse,
+          },
+        ],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio,
+          personGeneration: 'allow_adult',
         },
-      ],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio,
-        personGeneration: 'allow_adult',
       },
-    },
-    {
-      headers: {
-        'x-goog-api-key': process.env.GOOGLE_AI_API_KEY,
-        'Content-Type': 'application/json',
-      },
+      {
+        headers: {
+          'x-goog-api-key': process.env.GOOGLE_AI_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  };
+
+  let response;
+  try {
+    // 1차 시도: 원본 프롬프트로 시도
+    response = await callAPI(finalPrompt);
+  } catch (error: any) {
+    // 정책 위반 오류(400, 403)인 경우 민감단어 우회 후 재시도
+    if (error.response?.status === 400 || error.response?.status === 403) {
+      console.log('⚠️ [Gemini] 정책 위반 감지, 민감단어 우회 후 재시도...');
+      const sanitizedPrompt = sanitizePrompt(finalPrompt);
+      response = await callAPI(sanitizedPrompt);
+    } else {
+      throw error;
     }
-  );
+  }
 
   if (!response.data?.predictions?.[0]?.bytesBase64Encoded) {
     console.error('❌ [Gemini] API 응답:', JSON.stringify(response.data));
