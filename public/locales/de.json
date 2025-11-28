@@ -9,7 +9,7 @@
     "points": "Punkte",
     "currentPoints": "Aktuelle Punkte",
     "chargePoints": "Punkte kaufen",
-    "loading": "Laden...",
+    "loading": "Wird geladen...",
     "error": "Ein Fehler ist aufgetreten",
     "save": "Speichern",
     "cancel": "Abbrechen",
@@ -29,10 +29,13 @@
     "support": "Support",
     "terms": "Nutzungsbedingungen",
     "privacy": "Datenschutzrichtlinie",
-    "refund": "Rückerstattungsrichtlinie",
+    "refundPolicy": "Erstattungsrichtlinie",
     "email": "E-Mail",
     "password": "Passwort",
-    "name": "Name"
+    "name": "Name",
+    "effectiveDate": "Gültigkeitsdatum",
+    "backToHome": "Zurück zur Startseite",
+    "viewTerms": "Nutzungsbedingungen anzeigen"
   },
   "header": {
     "imageGeneration": "Bildgenerierung",
@@ -42,36 +45,36 @@
   },
   "home": {
     "title": "KI-Bildgenerierung",
-    "subtitle": "Generieren Sie Dutzende von Bildern auf einmal mit mehreren KI-Modellen",
+    "subtitle": "Generieren Sie Dutzende von Bildern gleichzeitig mit mehreren KI-Modellen",
     "promptPlaceholder": "Beschreiben Sie das Bild, das Sie erstellen möchten...",
     "generateButton": "Bilder generieren",
-    "generating": "Generierung läuft...",
+    "generating": "Wird generiert...",
     "selectModels": "KI-Modelle auswählen",
     "totalCost": "Gesamtkosten",
     "totalImages": "Gesamtbilder",
     "images": "Bilder",
-    "promptCorrection": "Prompt-Verbesserung",
+    "promptCorrection": "Prompt-Korrektur",
     "modelRecommendation": "Modellempfehlung",
     "referenceImage": "Referenzbild",
     "uploadReference": "Referenzbild hochladen",
-    "insufficientPoints": "Nicht genügend Punkte",
+    "insufficientPoints": "Unzureichende Punkte",
     "loginRequired": "Anmeldung erforderlich",
-    "minPromptLength": "Bitte geben Sie mindestens 10 Zeichen ein",
+    "minPromptLength": "Der Prompt muss mindestens 10 Zeichen lang sein",
     "selectAtLeastOneModel": "Bitte wählen Sie mindestens ein Modell aus"
   },
   "models": {
     "perImage": "pro Bild",
     "max": "max",
     "description": {
-      "midjourney": "Beste für kreative Kunstwerke · 4 Bilder pro Anfrage",
-      "gpt-image": "Neueste von OpenAI · Native multimodal",
-      "gemini": "Neueste von Google · Ausgezeichnetes Prompt-Verständnis",
+      "midjourney": "Das Beste für kreative Kunstwerke · 4 Bilder pro Anfrage",
+      "gpt-image": "OpenAIs neuestes · Multimodal nativ",
+      "gemini": "Googles neuestes · Ausgezeichnetes Prompt-Verständnis",
       "grok": "xAI · Kreative Bildgenerierung",
       "leonardo": "Spezialisiert auf Spiele/Charaktere",
       "sdxl": "Neuestes Modell von Stability AI",
       "ideogram": "Spezialisiert auf Textrendering",
       "flux": "Black Forest Labs · Hohe Qualität",
-      "recraft": "Spezialisiert auf Vektor/Illustration",
+      "recraft": "Spezialisiert auf Vektoren/Illustrationen",
       "pixart": "Schnelle Generierung",
       "hunyuan": "Tencent AI · Realistische Bilder",
       "seedream": "Segmind · Traumhafter Stil"
@@ -81,17 +84,17 @@
     "title": "Bildgenerierungsergebnisse",
     "status": {
       "pending": "Ausstehend",
-      "processing": "Verarbeitung",
+      "processing": "Wird verarbeitet",
       "completed": "Abgeschlossen",
       "failed": "Fehlgeschlagen"
     },
     "progress": "Fortschritt",
     "download": "Herunterladen",
-    "downloadAll": "Alles herunterladen (ZIP)",
-    "regenerate": "Erneut generieren",
+    "downloadAll": "Alle herunterladen (ZIP)",
+    "regenerate": "Neu generieren",
     "viewDetails": "Details anzeigen",
     "failedModels": "Fehlgeschlagene Modelle",
-    "autoRefund": "Automatische Rückerstattung",
+    "autoRefund": "Automatische Erstattung",
     "refundedPoints": "Erstattete Punkte"
   },
   "mypage": {
@@ -99,14 +102,14 @@
     "dashboard": "Dashboard",
     "pointsTab": "Punkte",
     "historyTab": "Verlauf",
-    "paymentTab": "Zahlungsverlauf",
+    "paymentTab": "Zahlungen",
     "settingsTab": "Einstellungen",
-    "currentBalance": "Aktueller Kontostand",
+    "currentBalance": "Aktuelles Guthaben",
     "totalImages": "Gesamtbilder",
-    "totalGenerations": "Gesamtgenerierungen",
+    "totalGenerations": "Generierungen insgesamt",
     "quickActions": "Schnellaktionen",
     "newGeneration": "Neue Generierung",
-    "recentImages": "Aktuelle Bilder",
+    "recentImages": "Neueste Bilder",
     "viewAll": "Alle anzeigen",
     "noImages": "Noch keine Bilder generiert",
     "createFirst": "Erstellen Sie Ihr erstes Bild",
@@ -122,38 +125,38 @@
   },
   "points": {
     "title": "Punkte kaufen",
-    "info": "Punkte-Info",
+    "info": "Punktinformationen",
     "onePoint": "1 Punkt = 0,01 $ (1 Cent)",
-    "modelPrices": "Modellpreise: 1pt ~ 60pt pro Bild",
-    "validity": "Gültig für 5 Jahre ab Kauf",
+    "modelPrices": "Modellpreise: 1pt ~ 60pt/Bild",
+    "validity": "Gültigkeit: 5 Jahre ab Kauf",
     "nonRefundable": "Nicht erstattungsfähiger digitaler Inhalt",
-    "packages": "Punktepakete",
+    "packages": "Punktpakete",
     "customAmount": "Benutzerdefinierter Betrag",
     "enterAmount": "Betrag eingeben (USD)",
     "youllGet": "Sie erhalten",
-    "minMax": "1 $ = 100 Punkte (Min 1 $ ~ Max 1.000 $)",
+    "minMax": "1 $ = 100 Punkte (Min. 1 $ ~ Max. 1.000 $)",
     "orderSummary": "Bestellübersicht",
     "amount": "Betrag",
     "basePoints": "Basispunkte",
     "bonusPoints": "Bonuspunkte",
     "totalPoints": "Gesamtpunkte",
-    "afterPurchase": "Kontostand nach Kauf",
-    "pay": "Bezahlen",
-    "selectAmount": "Wählen Sie einen Betrag",
+    "afterPurchase": "Guthaben nach dem Kauf",
+    "pay": "Jetzt bezahlen",
+    "selectAmount": "Bitte wählen Sie einen Betrag",
     "beforePayment": "Vor der Zahlung",
     "nonRefundableNotice": "Punkte sind nicht erstattungsfähig (digitaler Inhalt)",
     "validityNotice": "Punkte sind 5 Jahre gültig",
     "paymentMethods": "Zahlungsmethoden: Kreditkarte, PayPal",
-    "instantCredit": "Punkte werden sofort gutgeschrieben",
+    "instantCredit": "Punkte werden sofort nach der Zahlung gutgeschrieben",
     "faq": "FAQ",
     "faqExpire": "Verfallen Punkte?",
-    "faqExpireAnswer": "Ja, Punkte sind 5 Jahre ab Kaufdatum gültig.",
-    "faqRefund": "Kann ich eine Rückerstattung erhalten?",
-    "faqRefundAnswer": "Punkte sind nicht erstattungsfähig, da sie digitaler Inhalt sind.",
-    "faqWhen": "Wann erhalte ich meine Punkte?",
-    "faqWhenAnswer": "Punkte werden sofort nach Zahlungsbestätigung gutgeschrieben.",
+    "faqExpireAnswer": "Ja, Punkte sind 5 Jahre ab Kauf gültig.",
+    "faqRefund": "Kann ich eine Erstattung erhalten?",
+    "faqRefundAnswer": "Punkte sind als digitaler Inhalt nicht erstattungsfähig.",
+    "faqWhen": "Wann werden die Punkte gutgeschrieben?",
+    "faqWhenAnswer": "Punkte werden sofort nach Zahlungsgenehmigung gutgeschrieben.",
     "faqInvoice": "Kann ich eine Rechnung erhalten?",
-    "faqInvoiceAnswer": "Ja, kontaktieren Sie den Support unter webmaster@geniuscat.co.kr",
+    "faqInvoiceAnswer": "Ja, bitte kontaktieren Sie den Support unter webmaster@geniuscat.co.kr.",
     "needHelp": "Brauchen Sie Hilfe?"
   },
   "auth": {
@@ -165,41 +168,218 @@
     "namePlaceholder": "Name",
     "loginButton": "Anmelden",
     "signupButton": "Registrieren",
-    "googleLogin": "Mit Google fortfahren",
+    "googleLogin": "Mit Google anmelden",
     "googleSignup": "Mit Google registrieren",
-    "noAccount": "Kein Konto?",
-    "hasAccount": "Bereits ein Konto?",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Haben Sie bereits ein Konto?",
     "forgotPassword": "Passwort vergessen?",
-    "agreeTerms": "Ich akzeptiere die Nutzungsbedingungen",
-    "agreePrivacy": "Ich akzeptiere die Datenschutzrichtlinie"
+    "agreeTerms": "Ich stimme den Nutzungsbedingungen zu",
+    "agreePrivacy": "Ich stimme der Datenschutzrichtlinie zu"
   },
   "terms": {
     "title": "Nutzungsbedingungen",
-    "refundPolicy": "Rückerstattungsrichtlinie",
-    "effectiveDate": "Gültigkeitsdatum",
-    "contact": "Kontakt",
-    "backToHome": "Zurück zur Startseite"
+    "article1": {
+      "title": "Artikel 1 (Zweck)",
+      "content": "Diese Allgemeinen Geschäftsbedingungen dienen dazu, die Rechte, Pflichten und Verantwortlichkeiten zwischen MJ Studio (nachfolgend „Unternehmen") und den Nutzern in Bezug auf die Nutzung von ImageFactory (nachfolgend „Dienst"), der vom Unternehmen betrieben wird, zu definieren."
+    },
+    "article2": {
+      "title": "Artikel 2 (Definitionen)",
+      "item1": "„Dienst" bezeichnet die vom Unternehmen bereitgestellte KI-Bildgenerierungsplattform.",
+      "item2": "„Nutzer" bezeichnet Mitglieder und Nicht-Mitglieder, die den vom Unternehmen gemäß diesen Bedingungen bereitgestellten Dienst nutzen.",
+      "item3": "„Mitglied" bezeichnet eine Person, die sich als Mitglied registriert hat und den Dienst nutzt.",
+      "item4": "„Punkte" bezeichnet virtuelle Vermögenswerte zur Nutzung des Dienstes, die für die Bildgenerierung verwendet werden."
+    },
+    "article3": {
+      "title": "Artikel 3 (Veröffentlichung und Änderung der Bedingungen)",
+      "item1": "Das Unternehmen wird diese Bedingungen auf dem Startbildschirm des Dienstes veröffentlichen, damit die Nutzer sie leicht verstehen können.",
+      "item2": "Das Unternehmen kann diese Bedingungen ändern, soweit sie nicht gegen geltende Gesetze verstoßen.",
+      "item3": "Bei Änderung der Bedingungen werden das Datum des Inkrafttretens und der Grund für die Änderung bekannt gegeben."
+    },
+    "article4": {
+      "title": "Artikel 4 (Bereitstellung und Änderung des Dienstes)",
+      "intro": "Das Unternehmen bietet folgende Dienste an:",
+      "service1": "KI-Bildgenerierungsdienst",
+      "service2": "Aufladen und Verwaltung von Punkten",
+      "service3": "Speicherung und Download generierter Bilder",
+      "service4": "E-Mail-Versanddienst",
+      "item2": "Das Unternehmen kann den Inhalt des Dienstes ändern und wird die Nutzer im Voraus über Änderungen informieren."
+    },
+    "article5": {
+      "title": "Artikel 5 (Punkterichtlinie)",
+      "item1": "Punkte können durch Zahlung aufgeladen werden.",
+      "item2": "Die Gültigkeitsdauer aufgeladener Punkte beträgt 5 Jahre ab dem Aufladen.",
+      "item3": "Punkte sind nicht in bar erstattungsfähig.",
+      "item4": "Verbleibende Punkte verfallen automatisch bei Kündigung der Mitgliedschaft."
+    },
+    "article6": {
+      "title": "Artikel 6 (Urheberrecht)",
+      "item1": "Das Urheberrecht an generierten Bildern gehört dem Nutzer.",
+      "item2": "Generierte Bilder dürfen jedoch nicht für illegale Zwecke verwendet werden.",
+      "item3": "Das Unternehmen kann generierte Bilder für statistische und analytische Zwecke zur Verbesserung des Dienstes verwenden."
+    },
+    "article7": {
+      "title": "Artikel 7 (Erstattungsrichtlinie)",
+      "seeRefundPage": "Für die detaillierte Erstattungsrichtlinie beachten Sie bitte die Seite Erstattungsrichtlinie."
+    },
+    "article8": {
+      "title": "Artikel 8 (Haftungsausschluss)",
+      "item1": "Das Unternehmen ist von der Haftung befreit, wenn es den Dienst aufgrund höherer Gewalt wie Naturkatastrophen nicht bereitstellen kann.",
+      "item2": "Das Unternehmen haftet nicht für Probleme bei der Dienstnutzung, die durch Verschulden des Nutzers verursacht werden.",
+      "item3": "Das Unternehmen haftet nicht für rechtliche Probleme, die durch die kommerzielle Nutzung generierter Bilder entstehen."
+    }
+  },
+  "refund": {
+    "title": "Erstattungsrichtlinie",
+    "subtitle": "Refund Policy",
+    "principle": {
+      "title": "Grundprinzipien",
+      "item1": "Aufgrund der Natur digitaler Inhalte und Credits sind Erstattungen für bereits verwendete Credits und erfolgreich generierte Bilder grundsätzlich nicht möglich.",
+      "item2": "Ausnahmen für Erstattungen oder Credit-Wiederherstellung werden nur in Fällen von Dienstausfällen oder Zahlungsfehlern gemacht, die „nicht auf das Verschulden des Nutzers" zurückzuführen sind."
+    },
+    "section1": {
+      "title": "Erstattungsrichtlinie nach Tarifart",
+      "creditPack": {
+        "title": "Credit-Paket (Einmalkauf)",
+        "unused": {
+          "title": "Vollständig ungenutzte Credits nach dem Kauf",
+          "desc": "Vollständige Erstattung bei Anfrage innerhalb von 7 Tagen nach dem Kaufdatum"
+        },
+        "partial": {
+          "title": "Teilweise genutzte Credits",
+          "desc": "Der genutzte Teil ist nicht erstattungsfähig; verbleibende Credits sind grundsätzlich nicht erstattungsfähig, werden nur bei Dienstausfall individuell geprüft"
+        }
+      },
+      "subscription": {
+        "title": "Abonnement (monatlich/jährlich)",
+        "active": {
+          "title": "Bereits aktiviertes Abonnement während des aktuellen Abrechnungszeitraums",
+          "desc": "Keine Teilerstattung bei vorzeitiger Kündigung, unabhängig von der Nutzung"
+        },
+        "cancel": {
+          "title": "Abonnementkündigung",
+          "desc": "Sie können Ihr Abonnement jederzeit vor dem Verlängerungsdatum kündigen, um zukünftige Gebühren zu stoppen"
+        },
+        "error": {
+          "title": "Systemfehler/Doppelte Zahlung",
+          "desc": "Vollständige Erstattung oder gleichwertiges Guthaben bei bestätigtem Abrechnungsfehler"
+        }
+      }
+    },
+    "section2": {
+      "title": "Nicht erstattungsfähige Fälle",
+      "item1": "Bei erfolgreicher Bildgenerierung: Keine Erstattung oder Credit-Wiederherstellung, nur weil Ihnen die Ergebnisse nicht gefallen",
+      "item2": "Gratis-Credits: Werbe-, Bonus- oder Empfehlungsbelohnungs-Credits",
+      "item3": "Sonderangebote: Zu Aktions-/Rabattpreisen gekaufte Produkte (wenn angegeben)"
+    },
+    "section3": {
+      "title": "Erstattungsantrag-Verfahren",
+      "intro": "Kontaktieren Sie den Kundensupport per E-Mail mit folgenden Informationen:",
+      "item1": "Konto-E-Mail",
+      "item2": "Zahlungsdatum und -betrag",
+      "item3": "Zahlungsmethode (Karte, Zahlungsgateway usw.)",
+      "item4": "Erstattungsgrund und zugehörige Screenshots (Fehlerbildschirme bei Dienstausfall)",
+      "processingTime": "Bearbeitungszeit",
+      "processingDesc": "Unser Team wird innerhalb von 7 Werktagen prüfen und antworten. Bei Genehmigung erfolgt die Erstattung auf die ursprüngliche Zahlungsmethode.",
+      "processingNote": "※ Die tatsächliche Erstattung kann je nach Kartenunternehmen/Zahlungsabwickler bis zu 14 Werktage dauern."
+    },
+    "section4": {
+      "title": "Dienstausfälle und Ausnahmen",
+      "content": "Bei eindeutiger Dienstverantwortung wie Serverausfällen, nicht gutgeschriebenen Credits trotz Zahlung oder wiederholten Fehlern, die die Bildgenerierung verhindern, gewähren wir eine vollständige Erstattung oder gleichwertige Credits.",
+      "note": "Bei größeren Ausfällen können wir temporäre Credit-Wiederherstellungs- oder zusätzliche Credit-Richtlinien mit separaten Ankündigungen implementieren."
+    },
+    "section5": {
+      "title": "Richtlinienänderungen",
+      "item1": "Die Erstattungsrichtlinie von ImageFactory kann zur Dienstverbesserung periodisch geändert werden, mit vorheriger Ankündigung per Mitteilung oder E-Mail.",
+      "item2": "Geänderte Richtlinien gelten für Zahlungen, die nach dem angekündigten Wirksamkeitsdatum erfolgen."
+    },
+    "contact": {
+      "title": "Erstattungsanfragen",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "hours": "Werktags 10:00 - 18:00 Uhr (Wochenenden und Feiertage geschlossen)"
+    }
+  },
+  "privacy": {
+    "title": "Datenschutzrichtlinie",
+    "article1": {
+      "title": "Artikel 1 (Zweck der Verarbeitung personenbezogener Daten)",
+      "intro": "MJ Studio (nachfolgend „Unternehmen") verarbeitet personenbezogene Daten für folgende Zwecke. Die verarbeiteten personenbezogenen Daten werden nicht für andere als die folgenden Zwecke verwendet, und wenn der Verwendungszweck sich ändert, werden notwendige Maßnahmen wie die Einholung einer separaten Einwilligung ergriffen.",
+      "item1": "Mitgliederregistrierung und -verwaltung: Bereitstellung von Mitgliedschaftsdiensten, Identitätsüberprüfung",
+      "item2": "Dienstbereitstellung: KI-Bildgenerierung, Versand von Ergebnis-E-Mails",
+      "item3": "Zahlung und Abrechnung: Punkte-Aufladung, Zahlungsabwicklung",
+      "item4": "Kundenbetreuung: Anfragenbearbeitung, Beschwerdebehandlung"
+    },
+    "article2": {
+      "title": "Artikel 2 (Verarbeitete personenbezogene Datenelemente)",
+      "intro": "Das Unternehmen verarbeitet folgende personenbezogene Datenelemente:",
+      "required": "Erforderlich: E-Mail, Passwort, Name",
+      "optional": "Optional: Profilbild",
+      "auto": "Automatische Erhebung: IP-Adresse, Cookies, Dienstnutzungsprotokolle, Zugangsprotokolle"
+    },
+    "article3": {
+      "title": "Artikel 3 (Aufbewahrungsdauer und Nutzungszeitraum personenbezogener Daten)",
+      "item1": "Das Unternehmen verarbeitet und bewahrt personenbezogene Daten innerhalb der gesetzlichen Aufbewahrungsfrist oder innerhalb der bei der Erhebung vereinbarten Frist auf.",
+      "item2": "Personenbezogene Daten werden bei Kündigung der Mitgliedschaft unverzüglich vernichtet. Wenn jedoch ein gesetzlicher Aufbewahrungsgrund besteht, werden sie für diesen Zeitraum aufbewahrt."
+    },
+    "article4": {
+      "title": "Artikel 4 (Weitergabe personenbezogener Daten an Dritte)",
+      "intro": "Das Unternehmen gibt personenbezogene Daten der Nutzer grundsätzlich nicht an Dritte weiter. Folgende Fälle sind jedoch Ausnahmen:",
+      "item1": "Wenn der Nutzer vorher zugestimmt hat",
+      "item2": "Wenn gesetzlich vorgeschrieben oder wenn Ermittlungsbehörden gemäß den gesetzlichen Verfahren und Methoden Anfragen stellen"
+    },
+    "article5": {
+      "title": "Artikel 5 (Beauftragung der Verarbeitung personenbezogener Daten)",
+      "intro": "Das Unternehmen beauftragt die Verarbeitung personenbezogener Daten wie folgt zur Dienstbereitstellung:",
+      "firebase": "Firebase (Google): Datenspeicherung und Authentifizierung",
+      "ai": "OpenAI, Replicate usw.: KI-Bildgenerierung",
+      "email": "Gmail SMTP: E-Mail-Versand",
+      "payment": "Toss Payments: Zahlungsabwicklung"
+    },
+    "article6": {
+      "title": "Artikel 6 (Rechte und Pflichten der betroffenen Personen und deren Ausübung)",
+      "intro": "Nutzer können jederzeit folgende Rechte ausüben:",
+      "item1": "Einsicht in personenbezogene Daten verlangen",
+      "item2": "Berichtigung oder Löschung personenbezogener Daten verlangen",
+      "item3": "Aussetzung der Verarbeitung personenbezogener Daten verlangen",
+      "item4": "Mitgliedschaft kündigen (Einwilligung widerrufen)"
+    },
+    "article7": {
+      "title": "Artikel 7 (Vernichtung personenbezogener Daten)",
+      "content": "Das Unternehmen vernichtet personenbezogene Daten unverzüglich, wenn sie aufgrund des Ablaufs der Aufbewahrungsfrist, Erreichung des Verarbeitungszwecks usw. nicht mehr benötigt werden."
+    },
+    "article8": {
+      "title": "Artikel 8 (Datenschutzbeauftragter)",
+      "label": "Datenschutzbeauftragter:",
+      "name": "Name: Minju Song",
+      "position": "Position: CEO",
+      "email": "E-Mail: webmaster@geniuscat.co.kr",
+      "phone": "Telefon: 010-8440-9820"
+    },
+    "article9": {
+      "title": "Artikel 9 (Betrieb und Ablehnung von Cookies)",
+      "content": "Das Unternehmen verwendet Cookies, um den Nutzern personalisierte Dienste anzubieten. Nutzer haben das Recht, die Installation von Cookies zu wählen und können Cookies ablehnen, indem sie die Optionen in ihrem Webbrowser einstellen."
+    },
+    "officer": "Datenschutzbeauftragter"
   },
   "footer": {
-    "description": "Generieren Sie Dutzende von Bildern auf einmal mit mehreren KI-Modellen",
-    "customerSupport": "Kundensupport",
-    "businessHours": "Mo-Fr 10:00 - 18:00",
+    "description": "Generieren Sie Dutzende von Bildern gleichzeitig mit mehreren KI-Modellen",
+    "customerSupport": "Kundenbetreuung",
+    "businessHours": "Werktags 10:00 - 18:00 Uhr",
     "companyInfo": "Unternehmensinformationen",
     "companyName": "MJ Studio",
-    "representative": "Vertreter",
-    "businessNumber": "Geschäftsnummer",
-    "ecommerceNumber": "E-Commerce-Lizenz",
+    "representative": "CEO",
+    "businessNumber": "Unternehmensnummer",
+    "ecommerceNumber": "E-Commerce-Nummer",
     "address": "Adresse",
-    "termsAndPolicies": "Bedingungen & Richtlinien",
+    "termsAndPolicies": "Bedingungen und Richtlinien",
     "allRightsReserved": "Alle Rechte vorbehalten."
   },
   "errors": {
     "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-    "network": "Bitte überprüfen Sie Ihre Internetverbindung.",
+    "network": "Bitte überprüfen Sie Ihre Netzwerkverbindung.",
     "unauthorized": "Anmeldung erforderlich.",
     "forbidden": "Zugriff verweigert.",
     "notFound": "Seite nicht gefunden.",
     "serverError": "Serverfehler aufgetreten."
   }
 }
-

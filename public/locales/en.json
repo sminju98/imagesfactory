@@ -8,7 +8,7 @@
     "mypage": "My Page",
     "points": "Points",
     "currentPoints": "Current Points",
-    "chargePoints": "Buy Points",
+    "chargePoints": "Charge Points",
     "loading": "Loading...",
     "error": "An error occurred",
     "save": "Save",
@@ -25,14 +25,17 @@
     "search": "Search",
     "settings": "Settings",
     "help": "Help",
-    "contact": "Contact",
+    "contact": "Contact Us",
     "support": "Support",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
-    "refund": "Refund Policy",
+    "refundPolicy": "Refund Policy",
     "email": "Email",
     "password": "Password",
-    "name": "Name"
+    "name": "Name",
+    "effectiveDate": "Effective Date",
+    "backToHome": "Back to Home",
+    "viewTerms": "View Terms of Service"
   },
   "header": {
     "imageGeneration": "Image Generation",
@@ -50,13 +53,13 @@
     "totalCost": "Total Cost",
     "totalImages": "Total Images",
     "images": "images",
-    "promptCorrection": "Prompt Enhancement",
+    "promptCorrection": "Prompt Correction",
     "modelRecommendation": "Model Recommendation",
     "referenceImage": "Reference Image",
     "uploadReference": "Upload Reference Image",
     "insufficientPoints": "Insufficient points",
     "loginRequired": "Login required",
-    "minPromptLength": "Please enter at least 10 characters",
+    "minPromptLength": "Prompt must be at least 10 characters",
     "selectAtLeastOneModel": "Please select at least one model"
   },
   "models": {
@@ -64,7 +67,7 @@
     "max": "max",
     "description": {
       "midjourney": "Best for creative artwork · 4 images per request",
-      "gpt-image": "OpenAI's latest · Native multimodal",
+      "gpt-image": "OpenAI's latest · Multimodal native",
       "gemini": "Google's latest · Excellent prompt understanding",
       "grok": "xAI · Creative image generation",
       "leonardo": "Game/Character specialized",
@@ -99,7 +102,7 @@
     "dashboard": "Dashboard",
     "pointsTab": "Points",
     "historyTab": "History",
-    "paymentTab": "Payment History",
+    "paymentTab": "Payments",
     "settingsTab": "Settings",
     "currentBalance": "Current Balance",
     "totalImages": "Total Images",
@@ -109,7 +112,7 @@
     "recentImages": "Recent Images",
     "viewAll": "View All",
     "noImages": "No images generated yet",
-    "createFirst": "Create Your First Image",
+    "createFirst": "Create your first image",
     "usedPoints": "Used Points",
     "purchasedPoints": "Purchased Points",
     "approxImages": "Approx. {{count}} images",
@@ -121,39 +124,39 @@
     "usageStats": "Usage Statistics"
   },
   "points": {
-    "title": "Buy Points",
-    "info": "Points Info",
-    "onePoint": "1 point = $0.01 (1 cent)",
-    "modelPrices": "Model prices: 1pt ~ 60pt per image",
-    "validity": "Valid for 5 years from purchase",
+    "title": "Charge Points",
+    "info": "Point Information",
+    "onePoint": "1 Point = $0.01 (1 cent)",
+    "modelPrices": "Model prices: 1pt ~ 60pt/image",
+    "validity": "Validity: 5 years from purchase",
     "nonRefundable": "Non-refundable digital content",
     "packages": "Point Packages",
     "customAmount": "Custom Amount",
     "enterAmount": "Enter amount (USD)",
-    "youllGet": "Points you'll get",
+    "youllGet": "You'll get",
     "minMax": "$1 = 100 points (Min $1 ~ Max $1,000)",
     "orderSummary": "Order Summary",
     "amount": "Amount",
     "basePoints": "Base Points",
     "bonusPoints": "Bonus Points",
     "totalPoints": "Total Points",
-    "afterPurchase": "Balance After Purchase",
-    "pay": "Pay",
-    "selectAmount": "Select an amount",
-    "beforePayment": "Before You Pay",
+    "afterPurchase": "Balance after purchase",
+    "pay": "Pay Now",
+    "selectAmount": "Please select an amount",
+    "beforePayment": "Before Payment",
     "nonRefundableNotice": "Points are non-refundable (digital content)",
     "validityNotice": "Points are valid for 5 years",
     "paymentMethods": "Payment methods: Credit card, PayPal",
     "instantCredit": "Points credited instantly after payment",
     "faq": "FAQ",
     "faqExpire": "Do points expire?",
-    "faqExpireAnswer": "Yes, points are valid for 5 years from purchase date.",
+    "faqExpireAnswer": "Yes, points are valid for 5 years from purchase.",
     "faqRefund": "Can I get a refund?",
-    "faqRefundAnswer": "Points are non-refundable as they are digital content.",
-    "faqWhen": "When will I receive my points?",
-    "faqWhenAnswer": "Points are credited instantly after payment confirmation.",
+    "faqRefundAnswer": "Points are non-refundable as digital content.",
+    "faqWhen": "When will points be credited?",
+    "faqWhenAnswer": "Points are credited immediately upon payment approval.",
     "faqInvoice": "Can I get an invoice?",
-    "faqInvoiceAnswer": "Yes, please contact support at webmaster@geniuscat.co.kr",
+    "faqInvoiceAnswer": "Yes, please contact support at webmaster@geniuscat.co.kr.",
     "needHelp": "Need help?"
   },
   "auth": {
@@ -165,71 +168,208 @@
     "namePlaceholder": "Name",
     "loginButton": "Login",
     "signupButton": "Sign Up",
-    "googleLogin": "Continue with Google",
+    "googleLogin": "Login with Google",
     "googleSignup": "Sign up with Google",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "forgotPassword": "Forgot password?",
+    "forgotPassword": "Forgot your password?",
     "agreeTerms": "I agree to the Terms of Service",
     "agreePrivacy": "I agree to the Privacy Policy"
   },
   "terms": {
     "title": "Terms of Service",
-    "refundPolicy": "Refund Policy",
-    "effectiveDate": "Effective Date",
-    "contact": "Contact",
-    "backToHome": "Back to Home"
+    "article1": {
+      "title": "Article 1 (Purpose)",
+      "content": "These terms and conditions are intended to define the rights, obligations, and responsibilities between MJ Studio (hereinafter \"Company\") and users in relation to the use of ImageFactory (hereinafter \"Service\") operated by the Company."
+    },
+    "article2": {
+      "title": "Article 2 (Definitions)",
+      "item1": "\"Service\" refers to the AI image generation platform provided by the Company.",
+      "item2": "\"User\" refers to members and non-members who use the Service provided by the Company according to these terms.",
+      "item3": "\"Member\" refers to a person who has registered for membership and uses the Service.",
+      "item4": "\"Points\" refers to cyber assets for using the Service, used for image generation."
+    },
+    "article3": {
+      "title": "Article 3 (Posting and Amendment of Terms)",
+      "item1": "The Company shall post these terms on the initial screen of the Service so that users can easily understand them.",
+      "item2": "The Company may amend these terms within the scope that does not violate relevant laws.",
+      "item3": "When terms are amended, the effective date and reason for amendment shall be announced."
+    },
+    "article4": {
+      "title": "Article 4 (Provision and Modification of Service)",
+      "intro": "The Company provides the following services:",
+      "service1": "AI image generation service",
+      "service2": "Point charging and management",
+      "service3": "Storage and download of generated images",
+      "service4": "Email delivery service",
+      "item2": "The Company may change the content of the Service and will notify users in advance of any changes."
+    },
+    "article5": {
+      "title": "Article 5 (Point Policy)",
+      "item1": "Points can be charged through paid payment.",
+      "item2": "The validity period of charged points is 5 years from the date of charging.",
+      "item3": "Points are not refundable in cash.",
+      "item4": "Remaining points are automatically forfeited upon membership withdrawal."
+    },
+    "article6": {
+      "title": "Article 6 (Copyright)",
+      "item1": "The copyright of generated images belongs to the user.",
+      "item2": "However, generated images cannot be used for illegal purposes.",
+      "item3": "The Company may use generated images for statistical and analytical purposes to improve the Service."
+    },
+    "article7": {
+      "title": "Article 7 (Refund Policy)",
+      "seeRefundPage": "For detailed refund policy, please refer to the Refund Policy page."
+    },
+    "article8": {
+      "title": "Article 8 (Disclaimer)",
+      "item1": "The Company is exempt from liability if it cannot provide the Service due to force majeure such as natural disasters.",
+      "item2": "The Company is not responsible for service usage problems caused by the user's fault.",
+      "item3": "The Company is not responsible for legal issues arising from commercial use of generated images."
+    }
   },
   "refund": {
     "title": "Refund Policy",
-    "basicPrinciple": "Basic Principle",
-    "basicDesc1": "Due to the nature of digital content and credits, refunds are not available for used credits or completed image generations.",
-    "basicDesc2": "Exceptions for refunds or credit restoration are only provided for cases not caused by user error, such as service failures or payment errors.",
-    "byPlanType": "Refund Policy by Plan Type",
-    "creditPack": "Credit Pack (One-time Purchase)",
-    "unusedCredits": "Unused credits after purchase",
-    "unusedCreditsDesc": "Full refund available if requested within 7 days of purchase",
-    "partiallyUsed": "Partially used credits",
-    "partiallyUsedDesc": "Used portion is non-refundable; remaining credits are generally non-refundable, reviewed case-by-case only for service failures",
-    "subscription": "Subscription (Monthly/Annual)",
-    "activeSubscription": "Active subscription in current billing period",
-    "activeSubscriptionDesc": "No partial refunds for mid-cycle cancellation regardless of usage",
-    "cancelSubscription": "Subscription cancellation",
-    "cancelSubscriptionDesc": "You can cancel anytime before renewal to stop future charges",
-    "billingError": "System error/duplicate payment",
-    "billingErrorDesc": "Full refund or equivalent credit for confirmed billing errors",
-    "nonRefundable": "Non-Refundable Cases",
-    "completedGeneration": "Successfully completed image generation",
-    "completedGenerationDesc": "Not eligible for refund just because you don't like the results",
-    "freeCredits": "Free credits from promotions, events, bonuses, or referrals",
-    "saleItems": "Sale/discounted items (when specified)",
-    "refundProcess": "Refund Request Process",
-    "contactEmail": "Contact customer support email with the following information:",
-    "accountEmail": "Account email",
-    "paymentDateTime": "Payment date and amount",
-    "paymentMethod": "Payment method (card, payment provider, etc.)",
-    "refundReason": "Reason for refund and relevant screenshots (error screens for service issues)",
-    "processingTime": "Processing Time",
-    "processingTimeDesc": "Our team will respond within 7 business days of receipt. If approved, refunds will be processed to the original payment method.",
-    "actualRefundTime": "Actual refund may take up to 14 business days depending on card company/payment provider policies.",
-    "serviceFailure": "Service Failure & Exceptions",
-    "serviceFailureDesc": "For cases of clear service responsibility (server failures, payment processed but credits not added, repeated generation failures), we provide full refunds or equivalent credit compensation.",
-    "majorOutage": "For major outages, we may implement temporary usage restoration or additional credit policies with separate announcements.",
-    "policyChanges": "Policy Changes",
-    "policyChangesDesc1": "ImageFactory's refund policy may change periodically for service improvements. Changes will be announced via notices or email.",
-    "policyChangesDesc2": "Changed policies apply to payments made after the announced effective date.",
-    "refundInquiry": "Refund Inquiry",
-    "businessHours": "Mon-Fri 10:00 - 18:00 (Closed on weekends and holidays)"
+    "subtitle": "환불 정책",
+    "principle": {
+      "title": "Basic Principles",
+      "item1": "Due to the nature of digital content and credits, refunds are generally not available for credits already used and images that have been successfully generated.",
+      "item2": "Exceptions for refunds or credit restoration are made only in cases of service failures or payment errors that are \"not due to user's fault.\""
+    },
+    "section1": {
+      "title": "Refund Policy by Plan Type",
+      "creditPack": {
+        "title": "Credit Pack (One-time Purchase)",
+        "unused": {
+          "title": "Completely unused credits after purchase",
+          "desc": "Full refund if requested within 7 days from purchase date"
+        },
+        "partial": {
+          "title": "Partially used credits",
+          "desc": "Used portion is non-refundable; remaining credits are generally non-refundable, reviewed individually only in case of service failure"
+        }
+      },
+      "subscription": {
+        "title": "Subscription Plan (Monthly/Annual)",
+        "active": {
+          "title": "Already activated subscription during current billing period",
+          "desc": "No partial refund for mid-term cancellation regardless of usage"
+        },
+        "cancel": {
+          "title": "Subscription Cancellation",
+          "desc": "You can cancel your subscription anytime before the renewal date to stop future charges"
+        },
+        "error": {
+          "title": "System error/Duplicate payment",
+          "desc": "Full refund or equivalent credit provided when billing error is confirmed"
+        }
+      }
+    },
+    "section2": {
+      "title": "Non-refundable Cases",
+      "item1": "When image generation is completed successfully: No refund or credit restoration simply because you don't like the results",
+      "item2": "Free credits: Promotional, bonus, or referral reward credits",
+      "item3": "Special offers: Products purchased at sale/discount prices (when specified)"
+    },
+    "section3": {
+      "title": "Refund Request Procedure",
+      "intro": "Contact customer support via email with the following information:",
+      "item1": "Account email",
+      "item2": "Payment date and amount",
+      "item3": "Payment method (card, payment gateway, etc.)",
+      "item4": "Reason for refund and related screenshots (error screens if there was a service failure)",
+      "processingTime": "Processing Time",
+      "processingDesc": "Our team will review and respond within 7 business days. If approved, refund will be processed to the original payment method.",
+      "processingNote": "※ Actual refund may take up to 14 business days depending on card company/payment processor policies."
+    },
+    "section4": {
+      "title": "Service Failures and Exceptions",
+      "content": "In cases of clear service responsibility such as server failures, credits not charged despite payment, or repeated failures preventing image generation, we will provide full refund or equivalent credits.",
+      "note": "In case of major outages, we may implement temporary credit restoration or additional credit policies with separate announcements."
+    },
+    "section5": {
+      "title": "Policy Changes",
+      "item1": "ImageFactory's refund policy may be changed periodically for service improvement, with advance notice through announcements or email.",
+      "item2": "Changed policies apply to payments made after the announced effective date."
+    },
+    "contact": {
+      "title": "Refund Inquiries",
+      "email": "Email",
+      "phone": "Phone",
+      "hours": "Weekdays 10:00 AM - 6:00 PM (Closed on weekends and holidays)"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "article1": {
+      "title": "Article 1 (Purpose of Processing Personal Information)",
+      "intro": "MJ Studio (hereinafter \"Company\") processes personal information for the following purposes. Personal information being processed will not be used for purposes other than the following, and if the purpose of use changes, necessary measures such as obtaining separate consent will be implemented.",
+      "item1": "Member registration and management: Provision of membership services, identity verification",
+      "item2": "Service provision: AI image generation, result email delivery",
+      "item3": "Payment and settlement: Point charging, payment processing",
+      "item4": "Customer support: Inquiry response, complaint handling"
+    },
+    "article2": {
+      "title": "Article 2 (Personal Information Items Processed)",
+      "intro": "The Company processes the following personal information items:",
+      "required": "Required: Email, password, name",
+      "optional": "Optional: Profile photo",
+      "auto": "Automatically collected: IP address, cookies, service usage records, access logs"
+    },
+    "article3": {
+      "title": "Article 3 (Retention and Use Period of Personal Information)",
+      "item1": "The Company processes and retains personal information within the retention period according to laws or within the agreed period when collecting personal information from data subjects.",
+      "item2": "Personal information is destroyed immediately upon membership withdrawal. However, if there is a reason for retention under relevant laws, it will be kept for that period."
+    },
+    "article4": {
+      "title": "Article 4 (Provision of Personal Information to Third Parties)",
+      "intro": "In principle, the Company does not provide users' personal information to third parties. However, the following cases are exceptions:",
+      "item1": "When the user has given prior consent",
+      "item2": "When required by law or when requested by investigative agencies according to procedures and methods prescribed by law for investigation purposes"
+    },
+    "article5": {
+      "title": "Article 5 (Entrustment of Personal Information Processing)",
+      "intro": "The Company entrusts personal information processing as follows to provide services:",
+      "firebase": "Firebase (Google): Data storage and authentication",
+      "ai": "OpenAI, Replicate, etc.: AI image generation",
+      "email": "Gmail SMTP: Email delivery",
+      "payment": "Toss Payments: Payment processing"
+    },
+    "article6": {
+      "title": "Article 6 (Rights and Obligations of Data Subjects and How to Exercise Them)",
+      "intro": "Users can exercise the following rights at any time:",
+      "item1": "Request to view personal information",
+      "item2": "Request to correct or delete personal information",
+      "item3": "Request to suspend processing of personal information",
+      "item4": "Membership withdrawal (consent withdrawal)"
+    },
+    "article7": {
+      "title": "Article 7 (Destruction of Personal Information)",
+      "content": "The Company destroys personal information without delay when it is no longer needed due to expiration of retention period, achievement of processing purpose, etc."
+    },
+    "article8": {
+      "title": "Article 8 (Personal Information Protection Officer)",
+      "label": "Personal Information Protection Officer:",
+      "name": "Name: Minju Song",
+      "position": "Position: CEO",
+      "email": "Email: webmaster@geniuscat.co.kr",
+      "phone": "Phone: 010-8440-9820"
+    },
+    "article9": {
+      "title": "Article 9 (Operation and Rejection of Cookies)",
+      "content": "The Company uses cookies to provide customized services to users. Users have the right to choose whether to install cookies and can reject cookies by setting options in their web browser."
+    },
+    "officer": "Personal Information Protection Officer"
   },
   "footer": {
     "description": "Generate dozens of images at once with multiple AI models",
     "customerSupport": "Customer Support",
-    "businessHours": "Mon-Fri 10:00 - 18:00",
+    "businessHours": "Weekdays 10:00 AM - 6:00 PM",
     "companyInfo": "Company Info",
     "companyName": "MJ Studio",
-    "representative": "Representative",
-    "businessNumber": "Business Number",
-    "ecommerceNumber": "E-commerce License",
+    "representative": "CEO",
+    "businessNumber": "Business No.",
+    "ecommerceNumber": "E-commerce No.",
     "address": "Address",
     "termsAndPolicies": "Terms & Policies",
     "allRightsReserved": "All rights reserved."
@@ -243,4 +383,3 @@
     "serverError": "Server error occurred."
   }
 }
-
