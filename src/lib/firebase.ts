@@ -47,4 +47,3 @@ if (useEmulator) {
 }
 
 export default app;
-

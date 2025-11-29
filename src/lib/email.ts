@@ -225,4 +225,3 @@ export function getWelcomeEmailHTML(data: {
 </html>
   `;
 }
-

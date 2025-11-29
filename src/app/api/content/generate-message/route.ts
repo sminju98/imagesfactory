@@ -87,4 +87,3 @@ USP: ${concept.usp}
   }
 }
 
-

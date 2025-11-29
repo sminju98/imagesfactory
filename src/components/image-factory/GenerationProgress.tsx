@@ -170,4 +170,3 @@ export default function GenerationProgress({ task, isLoading }: GenerationProgre
     </div>
   );
 }
-

@@ -1135,4 +1135,3 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
     }
   });
 }
-

@@ -214,4 +214,3 @@ function getModelPoints(modelId: string): number {
   };
   return pointsMap[modelId] || 30;
 }
-

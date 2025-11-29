@@ -298,4 +298,3 @@ function CardNewsScriptView({ pages, title }: { pages: CardNewsPage[]; title: st
   );
 }
 
-

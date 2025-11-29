@@ -70,4 +70,3 @@ export const storage = admin.storage();
 export const fieldValue = admin.firestore.FieldValue;
 
 export default admin;
-

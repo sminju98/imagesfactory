@@ -1296,4 +1296,3 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
       throw new Error(`지원하지 않는 모델입니다: ${modelId}`);
   }
 }
-

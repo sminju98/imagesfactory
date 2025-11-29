@@ -230,4 +230,3 @@ export const USER_CONCURRENCY_LIMIT = 10; // 유저당 최대 10개 Job 동시 �
  * 전체 시스템 동시 처리 제한
  */
 export const SYSTEM_MAX_INSTANCES = 50; // Firebase Functions 최대 인스턴스
-

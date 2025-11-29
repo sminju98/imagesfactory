@@ -521,4 +521,3 @@ export const PromptCorrectionModal = ({
 };
 
 export default PromptCorrectionModal;
-

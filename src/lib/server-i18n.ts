@@ -495,4 +495,3 @@ export function getTranslationFromRequest(request: Request) {
     email: getEmailTranslation(lang),
   };
 }
-
