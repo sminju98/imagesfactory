@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getTranslationFromRequest } from '@/lib/server-i18n';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
+  const { t } = getTranslationFromRequest(request);
+  
   try {
     const { concept, message } = await request.json();
 
     if (!concept || !message) {
       return NextResponse.json({
         success: false,
-        error: '콘셉트와 메시지 데이터가 필요합니다',
+        error: t.errors.invalidRequest,
       });
     }
 
@@ -83,7 +86,7 @@ CTA: ${message.ctaText}
       console.error('JSON 파싱 오류:', responseText);
       return NextResponse.json({
         success: false,
-        error: '대본 생성 결과를 처리하는 중 오류가 발생했습니다',
+        error: t.errors.scriptGenerationFailed,
       });
     }
 
@@ -96,7 +99,7 @@ CTA: ${message.ctaText}
     console.error('대본 생성 오류:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '대본 생성 중 오류가 발생했습니다',
+      error: t.errors.scriptGenerationFailed,
     }, { status: 500 });
   }
 }

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, auth, fieldValue } from '@/lib/firebase-admin';
+import { getTranslationFromRequest } from '@/lib/server-i18n';
 
 export async function POST(request: NextRequest) {
+  const { t } = getTranslationFromRequest(request);
+  
   try {
     // Authorization 헤더에서 ID Token 가져오기
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Missing token' },
+        { success: false, error: t.errors.unauthorized },
         { status: 401 }
       );
     }
@@ -23,7 +26,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('❌ Token 검증 실패:', error);
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid token' },
+        { success: false, error: t.errors.invalidToken },
         { status: 401 }
       );
     }
@@ -34,7 +37,7 @@ export async function POST(request: NextRequest) {
     // 유효성 검사
     if (!prompt || !email || !selectedModels) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: t.errors.invalidRequest },
         { status: 400 }
       );
     }
@@ -46,9 +49,16 @@ export async function POST(request: NextRequest) {
       referenceImageUrl: referenceImageUrl || 'none',
     });
 
-    if (prompt.length < 10 || prompt.length > 1000) {
+    if (prompt.length < 10) {
       return NextResponse.json(
-        { success: false, error: 'PROMPT_LENGTH_ERROR', message: 'Prompt must be between 10-1000 characters' },
+        { success: false, error: t.errors.promptTooShort },
+        { status: 400 }
+      );
+    }
+    
+    if (prompt.length > 1000) {
+      return NextResponse.json(
+        { success: false, error: t.errors.promptTooLong },
         { status: 400 }
       );
     }
@@ -79,7 +89,7 @@ export async function POST(request: NextRequest) {
     
     if (!userDoc.exists) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
+        { success: false, error: t.errors.userNotFound },
         { status: 404 }
       );
     }
@@ -90,7 +100,7 @@ export async function POST(request: NextRequest) {
     // 포인트 확인
     if (currentPoints < totalPoints) {
       return NextResponse.json(
-        { success: false, error: 'INSUFFICIENT_POINTS', message: `Insufficient points (Current: ${currentPoints}pt, Required: ${totalPoints}pt)` },
+        { success: false, error: t.errors.insufficientPoints, details: { current: currentPoints, required: totalPoints } },
         { status: 400 }
       );
     }

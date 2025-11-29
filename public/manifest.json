@@ -1,13 +1,62 @@
 {
-  "name": "ImageFactory - AI 이미지 생성",
+  "name": "ImageFactory - AI 이미지 생성 플랫폼",
   "short_name": "ImageFactory",
-  "description": "AI 모델로 이미지를 대량 생성하는 플랫폼",
+  "description": "Midjourney, DALL-E 4, Stable Diffusion 등 13개 AI 모델로 한 번에 수백 장의 이미지를 생성하세요. GPT-5.1 프롬프트 교정 지원!",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#6366F1",
   "orientation": "portrait-primary",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["productivity", "graphics", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ImageFactory 홈 화면"
+    }
+  ],
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
@@ -15,11 +64,41 @@
       "purpose": "any maskable"
     },
     {
+      "src": "/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "이미지 생성",
+      "short_name": "생성",
+      "description": "새로운 AI 이미지 생성하기",
+      "url": "/",
+      "icons": [{ "src": "/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "포인트 충전",
+      "short_name": "충전",
+      "description": "포인트 충전하기",
+      "url": "/points",
+      "icons": [{ "src": "/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "마이페이지",
+      "short_name": "마이페이지",
+      "description": "내 정보 및 갤러리",
+      "url": "/mypage",
+      "icons": [{ "src": "/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }
-

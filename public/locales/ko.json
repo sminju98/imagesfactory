@@ -44,6 +44,8 @@
     "history": "히스토리"
   },
   "home": {
+    "heroTitle": "AI 이미지 & 콘텐츠 자동 생성 플랫폼",
+    "heroDescription": "Midjourney, DALL-E, Ideogram 등 여러 유료 AI 모델을 활용하여 이미지와 콘텐츠를 자동으로 대량 생성할 수 있는 SaaS 서비스입니다.",
     "title": "AI 이미지 생성",
     "subtitle": "여러 AI 모델로 한 번에 수십 장의 이미지를 생성하세요",
     "promptInput": "프롬프트 입력",
@@ -172,15 +174,34 @@
     "noticeContinue": "이 페이지를 닫아도 생성은 계속됩니다",
     "noticeEmail": "완료되면 {{email}}으로 자동 전송됩니다",
     "noticeHistory": "마이페이지 > 히스토리에서 언제든지 확인 가능합니다",
-    "noticeValidity": "이미지 링크는 30일간 유효합니다"
+    "noticeValidity": "이미지 링크는 30일간 유효합니다",
+    "like": "좋아요",
+    "unlike": "좋아요 취소"
   },
   "mypage": {
     "title": "마이페이지",
     "dashboard": "대시보드",
+    "galleryTab": "갤러리",
     "pointsTab": "포인트",
     "historyTab": "히스토리",
     "paymentTab": "결제 내역",
     "settingsTab": "설정",
+    "contentStorageTab": "콘텐츠 저장소",
+    "contentHistoryTab": "콘텐츠 히스토리",
+    "contentStorage": "콘텐츠 저장소",
+    "contentStorageDesc": "저장된 콘텐츠를 관리하세요",
+    "contentHistory": "콘텐츠 히스토리",
+    "contentHistoryDesc": "생성 기록을 확인하세요",
+    "contentTypes": "콘텐츠 타입",
+    "contentTypesDesc": "타입별로 저장된 콘텐츠를 확인하세요",
+    "contentTypeStory": "스토리",
+    "contentHistoryTitle": "콘텐츠 생성 기록",
+    "contentHistoryGuide": "콘텐츠팩토리에서 생성한 프로젝트 기록을 확인하세요",
+    "viewContentHistory": "히스토리 보기",
+    "viewContentHistoryDesc": "생성한 콘텐츠 프로젝트의 상세 기록을 확인할 수 있습니다",
+    "viewAll": "전체 보기",
+    "createNewContent": "새 콘텐츠 만들기",
+    "createNewContentDesc": "콘텐츠팩토리로 다양한 마케팅 콘텐츠를 생성하세요",
     "currentBalance": "보유 포인트",
     "totalImages": "총 생성 이미지",
     "totalGenerations": "총 생성 작업",
@@ -223,6 +244,25 @@
     "pointCharge": "포인트 충전",
     "orderNumber": "주문번호",
     "failReason": "실패 사유"
+  },
+  "gallery": {
+    "title": "📸 내 갤러리",
+    "all": "전체",
+    "liked": "좋아요",
+    "uploaded": "업로드",
+    "evolution": "진화",
+    "noImages": "아직 이미지가 없습니다",
+    "noImagesDesc": "이미지를 생성하거나 좋아요를 눌러보세요!",
+    "selected": "선택됨",
+    "sendToContentFactory": "콘텐츠팩토리로 보내기",
+    "startEvolution": "진화 시작",
+    "delete": "삭제",
+    "download": "다운로드",
+    "viewOriginal": "원본 보기",
+    "filterByModel": "모델로 필터",
+    "sortBy": "정렬",
+    "newest": "최신순",
+    "oldest": "오래된순"
   },
   "points": {
     "title": "포인트 충전",
@@ -488,7 +528,7 @@
       "name": "성명: 송민주",
       "position": "직책: 대표",
       "email": "이메일: webmaster@geniuscat.co.kr",
-      "phone": "전화: 010-8440-9820"
+      "phone": "전화: (+82)-10-8440-9820"
     },
     "article9": {
       "title": "제 9 조 (쿠키의 운영 및 거부)",
@@ -660,13 +700,16 @@
       "completed": "완료",
       "completeTitle": "🎉 생산 완료!",
       "completeDesc": "{{count}}장의 콘텐츠가 성공적으로 생성되었습니다.",
-      "completeGuide": "갤러리에서 확인하고 다운로드하세요.",
+      "completeGuide": "결과 페이지에서 확인하고 다운로드하세요.",
+      "viewResults": "결과 보기",
+      "goToStorage": "저장소로 이동",
       "startFailed": "생산 시작에 실패했습니다",
       "startError": "생산 시작 중 오류가 발생했습니다"
     }
   },
   "footer": {
     "description": "여러 AI 모델로 한 번에 수십 장의 이미지를 생성하세요",
+    "operatedBy": "운영",
     "support": "고객지원",
     "phone": "전화",
     "hours": "평일 10:00 - 18:00",
@@ -677,6 +720,7 @@
     "ecommerceNumber": "통신판매업",
     "address": "주소",
     "policies": "약관 및 정책",
+    "pricing": "요금 안내",
     "allRightsReserved": "All rights reserved."
   },
   "points": {
@@ -732,5 +776,143 @@
     "forbidden": "접근 권한이 없습니다.",
     "notFound": "페이지를 찾을 수 없습니다.",
     "serverError": "서버 오류가 발생했습니다."
+  },
+  "history": {
+    "title": "📚 생성 히스토리",
+    "totalTasks": "총 {{count}}개의 생성 작업",
+    "total": "전체",
+    "completed": "완료",
+    "inProgress": "진행 중",
+    "failed": "실패",
+    "statusPending": "⏳ 대기 중",
+    "statusProcessing": "🔄 생성 중",
+    "statusCompleted": "✅ 완료",
+    "statusFailed": "❌ 실패",
+    "noHistory": "생성 히스토리가 없습니다",
+    "noHistoryDesc": "첫 AI 이미지를 생성해보세요!",
+    "generateImage": "이미지 생성하기",
+    "images": "장",
+    "loadMore": "더 보기"
+  },
+  "payment": {
+    "bankTransfer": {
+      "title": "무통장입금 안내",
+      "loading": "로딩 중...",
+      "amount": "입금 금액",
+      "points": "충전 포인트",
+      "bankInfo": "입금 계좌 정보",
+      "bank": "은행",
+      "accountNumber": "계좌번호",
+      "accountHolder": "예금주",
+      "copyAccount": "계좌번호 복사",
+      "copied": "복사됨!",
+      "depositorName": "입금자명",
+      "depositorNamePlaceholder": "실제 입금하실 분의 이름",
+      "depositorNameHelp": "입금 확인을 위해 정확히 입력해주세요",
+      "notice": "안내사항",
+      "notice1": "입금 확인 후 수동으로 포인트가 충전됩니다 (평일 기준 24시간 이내)",
+      "notice2": "입금자명이 일치해야 빠른 확인이 가능합니다",
+      "notice3": "입금 후 확인이 안 되면 고객센터로 문의해주세요",
+      "confirmDeposit": "입금 완료 알림 신청",
+      "submitting": "신청 중...",
+      "submitSuccess": "입금 완료 신청이 접수되었습니다. 확인 후 포인트가 충전됩니다.",
+      "submitError": "신청 중 오류가 발생했습니다",
+      "goHome": "홈으로 가기"
+    },
+    "success": {
+      "processing": "결제 승인 처리 중...",
+      "title": "결제 완료!",
+      "pointsCharged": "{{points}} 포인트가 충전되었습니다!",
+      "redirecting": "잠시 후 메인 페이지로 이동합니다...",
+      "goHome": "홈으로 가기",
+      "invalidPayment": "결제 정보가 올바르지 않습니다",
+      "error": "결제 처리 중 오류가 발생했습니다"
+    },
+    "fail": {
+      "title": "결제 실패",
+      "errorCode": "오류 코드",
+      "unknownError": "알 수 없는 오류가 발생했습니다",
+      "retry": "다시 시도하기",
+      "goHome": "홈으로 가기",
+      "needHelp": "문제가 계속되시나요?"
+    }
+  },
+  "verifyEmail": {
+    "title": "이메일 인증",
+    "checkEmail": "이메일을 확인해주세요",
+    "sentTo": "{{email}}로 인증 메일을 보냈습니다.",
+    "checkSpam": "메일이 안 보이면 스팸 폴더를 확인해주세요.",
+    "resend": "인증 메일 다시 보내기",
+    "sending": "발송 중...",
+    "resendSuccess": "✅ 인증 메일이 발송되었습니다! 메일함을 확인해주세요.",
+    "resendError": "❌ 인증 메일 발송에 실패했습니다.",
+    "tooManyRequests": "❌ 너무 많은 요청이 있었습니다. 잠시 후 다시 시도해주세요.",
+    "alreadySent": "📧 이미 발송된 인증 메일을 확인해주세요.",
+    "verified": "인증 완료!",
+    "verifiedDesc": "이메일 인증이 완료되었습니다.",
+    "goHome": "홈으로 가기",
+    "checkVerification": "인증 확인하기",
+    "askResend": "이메일 인증이 필요합니다.\n\n인증 메일을 다시 받으시겠습니까?"
+  },
+  "pricing": {
+    "title": "요금 안내",
+    "subtitle": "필요한 만큼만 충전하고, 다양한 AI 모델로 이미지를 생성하세요",
+    "popular": "인기",
+    "perPoint": "포인트당",
+    "selectPlan": "충전하기",
+    "validFor5Years": "포인트 유효기간 5년",
+    "customAmountTitle": "💡 원하는 금액으로 충전 가능",
+    "customAmountDesc": "$1 ~ $1,000 범위 내에서 원하는 금액을 직접 입력하여 충전할 수 있습니다.",
+    "starter": {
+      "name": "스타터",
+      "feature1": "1,000 포인트 제공",
+      "feature2": "모든 AI 모델 사용 가능",
+      "feature3": "약 16장 이상 생성 가능"
+    },
+    "standard": {
+      "name": "인기",
+      "feature1": "5,250 포인트 제공 (+5% 보너스)",
+      "feature2": "모든 AI 모델 사용 가능",
+      "feature3": "약 87장 이상 생성 가능",
+      "feature4": "가성비 추천"
+    },
+    "pro": {
+      "name": "프로",
+      "feature1": "11,000 포인트 제공 (+10% 보너스)",
+      "feature2": "모든 AI 모델 사용 가능",
+      "feature3": "약 183장 이상 생성 가능",
+      "feature4": "대량 생성에 적합",
+      "feature5": "포인트당 가격 절약"
+    },
+    "premium": {
+      "name": "프리미엄",
+      "feature1": "34,500 포인트 제공 (+15% 보너스)",
+      "feature2": "모든 AI 모델 사용 가능",
+      "feature3": "약 575장 이상 생성 가능",
+      "feature4": "최고 보너스 혜택",
+      "feature5": "전문가/기업용 추천"
+    },
+    "modelPricing": "AI 모델별 요금",
+    "modelPricingDesc": "각 모델마다 품질과 생성 시간에 따라 포인트가 다르게 책정됩니다",
+    "model": "모델",
+    "pointsPerImage": "이미지당 포인트",
+    "avgTime": "평균 생성 시간",
+    "faqTitle": "자주 묻는 질문",
+    "faq1": {
+      "question": "포인트는 만료되나요?",
+      "answer": "포인트는 충전일로부터 5년간 유효합니다. 5년 내에 자유롭게 사용하실 수 있습니다."
+    },
+    "faq2": {
+      "question": "환불이 가능한가요?",
+      "answer": "네, 미사용 포인트에 대해 환불이 가능합니다. 자세한 내용은 환불 정책을 확인해주세요."
+    },
+    "faq3": {
+      "question": "이미지 생성에 실패하면 어떻게 되나요?",
+      "answer": "이미지 생성에 실패한 경우 해당 포인트는 자동으로 환불됩니다."
+    },
+    "faq4": {
+      "question": "여러 모델을 동시에 사용할 수 있나요?",
+      "answer": "네, 한 번의 요청으로 여러 AI 모델에서 동시에 이미지를 생성할 수 있습니다."
+    }
   }
 }

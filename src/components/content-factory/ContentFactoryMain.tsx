@@ -95,26 +95,21 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const toggleContentType = (typeId: string) => {
-    setSelectedTypes(prev => 
-      prev.includes(typeId) 
-        ? prev.filter(id => id !== typeId)
-        : [...prev, typeId]
-    );
+  const selectContentType = (typeId: string) => {
+    setSelectedType(typeId === selectedType ? null : typeId);
   };
 
-  const totalPrice = CONTENT_TYPES
-    .filter(type => selectedTypes.includes(type.id))
-    .reduce((sum, type) => sum + type.price, 0);
+  const selectedTypeData = CONTENT_TYPES.find(type => type.id === selectedType);
+  const totalPrice = selectedTypeData?.price || 0;
 
   const handleStartFactory = () => {
     if (inputPrompt.trim().length < 10) {
       alert(t('contentFactory.minChars'));
       return;
     }
-    if (selectedTypes.length === 0) {
+    if (!selectedType) {
       alert(t('contentFactory.selectContentType'));
       return;
     }
@@ -133,70 +128,70 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
   return (
     <>
       <div className="space-y-6">
-        {/* Hero Section with Selectable Content Types */}
-        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-8 text-white relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute bottom-0 right-0 w-60 h-60 bg-white rounded-full translate-x-1/3 translate-y-1/3" />
+        {/* 콘텐츠 타입 선택 섹션 */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          {/* 헤더 */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white">
+              <Factory className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{t('contentFactory.title')}</h1>
+              <p className="text-gray-500 text-sm">{t('contentFactory.subtitle')}</p>
+            </div>
+          </div>
+          
+          {/* 콘텐츠 타입 카드 그리드 */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {CONTENT_TYPES.map((type) => {
+              const isSelected = selectedType === type.id;
+              return (
+                <button
+                  key={type.id}
+                  onClick={() => selectContentType(type.id)}
+                  className={`relative ${type.bgColor} rounded-xl p-4 text-center border-2 transition-all hover:shadow-md ${
+                    isSelected ? type.borderColor + ' shadow-lg' : 'border-transparent'
+                  }`}
+                >
+                  {isSelected && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mx-auto mb-3 text-white shadow-lg`}>
+                    <type.icon className="w-6 h-6" />
+                  </div>
+                  <h4 className={`font-semibold ${type.textColor}`}>{getContentTypeName(type.id)}</h4>
+                  <p className="text-sm text-gray-600 mt-1">{getContentTypeCount(type.id)}</p>
+                  <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
+                  <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
-                <Factory className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">{t('contentFactory.title')}</h1>
-                <p className="text-white/80 text-sm">{t('contentFactory.subtitle')}</p>
-              </div>
-            </div>
-
-            {/* Selectable Content Type Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
-              {CONTENT_TYPES.map((type) => {
-                const isSelected = selectedTypes.includes(type.id);
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => toggleContentType(type.id)}
-                    className={`relative rounded-xl p-3 text-center transition-all transform hover:scale-105 ${
-                      isSelected 
-                        ? 'bg-white text-gray-900 shadow-xl ring-2 ring-white' 
-                        : 'bg-white/10 backdrop-blur hover:bg-white/20'
-                    }`}
-                  >
-                    {isSelected && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                        <Check className="w-4 h-4 text-white" />
-                      </div>
-                    )}
-                    <type.icon className={`w-6 h-6 mx-auto mb-1 ${isSelected ? type.textColor : ''}`} />
-                    <p className={`text-sm font-medium ${isSelected ? '' : 'text-white'}`}>{getContentTypeName(type.id)}</p>
-                    <p className={`text-xs ${isSelected ? 'text-gray-500' : 'text-white/70'}`}>{getContentTypeCount(type.id)}</p>
-                    <p className={`text-xs font-bold mt-1 ${isSelected ? type.textColor : 'text-yellow-300'}`}>
-                      {type.price}P (${(type.price / 100).toFixed(2)})
+          {/* 선택 요약 */}
+          {selectedType && selectedTypeData && (
+            <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Zap className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-indigo-900">
+                      {getContentTypeName(selectedType)} {t('contentFactory.selected')}
                     </p>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Selected Summary */}
-            {selectedTypes.length > 0 && (
-              <div className="mt-4 p-3 bg-white/20 backdrop-blur rounded-xl flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">
-                    {selectedTypes.length} {t('contentFactory.selected')}
-                  </p>
+                    <p className="text-sm text-indigo-700">{t('contentFactory.estimatedTime')}</p>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold">{totalPrice}P</p>
-                  <p className="text-xs text-white/70">${(totalPrice / 100).toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-indigo-900">{totalPrice}P</p>
+                  <p className="text-sm text-indigo-600">${(totalPrice / 100).toFixed(2)}</p>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Input Form */}
@@ -218,9 +213,9 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
             <p className="text-sm text-gray-500">{inputPrompt.length} / 2,000</p>
             <button
               onClick={handleStartFactory}
-              disabled={inputPrompt.trim().length < 10 || selectedTypes.length === 0}
+              disabled={inputPrompt.trim().length < 10 || !selectedType}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                inputPrompt.trim().length >= 10 && selectedTypes.length > 0
+                inputPrompt.trim().length >= 10 && selectedType
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg'
                   : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
@@ -265,53 +260,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
           </div>
         </div>
 
-        {/* Pricing Summary */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('contentFactory.pricingTitle')}</h3>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {CONTENT_TYPES.map((type) => (
-              <div
-                key={type.id}
-                className={`${type.bgColor} rounded-xl p-4 text-center border-2 transition-all cursor-pointer ${
-                  selectedTypes.includes(type.id) ? type.borderColor : 'border-transparent'
-                }`}
-                onClick={() => toggleContentType(type.id)}
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mx-auto mb-3 text-white shadow-lg`}>
-                  <type.icon className="w-6 h-6" />
-                </div>
-                <h4 className={`font-semibold ${type.textColor}`}>{getContentTypeName(type.id)}</h4>
-                <p className="text-sm text-gray-600 mt-1">{getContentTypeCount(type.id)}</p>
-                <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
-                <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
-              </div>
-            ))}
-          </div>
-
-          {selectedTypes.length > 0 && (
-            <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <Zap className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-indigo-900">
-                      {selectedTypes.length} {t('contentFactory.selected')}
-                    </p>
-                    <p className="text-sm text-indigo-700">{t('contentFactory.estimatedTime')}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-indigo-900">{totalPrice}P</p>
-                  <p className="text-sm text-indigo-600">${(totalPrice / 100).toFixed(2)}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
 
       {/* Content Generation Modal */}
       <ContentFactoryModal
@@ -319,7 +268,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
         onClose={() => setIsModalOpen(false)}
         initialPrompt={inputPrompt}
         referenceImageIds={selectedImageIds}
-        selectedContentTypes={selectedTypes}
+        selectedContentType={selectedType || ''}
         totalPrice={totalPrice}
       />
     </>

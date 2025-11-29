@@ -44,6 +44,8 @@
     "history": "History"
   },
   "home": {
+    "heroTitle": "AI Image & Content Auto-Generation Platform",
+    "heroDescription": "A SaaS service that automatically generates images and content in bulk using premium AI models like Midjourney, DALL-E, and Ideogram.",
     "title": "AI Image Generation",
     "subtitle": "Generate dozens of images at once with multiple AI models",
     "promptInput": "Enter Prompt",
@@ -172,15 +174,34 @@
     "noticeContinue": "Generation will continue even if you close this page",
     "noticeEmail": "You will receive an email at {{email}} when complete",
     "noticeHistory": "You can check anytime in My Page > History",
-    "noticeValidity": "Image links are valid for 30 days"
+    "noticeValidity": "Image links are valid for 30 days",
+    "like": "Like",
+    "unlike": "Unlike"
   },
   "mypage": {
     "title": "My Page",
     "dashboard": "Dashboard",
+    "galleryTab": "Gallery",
     "pointsTab": "Points",
     "historyTab": "History",
     "paymentTab": "Payments",
     "settingsTab": "Settings",
+    "contentStorageTab": "Content Storage",
+    "contentHistoryTab": "Content History",
+    "contentStorage": "Content Storage",
+    "contentStorageDesc": "Manage your saved content",
+    "contentHistory": "Content History",
+    "contentHistoryDesc": "View your generation records",
+    "contentTypes": "Content Types",
+    "contentTypesDesc": "View saved content by type",
+    "contentTypeStory": "Story",
+    "contentHistoryTitle": "Content Generation History",
+    "contentHistoryGuide": "View your Content Factory project history",
+    "viewContentHistory": "View History",
+    "viewContentHistoryDesc": "View detailed records of your generated content projects",
+    "viewAll": "View All",
+    "createNewContent": "Create New Content",
+    "createNewContentDesc": "Generate various marketing content with Content Factory",
     "currentBalance": "Current Balance",
     "totalImages": "Total Images",
     "totalGenerations": "Total Generations",
@@ -223,6 +244,25 @@
     "pointCharge": "Point Charge",
     "orderNumber": "Order Number",
     "failReason": "Failure Reason"
+  },
+  "gallery": {
+    "title": "📸 My Gallery",
+    "all": "All",
+    "liked": "Liked",
+    "uploaded": "Uploaded",
+    "evolution": "Evolution",
+    "noImages": "No images yet",
+    "noImagesDesc": "Generate images or like some to get started!",
+    "selected": "Selected",
+    "sendToContentFactory": "Send to ContentFactory",
+    "startEvolution": "Start Evolution",
+    "delete": "Delete",
+    "download": "Download",
+    "viewOriginal": "View Original",
+    "filterByModel": "Filter by Model",
+    "sortBy": "Sort by",
+    "newest": "Newest",
+    "oldest": "Oldest"
   },
   "points": {
     "title": "Charge Points",
@@ -488,7 +528,7 @@
       "name": "Name: Minju Song",
       "position": "Position: CEO",
       "email": "Email: webmaster@geniuscat.co.kr",
-      "phone": "Phone: 010-8440-9820"
+      "phone": "Phone: (+82)-10-8440-9820"
     },
     "article9": {
       "title": "Article 9 (Operation and Rejection of Cookies)",
@@ -660,13 +700,16 @@
       "completed": "Completed",
       "completeTitle": "🎉 Production Complete!",
       "completeDesc": "{{count}} images have been successfully generated.",
-      "completeGuide": "Check and download from gallery.",
+      "completeGuide": "Check and download from the results page.",
+      "viewResults": "View Results",
+      "goToStorage": "Go to Storage",
       "startFailed": "Failed to start production",
       "startError": "Error occurred while starting production"
     }
   },
   "footer": {
     "description": "Generate dozens of images at once with multiple AI models",
+    "operatedBy": "Operated by",
     "support": "Support",
     "phone": "Phone",
     "hours": "Weekdays 10:00 AM - 6:00 PM",
@@ -677,6 +720,7 @@
     "ecommerceNumber": "E-commerce No.",
     "address": "Address",
     "policies": "Terms & Policies",
+    "pricing": "Pricing",
     "allRightsReserved": "All rights reserved."
   },
   "points": {
@@ -732,5 +776,143 @@
     "forbidden": "Access denied.",
     "notFound": "Page not found.",
     "serverError": "Server error occurred."
+  },
+  "history": {
+    "title": "📚 Generation History",
+    "totalTasks": "{{count}} generation tasks",
+    "total": "Total",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "failed": "Failed",
+    "statusPending": "⏳ Pending",
+    "statusProcessing": "🔄 Processing",
+    "statusCompleted": "✅ Completed",
+    "statusFailed": "❌ Failed",
+    "noHistory": "No generation history",
+    "noHistoryDesc": "Generate your first AI images!",
+    "generateImage": "Generate Images",
+    "images": "images",
+    "loadMore": "Load More"
+  },
+  "payment": {
+    "bankTransfer": {
+      "title": "Bank Transfer Guide",
+      "loading": "Loading...",
+      "amount": "Transfer Amount",
+      "points": "Points to Charge",
+      "bankInfo": "Bank Account Info",
+      "bank": "Bank",
+      "accountNumber": "Account Number",
+      "accountHolder": "Account Holder",
+      "copyAccount": "Copy Account",
+      "copied": "Copied!",
+      "depositorName": "Depositor Name",
+      "depositorNamePlaceholder": "Name of the person making the deposit",
+      "depositorNameHelp": "Please enter accurately for verification",
+      "notice": "Notice",
+      "notice1": "Points will be credited manually after deposit confirmation (within 24 hours on business days)",
+      "notice2": "Depositor name must match for quick verification",
+      "notice3": "Contact support if not confirmed after deposit",
+      "confirmDeposit": "Notify Deposit Completion",
+      "submitting": "Submitting...",
+      "submitSuccess": "Deposit notification submitted. Points will be credited after verification.",
+      "submitError": "Error occurred while submitting",
+      "goHome": "Go Home"
+    },
+    "success": {
+      "processing": "Processing payment...",
+      "title": "Payment Complete!",
+      "pointsCharged": "{{points}} points have been charged!",
+      "redirecting": "Redirecting to home page...",
+      "goHome": "Go Home",
+      "invalidPayment": "Invalid payment information",
+      "error": "Error occurred while processing payment"
+    },
+    "fail": {
+      "title": "Payment Failed",
+      "errorCode": "Error Code",
+      "unknownError": "An unknown error occurred",
+      "retry": "Try Again",
+      "goHome": "Go Home",
+      "needHelp": "Still having issues?"
+    }
+  },
+  "verifyEmail": {
+    "title": "Email Verification",
+    "checkEmail": "Please check your email",
+    "sentTo": "Verification email sent to {{email}}.",
+    "checkSpam": "Check your spam folder if you don't see it.",
+    "resend": "Resend Verification Email",
+    "sending": "Sending...",
+    "resendSuccess": "✅ Verification email sent! Please check your inbox.",
+    "resendError": "❌ Failed to send verification email.",
+    "tooManyRequests": "❌ Too many requests. Please try again later.",
+    "alreadySent": "📧 Please check the verification email already sent.",
+    "verified": "Verified!",
+    "verifiedDesc": "Email verification complete.",
+    "goHome": "Go Home",
+    "checkVerification": "Check Verification",
+    "askResend": "Email verification required.\n\nWould you like to resend the verification email?"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Pay only for what you need and generate images with various AI models",
+    "popular": "Popular",
+    "perPoint": "Per point",
+    "selectPlan": "Get Started",
+    "validFor5Years": "Points valid for 5 years",
+    "customAmountTitle": "💡 Custom Amount Available",
+    "customAmountDesc": "You can enter any amount between $1 and $1,000 to charge.",
+    "starter": {
+      "name": "Starter",
+      "feature1": "1,000 points included",
+      "feature2": "Access to all AI models",
+      "feature3": "Generate 16+ images"
+    },
+    "standard": {
+      "name": "Popular",
+      "feature1": "5,250 points included (+5% bonus)",
+      "feature2": "Access to all AI models",
+      "feature3": "Generate 87+ images",
+      "feature4": "Best value"
+    },
+    "pro": {
+      "name": "Pro",
+      "feature1": "11,000 points included (+10% bonus)",
+      "feature2": "Access to all AI models",
+      "feature3": "Generate 183+ images",
+      "feature4": "Great for bulk generation",
+      "feature5": "Save more per point"
+    },
+    "premium": {
+      "name": "Premium",
+      "feature1": "34,500 points included (+15% bonus)",
+      "feature2": "Access to all AI models",
+      "feature3": "Generate 575+ images",
+      "feature4": "Maximum bonus",
+      "feature5": "For professionals & businesses"
+    },
+    "modelPricing": "AI Model Pricing",
+    "modelPricingDesc": "Points vary by model based on quality and generation time",
+    "model": "Model",
+    "pointsPerImage": "Points per Image",
+    "avgTime": "Avg. Time",
+    "faqTitle": "Frequently Asked Questions",
+    "faq1": {
+      "question": "Do points expire?",
+      "answer": "Points are valid for 5 years from the date of purchase. You can use them freely within 5 years."
+    },
+    "faq2": {
+      "question": "Can I get a refund?",
+      "answer": "Yes, refunds are available for unused points. Please check our refund policy for details."
+    },
+    "faq3": {
+      "question": "What happens if image generation fails?",
+      "answer": "Points are automatically refunded for failed image generations."
+    },
+    "faq4": {
+      "question": "Can I use multiple models at once?",
+      "answer": "Yes, you can generate images from multiple AI models simultaneously with a single request."
+    }
   }
 }

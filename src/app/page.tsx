@@ -436,21 +436,39 @@ export default function Home() {
     try {
       let referenceImageUrl = '';
 
-      // 참고 이미지가 있으면 먼저 Storage에 업로드
+      // 참고 이미지가 있으면 먼저 Storage에 업로드 + 갤러리에 저장
       if (referenceImage) {
         setUploadingImage(true);
         try {
-          const { ref: storageRef, uploadBytes: uploadBytesFunc, getDownloadURL: getDownloadURLFunc } = await import('firebase/storage');
-          const { storage } = await import('@/lib/firebase');
+          // FormData로 갤러리 업로드 API 호출
+          const formData = new FormData();
+          formData.append('file', referenceImage);
+          formData.append('userId', user.uid);
           
-          const timestamp = Date.now();
-          const filename = `reference-images/${user.uid}/${timestamp}_${referenceImage.name}`;
-          const imageRef = storageRef(storage, filename);
+          // 이미지 크기 가져오기
+          const img = new Image();
+          const imgLoadPromise = new Promise<{ width: number; height: number }>((resolve) => {
+            img.onload = () => resolve({ width: img.width, height: img.height });
+            img.onerror = () => resolve({ width: 0, height: 0 });
+            img.src = referenceImagePreview;
+          });
+          const dimensions = await imgLoadPromise;
+          formData.append('width', dimensions.width.toString());
+          formData.append('height', dimensions.height.toString());
           
-          await uploadBytesFunc(imageRef, referenceImage);
-          referenceImageUrl = await getDownloadURLFunc(imageRef);
+          const uploadResponse = await fetch('/api/gallery/upload', {
+            method: 'POST',
+            body: formData,
+          });
           
-          console.log('✅ 참고 이미지 업로드 완료:', referenceImageUrl);
+          const uploadData = await uploadResponse.json();
+          
+          if (uploadData.success) {
+            referenceImageUrl = uploadData.data.imageUrl;
+            console.log('✅ 참고 이미지 업로드 및 갤러리 저장 완료:', referenceImageUrl);
+          } else {
+            throw new Error(uploadData.error || '업로드 실패');
+          }
         } catch (uploadError) {
           console.error('❌ 참고 이미지 업로드 실패:', uploadError);
           alert(t('home.uploadFailed'));
@@ -514,6 +532,16 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* 서비스 설명 */}
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+            {t('home.heroTitle')}
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
+            {t('home.heroDescription')}
+          </p>
+        </div>
+
         {/* 탭 네비게이션 */}
         <div className="mb-6">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-md">
@@ -913,22 +941,26 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">{t('common.appName')}</h3>
-              <p className="text-gray-400 text-sm">{t('footer.description')}</p>
+              <p className="text-gray-400 text-sm mb-4">{t('footer.description')}</p>
+              <p className="text-gray-500 text-xs">
+                {t('footer.operatedBy')}: 엠제이스튜디오(MJ Studio)
+              </p>
             </div>
             <div>
               <h4 className="font-bold mb-4">{t('footer.support')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>{t('common.email')}: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">webmaster@geniuscat.co.kr</a></li>
-                <li>{t('footer.phone')}: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">010-8440-9820</a></li>
+                <li>{t('footer.phone')}: <a href="tel:+82-10-8440-9820" className="hover:text-white transition-colors">(+82)-10-8440-9820</a></li>
                 <li>{t('footer.hours')}</li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>{t('footer.companyName')}: MJ Studio</li>
-                <li>{t('footer.representative')}: Song Minju</li>
-                <li>{t('footer.businessNumber')}: 829-04-03406</li>
+                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ Studio)</li>
+                <li><strong>{t('footer.representative')}:</strong> Song Minju</li>
+                <li><strong>{t('footer.businessNumber')}:</strong> 829-04-03406</li>
+                <li><strong>{t('footer.address')}:</strong> Seoul, South Korea</li>
               </ul>
             </div>
             <div>
@@ -937,11 +969,19 @@ export default function Home() {
                 <li><Link href="/terms" className="hover:text-white transition-colors">{t('common.terms')}</Link></li>
                 <li><Link href="/privacy" className="hover:text-white transition-colors">{t('common.privacy')}</Link></li>
                 <li><Link href="/refund" className="hover:text-white transition-colors">{t('common.refundPolicy')}</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">{t('footer.pricing')}</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            © 2025 MJ Studio. {t('footer.allRightsReserved')}
+          <div className="border-t border-gray-800 mt-8 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+              <p>© 2025 엠제이스튜디오(MJ Studio). {t('footer.allRightsReserved')}</p>
+              <div className="flex space-x-4 mt-4 md:mt-0">
+                <Link href="/terms" className="hover:text-white transition-colors">{t('common.terms')}</Link>
+                <Link href="/privacy" className="hover:text-white transition-colors">{t('common.privacy')}</Link>
+                <Link href="/refund" className="hover:text-white transition-colors">{t('common.refundPolicy')}</Link>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

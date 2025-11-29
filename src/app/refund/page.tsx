@@ -161,7 +161,7 @@ export default function RefundPolicyPage() {
                 <strong>{t('refund.contact.email')}:</strong> <a href="mailto:webmaster@geniuscat.co.kr" className="text-indigo-600 hover:underline">webmaster@geniuscat.co.kr</a>
               </p>
               <p className="text-indigo-800">
-                <strong>{t('refund.contact.phone')}:</strong> <a href="tel:010-8440-9820" className="text-indigo-600 hover:underline">010-8440-9820</a>
+                <strong>{t('refund.contact.phone')}:</strong> <a href="tel:+82-10-8440-9820" className="text-indigo-600 hover:underline">(+82)-10-8440-9820</a>
               </p>
               <p className="text-sm text-indigo-600 mt-2">{t('refund.contact.hours')}</p>
             </div>

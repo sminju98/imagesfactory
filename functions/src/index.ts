@@ -12,5 +12,8 @@ export { jobWorker } from './jobWorker';
 // Task 완료 체크 (Firestore Trigger - onUpdate)
 export { checkTaskCompletion } from './checkTaskCompletion';
 
+// Task 타임아웃 체크 (5분마다 실행, 10분 초과 시 부분 완료)
+export { checkTaskTimeout } from './timeoutHandler';
+
 
 

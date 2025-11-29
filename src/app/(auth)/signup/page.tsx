@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useTranslation, SUPPORTED_LANGUAGES, LanguageCode } from '@/lib/i18n';
 import { Sparkles, Mail, Lock, User as UserIcon, CheckCircle, AlertCircle, Globe, ChevronDown } from 'lucide-react';
@@ -70,6 +70,9 @@ export default function SignupPage() {
 
       const user = userCredential.user;
 
+      // 가입 보너스 포인트
+      const SIGNUP_BONUS_POINTS = 100;
+
       // Firestore에 사용자 정보 저장
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
@@ -77,7 +80,7 @@ export default function SignupPage() {
         displayName: formData.displayName,
         photoURL: null,
         provider: 'password',
-        points: 1000, // 가입 보너스 1,000 포인트
+        points: SIGNUP_BONUS_POINTS, // 가입 보너스 100 포인트
         emailVerified: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -86,7 +89,19 @@ export default function SignupPage() {
           totalImages: 0,
           totalPointsUsed: 0,
           totalPointsPurchased: 0,
+          totalEvolutions: 0,
         },
+      });
+
+      // 포인트 트랜잭션 기록
+      await setDoc(doc(collection(db, 'pointTransactions')), {
+        userId: user.uid,
+        type: 'bonus',
+        amount: SIGNUP_BONUS_POINTS,
+        balanceBefore: 0,
+        balanceAfter: SIGNUP_BONUS_POINTS,
+        description: '회원가입 보너스 포인트',
+        createdAt: serverTimestamp(),
       });
 
       // 이메일 인증 발송
@@ -100,7 +115,7 @@ export default function SignupPage() {
           body: JSON.stringify({
             email: user.email,
             displayName: formData.displayName,
-            points: 1000,
+            points: SIGNUP_BONUS_POINTS,
           }),
         });
       } catch (emailError) {

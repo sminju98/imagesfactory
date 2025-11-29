@@ -108,7 +108,7 @@ export default function PrivacyPage() {
                 <strong>{t('common.effectiveDate')}:</strong> 2025-11-28
               </p>
               <p className="text-sm text-gray-600 mt-2">
-                <strong>{t('privacy.officer')}:</strong> 송민주 (webmaster@geniuscat.co.kr | 010-8440-9820)
+                <strong>{t('privacy.officer')}:</strong> 송민주 (webmaster@geniuscat.co.kr | (+82)-10-8440-9820)
               </p>
             </div>
           </div>

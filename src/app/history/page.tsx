@@ -8,9 +8,11 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import { Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export default function HistoryPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const [generations, setGenerations] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -71,10 +73,10 @@ export default function HistoryPage() {
   };
 
   const statusLabels = {
-    pending: '⏳ 대기 중',
-    processing: '🔄 생성 중',
-    completed: '✅ 완료',
-    failed: '❌ 실패',
+    pending: t('history.statusPending'),
+    processing: t('history.statusProcessing'),
+    completed: t('history.statusCompleted'),
+    failed: t('history.statusFailed'),
   };
 
   return (
@@ -84,9 +86,9 @@ export default function HistoryPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">📚 생성 히스토리</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('history.title')}</h1>
           <p className="text-gray-600">
-            총 {generations.length}개의 생성 작업
+            {t('history.totalTasks', { count: generations.length })}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export default function HistoryPage() {
           <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">전체</p>
+                <p className="text-sm text-gray-600 mb-1">{t('history.total')}</p>
                 <p className="text-2xl font-bold text-gray-900">{generations.length}</p>
               </div>
               <ImageIcon className="w-8 h-8 text-gray-400" />
@@ -105,7 +107,7 @@ export default function HistoryPage() {
           <div className="bg-green-50 rounded-xl p-6 border border-green-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-700 mb-1">완료</p>
+                <p className="text-sm text-green-700 mb-1">{t('history.completed')}</p>
                 <p className="text-2xl font-bold text-green-900">
                   {generations.filter(g => g.status === 'completed').length}
                 </p>
@@ -117,7 +119,7 @@ export default function HistoryPage() {
           <div className="bg-blue-50 rounded-xl p-6 border border-blue-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-700 mb-1">진행 중</p>
+                <p className="text-sm text-blue-700 mb-1">{t('history.inProgress')}</p>
                 <p className="text-2xl font-bold text-blue-900">
                   {generations.filter(g => g.status === 'processing').length}
                 </p>
@@ -129,7 +131,7 @@ export default function HistoryPage() {
           <div className="bg-red-50 rounded-xl p-6 border border-red-200 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-red-700 mb-1">실패</p>
+                <p className="text-sm text-red-700 mb-1">{t('history.failed')}</p>
                 <p className="text-2xl font-bold text-red-900">
                   {generations.filter(g => g.status === 'failed').length}
                 </p>

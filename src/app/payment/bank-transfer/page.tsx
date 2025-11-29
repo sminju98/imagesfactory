@@ -221,7 +221,7 @@ function BankTransferContent() {
             <li>• 평일 기준 1-2시간 내에 포인트가 충전됩니다</li>
             <li>• 주말/공휴일은 익일 처리됩니다</li>
             <li>• 입금자명이 다를 경우 확인이 지연될 수 있습니다</li>
-            <li>• 문의: webmaster@geniuscat.co.kr / 010-8440-9820</li>
+            <li>• 문의: webmaster@geniuscat.co.kr / (+82)-10-8440-9820</li>
           </ul>
         </div>
 

@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getTranslationFromRequest } from '@/lib/server-i18n';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
+  const { t } = getTranslationFromRequest(request);
+  
   try {
     const { concept, message, script } = await request.json();
 
     if (!concept || !message || !script) {
       return NextResponse.json({
         success: false,
-        error: '콘셉트, 메시지, 대본 데이터가 모두 필요합니다',
+        error: t.errors.invalidRequest,
       });
     }
 
@@ -96,7 +99,7 @@ ${script.cardNewsFlow?.map((p: any) => `${p.order}. ${p.title}: ${p.body}`).join
       console.error('JSON 파싱 오류:', responseText);
       return NextResponse.json({
         success: false,
-        error: '카피 생성 결과를 처리하는 중 오류가 발생했습니다',
+        error: t.errors.copyGenerationFailed,
       });
     }
 
@@ -109,7 +112,7 @@ ${script.cardNewsFlow?.map((p: any) => `${p.order}. ${p.title}: ${p.body}`).join
     console.error('카피 생성 오류:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '카피 생성 중 오류가 발생했습니다',
+      error: t.errors.copyGenerationFailed,
     }, { status: 500 });
   }
 }

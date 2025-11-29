@@ -8,7 +8,8 @@ import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } f
 import { auth, db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation, SUPPORTED_LANGUAGES, LanguageCode } from '@/lib/i18n';
-import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2, AlertCircle, Globe, ChevronDown } from 'lucide-react';
+import { Sparkles, User as UserIcon, Mail, Calendar, Award, Image as ImageIcon, TrendingUp, CreditCard, Settings, LogOut, Loader2, AlertCircle, Globe, ChevronDown, ImagePlus, FolderOpen, History } from 'lucide-react';
+import GalleryTab from '@/components/gallery/GalleryTab';
 
 export default function MyPage() {
   const router = useRouter();
@@ -28,6 +29,16 @@ export default function MyPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [paymentPage, setPaymentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // 콘텐츠 저장소 상태
+  const [selectedContentType, setSelectedContentType] = useState<string | null>(null);
+  const [savedContents, setSavedContents] = useState<any[]>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentStats, setContentStats] = useState<Record<string, number>>({});
+  
+  // 콘텐츠 히스토리 상태
+  const [contentProjects, setContentProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -43,6 +54,57 @@ export default function MyPage() {
       fetchPayments();
     }
   }, [user]);
+
+  // 콘텐츠 저장소 데이터 로드
+  useEffect(() => {
+    if (user && activeTab === 'contentStorage') {
+      fetchSavedContents();
+    }
+  }, [user, activeTab, selectedContentType]);
+
+  // 콘텐츠 히스토리 데이터 로드
+  useEffect(() => {
+    if (user && activeTab === 'contentHistory') {
+      fetchContentProjects();
+    }
+  }, [user, activeTab]);
+
+  const fetchSavedContents = async () => {
+    if (!user) return;
+    setContentLoading(true);
+    try {
+      const params = new URLSearchParams({ userId: user.uid, limit: '50' });
+      if (selectedContentType) {
+        params.set('type', selectedContentType);
+      }
+      const response = await fetch(`/api/content/storage?${params}`);
+      const data = await response.json();
+      if (data.success) {
+        setSavedContents(data.data.contents);
+        setContentStats(data.data.stats);
+      }
+    } catch (error) {
+      console.error('Content fetch error:', error);
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  const fetchContentProjects = async () => {
+    if (!user) return;
+    setProjectsLoading(true);
+    try {
+      const response = await fetch(`/api/content/history?userId=${user.uid}&limit=20`);
+      const data = await response.json();
+      if (data.success) {
+        setContentProjects(data.data.projects);
+      }
+    } catch (error) {
+      console.error('Projects fetch error:', error);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
 
   const fetchPayments = async () => {
     if (!user) return;
@@ -195,9 +257,21 @@ export default function MyPage() {
                   <Award className="w-5 h-5" />
                   <span className="font-medium">{t('mypage.pointsTab')}</span>
                 </button>
+                <button onClick={() => setActiveTab('gallery')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'gallery' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  <ImagePlus className="w-5 h-5" />
+                  <span className="font-medium">{t('mypage.galleryTab')}</span>
+                </button>
                 <button onClick={() => setActiveTab('history')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'history' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   <ImageIcon className="w-5 h-5" />
                   <span className="font-medium">{t('mypage.historyTab')}</span>
+                </button>
+                <button onClick={() => setActiveTab('contentStorage')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'contentStorage' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  <FolderOpen className="w-5 h-5" />
+                  <span className="font-medium">{t('mypage.contentStorageTab')}</span>
+                </button>
+                <button onClick={() => setActiveTab('contentHistory')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'contentHistory' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  <History className="w-5 h-5" />
+                  <span className="font-medium">{t('mypage.contentHistoryTab')}</span>
                 </button>
                 <button onClick={() => setActiveTab('payment')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'payment' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   <CreditCard className="w-5 h-5" />
@@ -292,6 +366,13 @@ export default function MyPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Gallery Tab */}
+            {activeTab === 'gallery' && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <GalleryTab userId={user.uid} />
               </div>
             )}
 
@@ -561,6 +642,155 @@ export default function MyPage() {
                 </div>
               </div>
             )}
+
+            {/* Content Storage Tab */}
+            {activeTab === 'contentStorage' && (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
+                  <h2 className="text-2xl font-bold mb-2">{t('mypage.contentStorage')}</h2>
+                  <p className="text-indigo-100 mb-4">{t('mypage.contentStorageDesc')}</p>
+                  <p className="text-3xl font-bold">{contentStats.total || 0} {t('mypage.totalContents')}</p>
+                </div>
+
+                {/* 콘텐츠 타입 필터 */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">{t('mypage.contentTypes')}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{t('mypage.contentTypesDesc')}</p>
+                  </div>
+                  <div className="p-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedContentType(null)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${!selectedContentType ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    >
+                      {t('common.all')} ({contentStats.total || 0})
+                    </button>
+                    {[
+                      { type: 'reels', labelKey: 'contentFactory.contentTypes.reels' },
+                      { type: 'comic', labelKey: 'contentFactory.contentTypes.comic' },
+                      { type: 'cardnews', labelKey: 'contentFactory.contentTypes.cardnews' },
+                      { type: 'banner', labelKey: 'contentFactory.contentTypes.banner' },
+                      { type: 'thumbnail', labelKey: 'contentFactory.contentTypes.thumbnail' },
+                      { type: 'detail_header', labelKey: 'contentFactory.contentTypes.detail' },
+                    ].map(item => (
+                      <button
+                        key={item.type}
+                        onClick={() => setSelectedContentType(item.type)}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedContentType === item.type ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                      >
+                        {t(item.labelKey)} ({contentStats[item.type] || 0})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 콘텐츠 그리드 */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">{selectedContentType ? t(`contentFactory.contentTypes.${selectedContentType === 'detail_header' ? 'detail' : selectedContentType}`) : t('common.all')}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{savedContents.length} {t('mypage.items')}</p>
+                  </div>
+                  {contentLoading ? (
+                    <div className="p-12 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+                    </div>
+                  ) : savedContents.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500">
+                      <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p>{t('mypage.noContents')}</p>
+                    </div>
+                  ) : (
+                    <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {savedContents.map((content: any) => (
+                        <div key={content.id} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+                          <img src={content.thumbnailUrl || content.imageUrl} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                              onClick={() => window.open(content.imageUrl, '_blank')}
+                              className="px-4 py-2 bg-white text-gray-900 rounded-lg font-medium"
+                            >
+                              {t('common.view')}
+                            </button>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                            <p className="text-white text-xs truncate">{content.type}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Content History Tab */}
+            {activeTab === 'contentHistory' && (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
+                  <h2 className="text-2xl font-bold mb-2">{t('mypage.contentHistory')}</h2>
+                  <p className="text-indigo-100 mb-4">{t('mypage.contentHistoryDesc')}</p>
+                  <p className="text-3xl font-bold">{contentProjects.length} {t('mypage.totalProjects')}</p>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">{t('mypage.contentHistoryTitle')}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{t('mypage.totalProjects', { count: contentProjects.length })}</p>
+                  </div>
+                  {projectsLoading ? (
+                    <div className="p-12 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+                    </div>
+                  ) : contentProjects.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500">
+                      <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p>{t('mypage.noProjects')}</p>
+                      <button
+                        onClick={() => router.push('/')}
+                        className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                      >
+                        {t('mypage.createNewContent')} →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {contentProjects.map((project: any) => {
+                        const createdAt = project.createdAt?.toDate ? new Date(project.createdAt.toDate()) : (project.createdAt?._seconds ? new Date(project.createdAt._seconds * 1000) : new Date());
+                        const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+                          processing: { label: t('mypage.statusProcessing'), color: 'text-blue-600', bg: 'bg-blue-100' },
+                          completed: { label: t('mypage.statusCompleted'), color: 'text-green-600', bg: 'bg-green-100' },
+                          failed: { label: t('mypage.statusFailed'), color: 'text-red-600', bg: 'bg-red-100' },
+                          partial: { label: t('mypage.statusPartial'), color: 'text-yellow-600', bg: 'bg-yellow-100' },
+                        };
+                        const status = statusConfig[project.status] || statusConfig.processing;
+                        return (
+                          <div key={project.id} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-gray-900">{project.concept?.productName || project.inputPrompt || t('mypage.untitledProject')}</p>
+                                  <span className={`px-2 py-1 text-xs rounded-full ${status.bg} ${status.color}`}>{status.label}</span>
+                                </div>
+                                <p className="text-sm text-gray-500">{createdAt.toLocaleDateString()} {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                  <span>{project.tasksSummary?.completed || 0}/{project.tasksSummary?.total || 0} {t('mypage.completed')}</span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => router.push(`/content/${project.id}`)}
+                                className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+                              >
+                                {t('common.view')} →
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -577,7 +807,7 @@ export default function MyPage() {
               <h4 className="font-bold mb-4">{t('footer.support')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>{t('common.email')}: <a href="mailto:webmaster@geniuscat.co.kr" className="hover:text-white transition-colors">webmaster@geniuscat.co.kr</a></li>
-                <li>{t('footer.phone')}: <a href="tel:010-8440-9820" className="hover:text-white transition-colors">010-8440-9820</a></li>
+                <li>{t('footer.phone')}: <a href="tel:+82-10-8440-9820" className="hover:text-white transition-colors">(+82)-10-8440-9820</a></li>
                 <li>{t('footer.hours')}</li>
               </ul>
             </div>

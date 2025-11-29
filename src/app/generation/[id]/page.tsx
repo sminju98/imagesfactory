@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useTranslation } from '@/lib/i18n';
-import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw, AlertTriangle, Heart } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GenerationData {
   id: string;
   prompt: string;
-  email: string;
+  email?: string;        // 이전 버전 호환
+  userEmail?: string;    // 현재 버전
   totalImages: number;
   totalPoints: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -71,11 +73,82 @@ export default function GenerationPage() {
   const params = useParams();
   const router = useRouter();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const generationId = params.id as string;
   const [generation, setGeneration] = useState<GenerationData | null>(null);
   const [failedJobs, setFailedJobs] = useState<FailedJob[]>([]);
   const [refundedPoints, setRefundedPoints] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [likedImages, setLikedImages] = useState<Set<string>>(new Set());
+  const [likingImage, setLikingImage] = useState<string | null>(null);
+
+  // 좋아요 상태 불러오기
+  useEffect(() => {
+    if (!user?.uid || !generation?.imageUrls?.length) return;
+
+    const fetchLikedStatus = async () => {
+      try {
+        const response = await fetch(
+          `/api/gallery/like?userId=${user.uid}&imageUrls=${encodeURIComponent(JSON.stringify(generation.imageUrls))}`
+        );
+        const data = await response.json();
+        
+        if (data.success && data.data.likedStatus) {
+          const liked = new Set<string>();
+          Object.entries(data.data.likedStatus).forEach(([url, isLiked]) => {
+            if (isLiked) liked.add(url);
+          });
+          setLikedImages(liked);
+        }
+      } catch (error) {
+        console.error('좋아요 상태 조회 오류:', error);
+      }
+    };
+
+    fetchLikedStatus();
+  }, [user?.uid, generation?.imageUrls]);
+
+  // 좋아요 토글
+  const handleLike = async (imageUrl: string) => {
+    if (!user?.uid) {
+      alert(t('common.loginRequired'));
+      return;
+    }
+
+    setLikingImage(imageUrl);
+
+    try {
+      const response = await fetch('/api/gallery/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          imageUrl,
+          taskId: generationId,
+          modelId: extractModelFromUrl(imageUrl),
+          prompt: generation?.prompt,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setLikedImages(prev => {
+          const newSet = new Set(prev);
+          if (data.data.isLiked) {
+            newSet.add(imageUrl);
+          } else {
+            newSet.delete(imageUrl);
+          }
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error('좋아요 토글 오류:', error);
+    } finally {
+      setLikingImage(null);
+    }
+  };
 
   // 다시 생성하기 - 같은 프롬프트, 모델, 수량으로 메인페이지 이동
   const handleRegenerate = () => {
@@ -246,7 +319,7 @@ export default function GenerationPage() {
                 )}
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                {t('generation.sentTo', { email: generation.email })}
+                {t('generation.sentTo', { email: generation.userEmail || generation.email || '' })}
               </p>
 
               {/* 실패한 모델 및 환불 정보 */}
@@ -392,8 +465,8 @@ export default function GenerationPage() {
           <p className="text-gray-700 whitespace-pre-wrap">{generation.prompt}</p>
         </div>
 
-        {/* Generated Images - 완료 시에만 표시 */}
-        {generation.status === 'completed' && generation.imageUrls && generation.imageUrls.length > 0 && (
+        {/* Generated Images - 진행 중이거나 완료 시 이미지가 있으면 표시 */}
+        {(generation.status === 'completed' || generation.status === 'processing') && generation.imageUrls && generation.imageUrls.length > 0 && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <h3 className="font-bold text-gray-900 mb-4">🎨 {t('generation.generatedImages')} ({generation.imageUrls.length} {t('home.images')})</h3>
             
@@ -419,6 +492,21 @@ export default function GenerationPage() {
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
                     #{index + 1} {extractModelFromUrl(url)}
                   </div>
+                  {/* 좋아요 버튼 */}
+                  <button
+                    onClick={() => handleLike(url)}
+                    disabled={likingImage === url}
+                    className={`absolute bottom-2 right-2 p-2 rounded-full transition-all shadow-lg ${
+                      likedImages.has(url)
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white/90 text-gray-600 hover:bg-white hover:text-red-500'
+                    } ${likingImage === url ? 'opacity-50' : ''}`}
+                    title={likedImages.has(url) ? t('generation.unlike') : t('generation.like')}
+                  >
+                    <Heart
+                      className={`w-5 h-5 ${likedImages.has(url) ? 'fill-current' : ''}`}
+                    />
+                  </button>
                 </div>
               ))}
             </div>
@@ -452,7 +540,7 @@ export default function GenerationPage() {
           <h3 className="font-bold text-indigo-900 mb-2">💡 {t('generation.notice')}</h3>
           <ul className="text-sm text-indigo-700 space-y-1">
             <li>• {t('generation.noticeContinue')}</li>
-            <li>• {t('generation.noticeEmail', { email: generation.email })}</li>
+            <li>• {t('generation.noticeEmail', { email: generation.userEmail || generation.email || '' })}</li>
             <li>• {t('generation.noticeHistory')}</li>
             {generation.status === 'completed' && (
               <li>• {t('generation.noticeValidity')}</li>

@@ -458,18 +458,44 @@ async function generateWithKandinsky(params) {
     });
 }
 /**
- * PixArt-Σ 이미지 생성
+ * PixArt-Σ 이미지 생성 (via Replicate)
+ * 고품질 텍스트-이미지 생성, 빠른 속도
+ * 버전 해시: 5a54352c99d9fef467986bc8f3a20205e8712cbd3df1cbae4975d6254c902de1
  */
 async function generateWithPixArt(params) {
-    return generateWithReplicate({ ...params, modelId: 'pixart' }, '5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637' // bytedance/sdxl-lightning-4step
-    );
+    const { width = 1024, height = 1024 } = params;
+    // 민감한 키워드 우회 처리
+    const sanitizedPrompt = sanitizePrompt(params.prompt);
+    let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+    finalPrompt = sanitizePrompt(finalPrompt);
+    console.log(`🎨 [PixArt-Σ] 이미지 생성 시작`);
+    // 버전 해시 방식으로 호출
+    return generateWithReplicate({ ...params, prompt: finalPrompt, modelId: 'pixart' }, '5a54352c99d9fef467986bc8f3a20205e8712cbd3df1cbae4975d6254c902de1', {
+        width: width,
+        height: height,
+        num_inference_steps: 20,
+        guidance_scale: 4.5,
+    });
 }
 /**
- * Realistic Vision 이미지 생성
+ * Realistic Vision v6 이미지 생성 (via Replicate)
+ * 포토리얼리즘 특화, 인물/피부 질감 최적화
+ * 버전 해시: fa61c3351b7fe2fe2497082fb459168e88ff1b66c845f12bfdaaa4f2139f6a9a
  */
 async function generateWithRealisticVision(params) {
-    return generateWithReplicate({ ...params, modelId: 'realistic-vision' }, '39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b', {
-        prompt: params.prompt + ', photorealistic, detailed, high quality',
+    const { width = 768, height = 1024 } = params;
+    // 민감한 키워드 우회 처리
+    const sanitizedPrompt = sanitizePrompt(params.prompt);
+    let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
+    finalPrompt = sanitizePrompt(finalPrompt);
+    console.log(`📸 [Realistic Vision v6] 이미지 생성 시작`);
+    // 버전 해시 방식으로 호출 (num_steps 파라미터 사용)
+    return generateWithReplicate({ ...params, prompt: finalPrompt + ', photorealistic, detailed, high quality, 8k', modelId: 'realistic-vision' }, 'fa61c3351b7fe2fe2497082fb459168e88ff1b66c845f12bfdaaa4f2139f6a9a', {
+        width: width,
+        height: height,
+        num_steps: 30,
+        guidance_scale: 7.5,
+        negative_prompt: 'blurry, low quality, distorted, deformed, ugly, bad anatomy',
     });
 }
 /**

@@ -25,7 +25,7 @@ interface ContentFactoryModalProps {
   onClose: () => void;
   initialPrompt?: string;
   referenceImageIds?: string[];
-  selectedContentTypes?: string[];
+  selectedContentType?: string;
   totalPrice?: number;
 }
 
@@ -34,7 +34,7 @@ export default function ContentFactoryModal({
   onClose,
   initialPrompt = '',
   referenceImageIds = [],
-  selectedContentTypes = [],
+  selectedContentType = '',
   totalPrice = 0,
 }: ContentFactoryModalProps) {
   const { t } = useTranslation();
@@ -157,6 +157,7 @@ export default function ContentFactoryModal({
             setIsLoading={setIsLoading}
             setError={setError}
             referenceImageIds={referenceImageIds}
+            selectedContentType={selectedContentType}
           />
         );
       default:

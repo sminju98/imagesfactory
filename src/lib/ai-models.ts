@@ -389,84 +389,130 @@ export async function generateWithIdeogram(params: GenerateImageParams): Promise
 }
 
 /**
- * Midjourney (via GoAPI 비공식 API)
- * 문서: https://www.goapi.ai/midjourney-api
+ * Midjourney 이미지 생성 (Maginary.ai API)
+ * 참고: https://app.maginary.ai
  */
 export async function generateWithMidjourney(params: GenerateImageParams): Promise<GeneratedImage> {
   const { prompt, width = 1024, height = 1024 } = params;
 
-  // 한글이면 번역
-  const finalPrompt = isKorean(prompt) 
-    ? await translatePromptToEnglish(prompt) 
-    : prompt;
+  // 한국어면 영어로 번역
+  const finalPrompt = isKorean(prompt) ? await translatePromptToEnglish(prompt) : prompt;
 
-  // 비율 계산
-  const aspectRatio = width === height ? '1:1' : width > height ? '16:9' : '9:16';
+  // 가로세로 비율 추가
+  const aspectRatio = width === height ? '' : width > height ? ' --ar 16:9' : ' --ar 9:16';
+  const promptWithAspect = finalPrompt + aspectRatio;
 
-  console.log('🎨 [Midjourney] 이미지 생성 시작:', finalPrompt.substring(0, 50));
+  console.log('🎨 [Midjourney] 이미지 생성 시작:', promptWithAspect.substring(0, 50));
 
-  // GoAPI Midjourney API 호출
-  const response = await fetch('https://api.goapi.ai/mj/v2/imagine', {
+  // 1) Generation 생성
+  const createResponse = await fetch('https://app.maginary.ai/api/gens/', {
     method: 'POST',
     headers: {
+      'Authorization': `Bearer ${process.env.MAGINARY_API_KEY}`,
       'Content-Type': 'application/json',
-      'X-API-Key': process.env.GOAPI_API_KEY!,
     },
-    body: JSON.stringify({
-      prompt: `${finalPrompt} --ar ${aspectRatio} --v 6.1`,
-      process_mode: 'fast',
-      webhook_endpoint: '',
-      webhook_secret: '',
-    }),
+    body: JSON.stringify({ prompt: promptWithAspect }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('❌ [Midjourney] API 에러:', response.status, errorText);
-    throw new Error(`Midjourney API error: ${response.status}`);
+  if (!createResponse.ok) {
+    const errorText = await createResponse.text();
+    console.error(`❌ [Midjourney] API 오류 (${createResponse.status}):`, errorText);
+    throw new Error(`Midjourney API 오류: ${createResponse.status}`);
   }
 
-  const data = await response.json();
-  
-  // 태스크 ID로 결과 폴링
-  const taskId = data.task_id;
-  let result = null;
-  let attempts = 0;
-  const maxAttempts = 60; // 최대 5분 대기
+  const createData = await createResponse.json();
 
-  while (attempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 5000)); // 5초 대기
-    
-    const statusResponse = await fetch(`https://api.goapi.ai/mj/v2/fetch`, {
-      method: 'POST',
+  if (!createData?.uuid) {
+    console.error('❌ [Midjourney] 생성 요청 실패:', JSON.stringify(createData));
+    throw new Error('Midjourney API 생성 요청 실패');
+  }
+
+  const uuid = createData.uuid;
+  console.log(`📝 [Midjourney] Generation UUID: ${uuid}`);
+
+  // 2) 폴링으로 완료 대기 (최대 5분)
+  const maxWaitTime = 5 * 60 * 1000;
+  const startTime = Date.now();
+  let genDetails: any;
+
+  while (Date.now() - startTime < maxWaitTime) {
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3초마다 체크
+
+    const getResponse = await fetch(`https://app.maginary.ai/api/gens/${uuid}/`, {
       headers: {
+        'Authorization': `Bearer ${process.env.MAGINARY_API_KEY}`,
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.GOAPI_API_KEY!,
       },
-      body: JSON.stringify({ task_id: taskId }),
     });
 
-    const statusData = await statusResponse.json();
-    
-    if (statusData.status === 'finished') {
-      result = statusData;
-      break;
-    } else if (statusData.status === 'failed') {
-      throw new Error('Midjourney 이미지 생성 실패');
+    if (!getResponse.ok) {
+      console.error(`❌ [Midjourney] 상태 조회 오류 (${getResponse.status})`);
+      continue; // 재시도
     }
+
+    genDetails = await getResponse.json();
+
+    // 상태 확인 (Maginary API는 processing_state 사용, 완료시 'done')
+    const processingState = genDetails.processing_state || genDetails.status;
     
-    attempts++;
-    console.log(`⏳ [Midjourney] 생성 중... (${attempts}/${maxAttempts})`);
+    // processing_result.slots에 성공한 이미지가 있는지 확인
+    const hasSuccessfulSlot = genDetails.processing_result?.slots?.some(
+      (slot: any) => slot.status === 'success' && slot.url
+    );
+    
+    if (processingState === 'done' || hasSuccessfulSlot) {
+      console.log('✅ [Midjourney] 이미지 생성 완료');
+      break;
+    }
+
+    if (processingState === 'failed' || processingState === 'error') {
+      const errorMsg = genDetails.processing_result?.error_message || genDetails.error || genDetails.message || 'Unknown error';
+      throw new Error(`Midjourney 생성 실패: ${errorMsg}`);
+    }
+
+    console.log(`⏳ [Midjourney] 생성 중... (state: ${processingState})`);
   }
 
-  if (!result) {
-    throw new Error('Midjourney 타임아웃');
+  // 다양한 응답 구조에서 이미지 URL 추출
+  let imageUrls: string[] = [];
+  
+  // 1) processing_result.slots에서 찾기
+  const slots = genDetails?.processing_result?.slots || [];
+  const successfulSlots = slots.filter((slot: any) => slot.status === 'success' && slot.url);
+  if (successfulSlots.length > 0) {
+    imageUrls = successfulSlots.map((slot: any) => slot.url);
+  }
+  
+  // 2) images 배열에서 찾기
+  if (imageUrls.length === 0 && genDetails?.images?.length > 0) {
+    imageUrls = genDetails.images.filter((img: any) => typeof img === 'string' || img?.url)
+      .map((img: any) => typeof img === 'string' ? img : img.url);
+  }
+  
+  // 3) result.images에서 찾기
+  if (imageUrls.length === 0 && genDetails?.result?.images?.length > 0) {
+    imageUrls = genDetails.result.images;
+  }
+  
+  // 4) processing_result.images에서 찾기
+  if (imageUrls.length === 0 && genDetails?.processing_result?.images?.length > 0) {
+    imageUrls = genDetails.processing_result.images;
+  }
+  
+  // 5) output_url 또는 image_url 필드
+  if (imageUrls.length === 0 && (genDetails?.output_url || genDetails?.image_url)) {
+    imageUrls = [genDetails.output_url || genDetails.image_url];
+  }
+  
+  if (imageUrls.length === 0) {
+    console.error('❌ [Midjourney] URL을 찾을 수 없음');
+    throw new Error('Midjourney 이미지 URL을 찾을 수 없습니다');
   }
 
-  console.log('✅ [Midjourney] 생성 완료');
+  console.log(`🖼️ [Midjourney] ${imageUrls.length}장 생성 완료`);
 
   return {
-    url: result.task_result.image_url,
+    url: imageUrls[0],
     modelId: 'midjourney',
   };
 }
@@ -1168,10 +1214,7 @@ async function generateDummyImage(params: GenerateImageParams): Promise<Generate
     'grok': 'Grok-2',
     'midjourney': 'MJ v6.1',
     'recraft': 'Recraft V3',
-    'playground': 'PG v2.5',
-    'kandinsky': 'Kandinsky',
     'gemini': 'NanaBanana',
-    'firefly': 'Firefly',
     'seedream': 'Seedream4',
     'hunyuan': 'Hunyuan3',
   };
@@ -1240,17 +1283,8 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
     case 'recraft':
       return await generateWithRecraft(params);
     
-    case 'playground':
-      return await generateWithPlayground(params);
-    
-    case 'kandinsky':
-      return await generateWithKandinsky(params);
-    
     case 'gemini':
       return await generateWithGemini(params);
-    
-    case 'firefly':
-      return await generateWithFirefly(params);
     
     case 'seedream':
       return await generateWithSeedream(params);

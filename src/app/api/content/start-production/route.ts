@@ -3,12 +3,19 @@ import { auth, db, fieldValue } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const { concept, message, script, copy, referenceImageIds } = await request.json();
+    const { concept, message, script, copy, referenceImageIds, selectedContentType } = await request.json();
 
     if (!concept || !message || !script || !copy) {
       return NextResponse.json({
         success: false,
         error: '모든 단계 데이터가 필요합니다',
+      });
+    }
+
+    if (!selectedContentType) {
+      return NextResponse.json({
+        success: false,
+        error: '콘텐츠 타입을 선택해주세요',
       });
     }
 
@@ -30,49 +37,65 @@ export async function POST(request: NextRequest) {
     const projectRef = db.collection('contentProjects').doc();
     const projectId = projectRef.id;
 
-    // 생성할 콘텐츠 목록 계산
-    const contentTasks = [
-      // 릴스 10장
-      ...script.reelsStory.map((scene: any, index: number) => ({
-        type: 'reels',
-        order: index + 1,
-        prompt: scene.imagePrompt || `${concept.productName} marketing content, ${scene.description}`,
-        text: copy.reelsCaptions[index] || scene.caption,
-        width: 1080,
-        height: 1920,
-      })),
-      // 4컷 만화
-      ...script.comicStory.map((panel: any, index: number) => ({
-        type: 'comic',
-        order: index + 1,
-        prompt: panel.imagePrompt || `${concept.productName} comic illustration, ${panel.description}`,
-        text: panel.dialogue,
-        width: 1080,
-        height: 1080,
-      })),
-      // 카드뉴스 5장
-      ...script.cardNewsFlow.map((page: any, index: number) => ({
-        type: 'card_news',
-        order: index + 1,
-        prompt: page.imagePrompt || `${concept.productName} card news, ${page.title}`,
-        text: copy.cardNewsCopies[index] || page.body,
-        width: 1080,
-        height: 1080,
-      })),
-      // 배너 2장
-      { type: 'banner', order: 1, prompt: `${concept.productName} banner advertisement, professional marketing`, text: copy.bannerCopy, width: 1200, height: 628 },
-      { type: 'banner', order: 2, prompt: `${concept.productName} promotional banner, modern design`, text: copy.bannerCopy, width: 1200, height: 628 },
-      // 스토리 2장
-      { type: 'story', order: 1, prompt: `${concept.productName} story advertisement, vertical format`, text: copy.storyCopy, width: 1080, height: 1920 },
-      { type: 'story', order: 2, prompt: `${concept.productName} instagram story, engaging design`, text: copy.storyCopy, width: 1080, height: 1920 },
-      // 썸네일 3장
-      { type: 'thumbnail', order: 1, prompt: `${concept.productName} youtube thumbnail, clickbait style`, text: copy.thumbnailTitle, width: 1280, height: 720 },
-      { type: 'thumbnail', order: 2, prompt: `${concept.productName} video thumbnail, professional`, text: copy.thumbnailTitle, width: 1280, height: 720 },
-      { type: 'thumbnail', order: 3, prompt: `${concept.productName} thumbnail, modern design`, text: copy.thumbnailTitle, width: 1280, height: 720 },
-      // 상세페이지 2장
-      { type: 'detail_header', order: 1, prompt: `${concept.productName} product detail page header, premium quality`, text: copy.detailPageHeadline, width: 860, height: 500 },
-      { type: 'detail_header', order: 2, prompt: `${concept.productName} landing page hero image, professional`, text: copy.detailPageHeadline, width: 860, height: 500 },
-    ];
+    // 선택한 타입에 따라 생성할 콘텐츠 목록 계산
+    let contentTasks: any[] = [];
+
+    switch (selectedContentType) {
+      case 'reels':
+        contentTasks = script.reelsStory?.map((scene: any, index: number) => ({
+          type: 'reels',
+          order: index + 1,
+          prompt: scene.imagePrompt || `${concept.productName} marketing content, ${scene.description}`,
+          text: copy.reelsCaptions?.[index] || scene.caption,
+          width: 1080,
+          height: 1920,
+        })) || [];
+        break;
+      case 'comic':
+        contentTasks = script.comicStory?.map((panel: any, index: number) => ({
+          type: 'comic',
+          order: index + 1,
+          prompt: panel.imagePrompt || `${concept.productName} comic illustration, ${panel.description}`,
+          text: panel.dialogue,
+          width: 1080,
+          height: 1080,
+        })) || [];
+        break;
+      case 'cardnews':
+        contentTasks = script.cardNewsFlow?.map((page: any, index: number) => ({
+          type: 'cardnews',
+          order: index + 1,
+          prompt: page.imagePrompt || `${concept.productName} card news, ${page.title}`,
+          text: copy.cardNewsCopies?.[index] || page.body,
+          width: 1080,
+          height: 1350,
+        })) || [];
+        break;
+      case 'banner':
+        contentTasks = [
+          { type: 'banner', order: 1, prompt: `${concept.productName} banner advertisement, professional marketing`, text: copy.bannerCopy, width: 1200, height: 628 },
+          { type: 'banner', order: 2, prompt: `${concept.productName} promotional banner, modern design`, text: copy.bannerCopy, width: 1200, height: 628 },
+        ];
+        break;
+      case 'thumbnail':
+        contentTasks = [
+          { type: 'thumbnail', order: 1, prompt: `${concept.productName} youtube thumbnail, clickbait style`, text: copy.thumbnailTitle, width: 1280, height: 720 },
+          { type: 'thumbnail', order: 2, prompt: `${concept.productName} video thumbnail, professional`, text: copy.thumbnailTitle, width: 1280, height: 720 },
+          { type: 'thumbnail', order: 3, prompt: `${concept.productName} thumbnail, modern design`, text: copy.thumbnailTitle, width: 1280, height: 720 },
+        ];
+        break;
+      case 'detail':
+        contentTasks = [
+          { type: 'detail_header', order: 1, prompt: `${concept.productName} product detail page header, premium quality`, text: copy.detailPageHeadline, width: 860, height: 500 },
+          { type: 'detail_header', order: 2, prompt: `${concept.productName} landing page hero image, professional`, text: copy.detailPageHeadline, width: 860, height: 500 },
+        ];
+        break;
+      default:
+        return NextResponse.json({
+          success: false,
+          error: '유효하지 않은 콘텐츠 타입입니다',
+        });
+    }
 
     // 프로젝트 문서 저장
     await projectRef.set({
@@ -81,6 +104,7 @@ export async function POST(request: NextRequest) {
       currentStep: 'production',
       inputPrompt: concept.productName,
       referenceImageIds: referenceImageIds || [],
+      selectedContentType,
       concept,
       message,
       script,

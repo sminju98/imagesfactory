@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getTranslationFromRequest } from '@/lib/server-i18n';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
+  const { t } = getTranslationFromRequest(request);
+  
   try {
     const { prompt, referenceImageIds } = await request.json();
 
     if (!prompt || prompt.trim().length < 10) {
       return NextResponse.json({
         success: false,
-        error: '프롬프트를 10자 이상 입력해주세요',
+        error: t.errors.promptTooShort,
       });
     }
 
@@ -59,7 +62,7 @@ JSON만 응답하고, 다른 설명은 추가하지 마세요.`;
       console.error('JSON 파싱 오류:', responseText);
       return NextResponse.json({
         success: false,
-        error: '콘셉트 분석 결과를 처리하는 중 오류가 발생했습니다',
+        error: t.errors.conceptGenerationFailed,
       });
     }
 
@@ -72,7 +75,7 @@ JSON만 응답하고, 다른 설명은 추가하지 마세요.`;
     console.error('콘셉트 생성 오류:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '콘셉트 생성 중 오류가 발생했습니다',
+      error: t.errors.conceptGenerationFailed,
     }, { status: 500 });
   }
 }
