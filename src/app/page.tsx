@@ -960,7 +960,7 @@ export default function Home() {
                 <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ Studio)</li>
                 <li><strong>{t('footer.representative')}:</strong> Song Minju</li>
                 <li><strong>{t('footer.businessNumber')}:</strong> 829-04-03406</li>
-                <li><strong>{t('footer.address')}:</strong> Seoul, South Korea</li>
+                <li><strong>{t('footer.address')}:</strong> {t('footer.addressValue')}</li>
               </ul>
             </div>
             <div>
