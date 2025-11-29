@@ -372,7 +372,7 @@ export default function MyPage() {
             {/* Gallery Tab */}
             {activeTab === 'gallery' && (
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <GalleryTab userId={user.uid} />
+                <GalleryTab />
               </div>
             )}
 

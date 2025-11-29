@@ -35,7 +35,9 @@
     "name": "Name",
     "effectiveDate": "Effective Date",
     "backToHome": "Back to Home",
-    "viewTerms": "View Terms of Service"
+    "viewTerms": "View Terms of Service",
+    "retry": "Retry",
+    "loginRequired": "Login required"
   },
   "header": {
     "imageGeneration": "Image Generation",
@@ -246,7 +248,7 @@
     "failReason": "Failure Reason"
   },
   "gallery": {
-    "title": "📸 My Gallery",
+    "title": "❤️ Favorites Gallery",
     "all": "All",
     "liked": "Liked",
     "uploaded": "Uploaded",
@@ -262,7 +264,20 @@
     "filterByModel": "Filter by Model",
     "sortBy": "Sort by",
     "newest": "Newest",
-    "oldest": "Oldest"
+    "oldest": "Oldest",
+    "totalImages": "{{count}} images total",
+    "empty": "No saved images",
+    "emptyDesc": "Like your favorite images from the result page!",
+    "confirmDelete": "Are you sure you want to remove this image from gallery?",
+    "confirmBulkDelete": "Are you sure you want to delete {{count}} selected images?",
+    "selectMode": "Select Mode",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete {{count}}",
+    "imageDetail": "Image Detail",
+    "prompt": "Prompt",
+    "model": "Model",
+    "createdAt": "Saved At"
   },
   "points": {
     "title": "Charge Points",
