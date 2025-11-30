@@ -943,7 +943,7 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-4">{t('common.appName')}</h3>
               <p className="text-gray-400 text-sm mb-4">{t('footer.description')}</p>
               <p className="text-gray-500 text-xs">
-                {t('footer.operatedBy')}: 엠제이스튜디오(MJ Studio)
+                {t('footer.operatedBy')}: 엠제이스튜디오(MJ)
               </p>
             </div>
             <div>
@@ -957,10 +957,10 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ Studio)</li>
-                <li><strong>{t('footer.representative')}:</strong> Song Minju</li>
+                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ)</li>
+                <li><strong>{t('footer.representative')}:</strong> 송민주</li>
                 <li><strong>{t('footer.businessNumber')}:</strong> 829-04-03406</li>
-                <li><strong>{t('footer.address')}:</strong> {t('footer.addressValue')}</li>
+                <li><strong>{t('footer.address')}:</strong> 서울특별시 강남구 봉은사로30길 68, 6층-S42호</li>
               </ul>
             </div>
             <div>
@@ -975,7 +975,7 @@ export default function Home() {
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-              <p>© 2025 엠제이스튜디오(MJ Studio). {t('footer.allRightsReserved')}</p>
+              <p>© 2025 엠제이스튜디오(MJ). {t('footer.allRightsReserved')}</p>
               <div className="flex space-x-4 mt-4 md:mt-0">
                 <Link href="/terms" className="hover:text-white transition-colors">{t('common.terms')}</Link>
                 <Link href="/privacy" className="hover:text-white transition-colors">{t('common.privacy')}</Link>

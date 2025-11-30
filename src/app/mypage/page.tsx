@@ -814,8 +814,8 @@ export default function MyPage() {
             <div>
               <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ Studio)</li>
-                <li><strong>{t('footer.representative')}:</strong> Song Minju</li>
+                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ)</li>
+                <li><strong>{t('footer.representative')}:</strong> 송민주</li>
                 <li><strong>{t('footer.businessNumber')}:</strong> 829-04-03406</li>
                 <li><strong>{t('footer.address')}:</strong> {t('footer.addressValue')}</li>
               </ul>
