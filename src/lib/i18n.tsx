@@ -45,7 +45,7 @@ const getNestedValue = (obj: any, path: string): string | undefined => {
 };
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>('en');
+  const [language, setLanguageState] = useState<LanguageCode>('ko');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [translations, setTranslations] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
