@@ -2,21 +2,23 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, Loader2 } from 'lucide-react';
-import Header from '@/components/Header';
+import { useTranslation } from '@/lib/i18n';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 
-function SuccessContent() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('결제 승인 처리 중...');
+  const [message, setMessage] = useState('');
+  const [points, setPoints] = useState(0);
 
   useEffect(() => {
     const confirmPayment = async () => {
       const paymentKey = searchParams.get('paymentKey');
       const orderId = searchParams.get('orderId');
       const amount = searchParams.get('amount');
-      const points = searchParams.get('points');
 
       if (!paymentKey || !orderId || !amount) {
         setStatus('error');
@@ -25,17 +27,13 @@ function SuccessContent() {
       }
 
       try {
-        // 결제 승인 API 호출
-        const response = await fetch('/api/payment/confirm', {
+        const response = await fetch('/api/payment/toss/confirm', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             paymentKey,
             orderId,
             amount: parseInt(amount),
-            points: parseInt(points || amount), // 1원 = 1포인트
           }),
         });
 
@@ -43,66 +41,78 @@ function SuccessContent() {
 
         if (data.success) {
           setStatus('success');
-          setMessage(`${parseInt(points || amount).toLocaleString()} 포인트가 충전되었습니다!`);
-          
-          // 3초 후 메인 페이지로 이동
-          setTimeout(() => {
-            router.push('/');
-          }, 3000);
+          setPoints(data.data.points);
+          setMessage('결제가 완료되었습니다!');
         } else {
           setStatus('error');
-          setMessage('결제 승인 실패: ' + data.error);
+          setMessage(data.error || '결제 처리 중 오류가 발생했습니다');
         }
-      } catch (error) {
-        console.error('Payment confirmation error:', error);
+      } catch (error: any) {
         setStatus('error');
-        setMessage('결제 승인 중 오류가 발생했습니다');
+        setMessage(error.message || '결제 처리 중 오류가 발생했습니다');
       }
     };
 
     confirmPayment();
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+        {status === 'loading' && (
+          <>
+            <Loader2 className="w-16 h-16 text-indigo-600 animate-spin mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">결제 처리 중...</h1>
+            <p className="text-gray-600">잠시만 기다려주세요</p>
+          </>
+        )}
 
-      <main className="max-w-2xl mx-auto px-4 py-20">
-        <div className="bg-white rounded-2xl shadow-xl p-12 text-center border border-gray-200">
-          {status === 'loading' && (
-            <>
-              <Loader2 className="w-16 h-16 text-indigo-600 mx-auto mb-6 animate-spin" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">결제 승인 중...</h1>
-              <p className="text-gray-600">{message}</p>
-            </>
-          )}
+        {status === 'success' && (
+          <>
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{message}</h1>
+            <p className="text-gray-600 mb-6">
+              <span className="text-indigo-600 font-bold text-xl">{points.toLocaleString()}</span> 포인트가 충전되었습니다
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/"
+                className="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                홈으로 가기
+              </Link>
+              <Link
+                href="/mypage"
+                className="block w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                마이페이지
+              </Link>
+            </div>
+          </>
+        )}
 
-          {status === 'success' && (
-            <>
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">충전 완료!</h1>
-              <p className="text-gray-600 mb-6">{message}</p>
-              <p className="text-sm text-gray-500">잠시 후 메인 페이지로 이동합니다...</p>
-            </>
-          )}
-
-          {status === 'error' && (
-            <>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">❌</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">충전 실패</h1>
-              <p className="text-red-600 mb-6">{message}</p>
-              <button
-                onClick={() => router.push('/points')}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+        {status === 'error' && (
+          <>
+            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">결제 실패</h1>
+            <p className="text-gray-600 mb-6">{message}</p>
+            <div className="space-y-3">
+              <Link
+                href="/points"
+                className="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 다시 시도하기
-              </button>
-            </>
-          )}
-        </div>
-      </main>
+              </Link>
+              <Link
+                href="/"
+                className="block w-full py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                홈으로 가기
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -110,13 +120,14 @@ function SuccessContent() {
 export default function PaymentSuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <Loader2 className="w-16 h-16 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <Loader2 className="w-16 h-16 text-indigo-600 animate-spin mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">로딩 중...</h1>
+        </div>
       </div>
     }>
-      <SuccessContent />
+      <PaymentSuccessContent />
     </Suspense>
   );
 }
-
-

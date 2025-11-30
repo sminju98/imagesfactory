@@ -249,8 +249,45 @@ export async function POST(request: NextRequest) {
       ...(allDone && { completedAt: fieldValue.serverTimestamp() }),
     });
 
-    // 완료 시 이메일 발송
+    // 완료 시 자동으로 저장소에 저장 + 이메일 발송
     if (allDone && projectData.userId) {
+      // 완료된 태스크들을 자동으로 저장소에 저장
+      const completedTasksSnapshot = await db.collection('contentProjects')
+        .doc(projectId)
+        .collection('tasks')
+        .where('status', '==', 'completed')
+        .get();
+
+      if (!completedTasksSnapshot.empty) {
+        const saveBatch = db.batch();
+        
+        completedTasksSnapshot.docs.forEach(doc => {
+          const taskData = doc.data();
+          const savedRef = db.collection('savedContents').doc();
+          
+          saveBatch.set(savedRef, {
+            userId: projectData.userId,
+            projectId,
+            taskId: doc.id,
+            type: taskData.type,
+            order: taskData.order,
+            imageUrl: taskData.imageUrl,
+            thumbnailUrl: taskData.thumbnailUrl || taskData.imageUrl,
+            prompt: taskData.prompt,
+            text: taskData.text,
+            width: taskData.width,
+            height: taskData.height,
+            tags: [],
+            isFavorite: false,
+            createdAt: taskData.createdAt,
+            savedAt: new Date(),
+          });
+        });
+
+        await saveBatch.commit();
+        console.log(`자동 저장 완료: ${completedTasksSnapshot.size}개 콘텐츠`);
+      }
+
       // 사용자 정보 가져오기
       const userDoc = await db.collection('users').doc(projectData.userId).get();
       if (userDoc.exists) {

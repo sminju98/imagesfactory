@@ -17,11 +17,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 사용자의 즐겨찾기 조회
+    // 사용자의 즐겨찾기 조회 (인덱스 없이 작동하도록 orderBy 제거)
     const favoritesSnapshot = await db.collection('favorites')
       .where('userId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .limit(limitParam)
       .get();
 
     const favorites: any[] = [];
@@ -34,19 +32,22 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // 총 개수 조회
-    const countSnapshot = await db.collection('favorites')
-      .where('userId', '==', userId)
-      .count()
-      .get();
-    const total = countSnapshot.data().count;
+    // 클라이언트에서 정렬 (최신순)
+    favorites.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    // limit 적용
+    const limitedFavorites = favorites.slice(0, limitParam);
 
     return NextResponse.json({
       success: true,
       data: {
-        favorites,
-        total,
-        hasMore: favorites.length < total,
+        favorites: limitedFavorites,
+        total: favorites.length,
+        hasMore: limitedFavorites.length < favorites.length,
       },
     });
 

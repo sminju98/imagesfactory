@@ -7,66 +7,61 @@ import Header from '@/components/Header';
 import { useTranslation } from '@/lib/i18n';
 import { Zap, Check, CreditCard, Loader2 } from 'lucide-react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { loadTossPayments } from '@tosspayments/payment-sdk';
 import { toast } from 'sonner';
 
 // 충전 패키지 (USD 기반, 1포인트 = $0.01)
-const POINT_PACKAGES = [
-  {
-    id: 'basic',
-    points: 1000,      // 1000pt
-    amount: 10,        // $10
-    bonus: 0,          // 보너스 없음
-    badge: 'Starter',
-    color: 'from-blue-500 to-cyan-500',
-  },
-  {
-    id: 'standard',
-    points: 5000,      // 5000pt 기본
-    amount: 50,        // $50
-    bonus: 5,          // +5% = 5250pt
-    badge: 'Popular',
-    color: 'from-indigo-500 to-purple-500',
-    popular: true,
-  },
-  {
-    id: 'pro',
-    points: 10000,     // 10000pt 기본
-    amount: 100,       // $100
-    bonus: 10,         // +10% = 11000pt
-    badge: 'Pro',
-    color: 'from-purple-500 to-pink-500',
-  },
-  {
-    id: 'premium',
-    points: 30000,     // 30000pt 기본
-    amount: 300,       // $300
-    bonus: 15,         // +15% = 34500pt
-    badge: 'Premium',
-    color: 'from-pink-500 to-rose-500',
-  },
+const POINT_PACKAGES_USD = [
+  { id: 'basic', points: 1000, amount: 10, bonus: 0, badge: 'Starter', color: 'from-blue-500 to-cyan-500' },
+  { id: 'standard', points: 5000, amount: 50, bonus: 5, badge: 'Popular', color: 'from-indigo-500 to-purple-500', popular: true },
+  { id: 'pro', points: 10000, amount: 100, bonus: 10, badge: 'Pro', color: 'from-purple-500 to-pink-500' },
+  { id: 'premium', points: 30000, amount: 300, bonus: 15, badge: 'Premium', color: 'from-pink-500 to-rose-500' },
 ];
 
-// 보너스 계산 함수 (USD 기준)
-function calculateBonus(amount: number): number {
-  if (amount >= 300) return 15;
-  if (amount >= 100) return 10;
-  if (amount >= 50) return 5;
-  return 0;
+// 한국어용 패키지 (원화 기준)
+const POINT_PACKAGES_KRW = [
+  { id: 'basic', points: 1000, amount: 15000, bonus: 0, badge: 'Starter', color: 'from-blue-500 to-cyan-500' },
+  { id: 'standard', points: 5000, amount: 70000, bonus: 5, badge: 'Popular', color: 'from-indigo-500 to-purple-500', popular: true },
+  { id: 'pro', points: 10000, amount: 140000, bonus: 10, badge: 'Pro', color: 'from-purple-500 to-pink-500' },
+  { id: 'premium', points: 30000, amount: 400000, bonus: 15, badge: 'Premium', color: 'from-pink-500 to-rose-500' },
+];
+
+// 보너스 계산 함수
+function calculateBonus(amount: number, isKorean: boolean): number {
+  if (isKorean) {
+    if (amount >= 400000) return 15;
+    if (amount >= 140000) return 10;
+    if (amount >= 70000) return 5;
+    return 0;
+  } else {
+    if (amount >= 300) return 15;
+    if (amount >= 100) return 10;
+    if (amount >= 50) return 5;
+    return 0;
+  }
 }
 
 export default function PointsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [customAmount, setCustomAmount] = useState('');
   const [useCustomAmount, setUseCustomAmount] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 커스텀 금액으로 포인트 계산 ($1 = 100pt + 보너스)
+  const isKorean = language === 'ko';
+  const POINT_PACKAGES = isKorean ? POINT_PACKAGES_KRW : POINT_PACKAGES_USD;
+  const currency = isKorean ? 'KRW' : 'USD';
+  const minAmount = isKorean ? 1500 : 1;
+  const maxAmount = isKorean ? 1000000 : 1000;
+
+  // 커스텀 금액으로 포인트 계산
   const customAmount_num = parseInt(customAmount) || 0;
-  const customBonus = calculateBonus(customAmount_num);
-  const customBasePoints = customAmount_num * 100; // $1 = 100pt
+  const customBonus = calculateBonus(customAmount_num, isKorean);
+  const customBasePoints = isKorean 
+    ? Math.floor(customAmount_num / 15) // ₩15 = 1pt
+    : customAmount_num * 100; // $1 = 100pt
   const customPoints = customBasePoints + Math.floor(customBasePoints * (customBonus / 100));
 
   // 선택된 패키지 정보
@@ -79,7 +74,68 @@ export default function PointsPage() {
 
   // PayPal Client ID
   const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+  const tossClientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || '';
 
+  // 토스페이먼츠 결제
+  const handleTossPayment = async () => {
+    if (!user) {
+      toast.error(t('points.pleaseLogin'));
+      router.push('/login');
+      return;
+    }
+
+    if (finalAmount < minAmount) {
+      toast.error(t('points.minAmount'));
+      return;
+    }
+
+    if (finalAmount > maxAmount) {
+      toast.error(t('points.maxAmount'));
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // 주문 생성
+      const createResponse = await fetch('/api/payment/toss/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          amount: finalAmount,
+          points: finalPoints,
+        }),
+      });
+
+      const createData = await createResponse.json();
+
+      if (!createData.success) {
+        throw new Error(createData.error || '주문 생성 실패');
+      }
+
+      // 토스페이먼츠 SDK 로드
+      const tossPayments = await loadTossPayments(tossClientKey);
+
+      // 결제 요청
+      await tossPayments.requestPayment('카드', {
+        amount: finalAmount,
+        orderId: createData.data.orderId,
+        orderName: `ImageFactory 포인트 ${finalPoints.toLocaleString()}pt`,
+        customerName: user.displayName || user.email || 'Customer',
+        successUrl: `${window.location.origin}/payment/success`,
+        failUrl: `${window.location.origin}/payment/fail`,
+      });
+
+    } catch (error: any) {
+      console.error('토스페이먼츠 결제 오류:', error);
+      if (error.code !== 'USER_CANCEL') {
+        toast.error(error.message || t('common.error'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // PayPal 주문 생성
   const createPayPalOrder = async () => {
@@ -89,12 +145,12 @@ export default function PointsPage() {
       return '';
     }
 
-    if (finalAmount < 10) {
+    if (finalAmount < minAmount) {
       toast.error(t('points.minAmount'));
       return '';
     }
 
-    if (finalAmount > 1000) {
+    if (finalAmount > maxAmount) {
       toast.error(t('points.maxAmount'));
       return '';
     }
@@ -141,7 +197,6 @@ export default function PointsPage() {
 
       if (result.success) {
         toast.success(t('points.paymentSuccess'));
-        // 페이지 새로고침하여 포인트 업데이트
         window.location.reload();
       } else {
         throw new Error(result.error || 'Payment failed');
@@ -154,8 +209,11 @@ export default function PointsPage() {
     }
   };
 
-  // 달러 포맷팅
-  const formatUSD = (amount: number) => {
+  // 금액 포맷팅
+  const formatCurrency = (amount: number) => {
+    if (isKorean) {
+      return `₩${amount.toLocaleString()}`;
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -190,7 +248,7 @@ export default function PointsPage() {
           <ul className="space-y-2 text-sm">
             <li className="flex items-center">
               <Check className="w-4 h-4 mr-2" />
-              {t('points.infoPointValue')}
+              {isKorean ? '1 포인트 = ₩15 (약 1센트)' : t('points.infoPointValue')}
             </li>
             <li className="flex items-center">
               <Check className="w-4 h-4 mr-2" />
@@ -247,7 +305,7 @@ export default function PointsPage() {
 
                 <div className="space-y-2">
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatUSD(pkg.amount)}
+                    {formatCurrency(pkg.amount)}
                   </p>
                   <p className="text-sm text-gray-500">
                     ~{Math.floor((pkg.points + Math.floor(pkg.points * (pkg.bonus / 100))) / 5)} {t('points.imagesApprox')}
@@ -271,7 +329,9 @@ export default function PointsPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">{t('points.customAmount')}</h2>
           <div className="flex items-center space-x-4">
             <div className="relative flex-1">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                {isKorean ? '₩' : '$'}
+              </span>
               <input
                 type="number"
                 value={customAmount}
@@ -285,8 +345,8 @@ export default function PointsPage() {
                   setSelectedPackage(null);
                 }}
                 placeholder={t('points.enterAmount')}
-                min="10"
-                max="1000"
+                min={minAmount}
+                max={maxAmount}
                 className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
@@ -298,7 +358,7 @@ export default function PointsPage() {
             </div>
           </div>
           <p className="mt-2 text-sm text-gray-500">
-            💡 {t('points.exchangeRate')}
+            💡 {isKorean ? `₩15 = 1 포인트 (최소 ₩${minAmount.toLocaleString()} ~ 최대 ₩${maxAmount.toLocaleString()})` : t('points.exchangeRate')}
           </p>
         </div>
 
@@ -308,7 +368,7 @@ export default function PointsPage() {
           <div className="space-y-4">
             <div className="flex justify-between text-lg">
               <span>{t('points.amount')}</span>
-              <span className="font-bold">{formatUSD(finalAmount)}</span>
+              <span className="font-bold">{formatCurrency(finalAmount)}</span>
             </div>
             <div className="border-t border-white/30 pt-4 space-y-3">
               <div className="flex justify-between text-lg">
@@ -337,23 +397,34 @@ export default function PointsPage() {
           </div>
         </div>
 
-        {/* PayPal Button */}
+        {/* Payment Button */}
         {user && finalAmount > 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 mb-8">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
               <CreditCard className="w-5 h-5 mr-2" />
-              {t('points.payWith')} PayPal
+              {t('points.payWith')} {isKorean ? '토스페이먼츠' : 'PayPal'}
             </h3>
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
                 <span className="ml-2 text-gray-600">{t('points.processing')}</span>
               </div>
+            ) : isKorean ? (
+              // 토스페이먼츠 버튼 (한국어)
+              <button
+                onClick={handleTossPayment}
+                disabled={loading || finalAmount < minAmount}
+                className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-xl transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <CreditCard className="w-5 h-5" />
+                {formatCurrency(finalAmount)} 결제하기
+              </button>
             ) : !paypalClientId ? (
               <div className="text-center py-8 text-red-500">
                 <p>PayPal is not configured. Please contact support.</p>
               </div>
             ) : (
+              // PayPal 버튼 (영어 및 기타 언어)
               <PayPalScriptProvider
                 options={{
                   clientId: paypalClientId,
@@ -404,7 +475,7 @@ export default function PointsPage() {
           <ul className="text-sm text-yellow-800 space-y-2">
             <li>• {t('points.noticeNonRefundable')}</li>
             <li>• {t('points.noticeValidity')}</li>
-            <li>• {t('points.noticePaymentMethods')}</li>
+            <li>• {isKorean ? '결제 방법: 신용카드, 체크카드, 간편결제' : t('points.noticePaymentMethods')}</li>
             <li>• {t('points.noticeInstant')}</li>
           </ul>
         </div>
