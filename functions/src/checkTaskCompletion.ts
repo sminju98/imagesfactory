@@ -216,7 +216,7 @@ async function processCompletedTask(
   let zipUrl: string | undefined;
   try {
     if (imageUrls.length >= 1) {
-      zipUrl = await createZipAndUpload(taskId, imageUrls);
+      zipUrl = await createZipAndUpload(imageUrls, taskId);
       await taskRef.update({
         zipUrl,
         updatedAt: fieldValue.serverTimestamp(),

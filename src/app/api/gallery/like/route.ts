@@ -3,6 +3,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import crypto from 'crypto';
+
+// URL을 해시하여 고유 ID 생성
+function hashUrl(url: string): string {
+  return crypto.createHash('sha256').update(url).digest('hex').slice(0, 32);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +21,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // imageUrl을 기반으로 고유 ID 생성
-    const imageId = Buffer.from(imageUrl).toString('base64').slice(0, 40);
+    // imageUrl을 SHA256 해시하여 고유 ID 생성 (충돌 방지)
+    const imageId = hashUrl(imageUrl);
     const favoriteId = `${userId}_${imageId}`;
     const favoriteRef = db.collection('favorites').doc(favoriteId);
     const favoriteDoc = await favoriteRef.get();

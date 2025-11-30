@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Search, DollarSign, Send, Shield, LogOut, Users, CreditCard, Cpu, RefreshCw, 
+  Search, Send, Shield, LogOut, Users, CreditCard, Cpu, RefreshCw, 
   Image as ImageIcon, Eye, Edit2, X, Check, ChevronLeft, ChevronRight, 
   AlertTriangle, Download, RotateCcw, Plus, Minus
 } from 'lucide-react';
@@ -61,7 +61,7 @@ interface Generation {
   createdAt: string;
 }
 
-type TabType = 'users' | 'payments' | 'generations' | 'pending' | 'ai-credits';
+type TabType = 'users' | 'payments' | 'generations' | 'ai-credits';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -105,9 +105,6 @@ export default function AdminPage() {
   const [genStats, setGenStats] = useState<any>(null);
   const [selectedGen, setSelectedGen] = useState<any>(null);
 
-  // 입금 대기
-  const [pendingPayments, setPendingPayments] = useState<any[]>([]);
-
   // AI 크레딧
   const [aiCredits, setAiCredits] = useState<AICredit[]>([]);
   const [creditsLoading, setCreditsLoading] = useState(false);
@@ -119,13 +116,6 @@ export default function AdminPage() {
     
     if (isAdmin && (now - loginTime < 24 * 60 * 60 * 1000)) {
       setAuthenticated(true);
-      fetchPendingPayments();
-      
-      const interval = setInterval(() => {
-        fetchPendingPayments();
-      }, 30000);
-      
-      return () => clearInterval(interval);
     } else {
       sessionStorage.removeItem('adminAuth');
       sessionStorage.removeItem('adminLoginTime');
@@ -360,47 +350,6 @@ export default function AdminPage() {
     }
   };
 
-  const fetchPendingPayments = async () => {
-    try {
-      const response = await fetch('/api/admin/pending-payments');
-      const data = await response.json();
-      
-      if (data.success) {
-        const sorted = data.data.sort((a: any, b: any) => {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-        setPendingPayments(sorted);
-      }
-    } catch (error) {
-      console.error('입금 목록 조회 에러:', error);
-    }
-  };
-
-  const approvePayment = async (paymentId: string) => {
-    if (!confirm('이 입금을 승인하시겠습니까?')) return;
-    
-    try {
-      setLoading(true);
-      const response = await fetch('/api/admin/approve-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setMessage('입금 승인 완료!');
-        fetchPendingPayments();
-      } else {
-        setMessage(`오류: ${data.error}`);
-      }
-    } catch (error: any) {
-      setMessage(`오류: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchAiCredits = async () => {
     try {
       setCreditsLoading(true);
@@ -467,7 +416,6 @@ export default function AdminPage() {
             { id: 'users', label: '회원 관리', icon: Users },
             { id: 'payments', label: '결제 내역', icon: CreditCard },
             { id: 'generations', label: '생성 기록', icon: ImageIcon },
-            { id: 'pending', label: `입금 승인 (${pendingPayments.length})`, icon: DollarSign },
             { id: 'ai-credits', label: 'AI 크레딧', icon: Cpu },
           ].map(tab => (
             <button
@@ -1171,63 +1119,6 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ==================== 입금 승인 탭 ==================== */}
-        {activeTab === 'pending' && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold flex items-center">
-                <DollarSign className="w-5 h-5 mr-2" />
-                입금 대기 목록
-              </h2>
-              <button
-                onClick={fetchPendingPayments}
-                className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 flex items-center space-x-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>새로고침</span>
-              </button>
-            </div>
-
-            {pendingPayments.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <DollarSign className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>대기 중인 입금이 없습니다</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pendingPayments.map(payment => (
-                  <div key={payment.id} className="p-4 border-2 border-yellow-200 bg-yellow-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                            <div>
-                        <p className="font-bold text-lg">₩{payment.amount?.toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">{payment.userEmail}</p>
-                        <p className="text-xs text-gray-500">
-                          입금자: {payment.depositorName || '-'} | 
-                          주문번호: {payment.orderId}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {payment.createdAt ? new Date(payment.createdAt).toLocaleString('ko-KR') : ''}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-blue-600 font-bold mb-2">+{payment.points?.toLocaleString()} pt</p>
-                      <button
-                          onClick={() => approvePayment(payment.id)}
-                          disabled={loading}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
-                      >
-                          <Check className="w-4 h-4" />
-                          <span>승인</span>
-                      </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 

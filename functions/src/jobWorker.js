@@ -48,6 +48,7 @@ var firestore_2 = require("./utils/firestore");
 var imageGeneration_1 = require("./utils/imageGeneration");
 var types_1 = require("./types");
 var node_fetch_1 = require("node-fetch");
+var pngMetadata_1 = require("./utils/pngMetadata");
 var MAX_RETRIES = 3;
 var RETRY_DELAY_MS = 2000; // 재시도 간 대기 시간
 /**
@@ -111,7 +112,7 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
     memory: '1GiB',
     maxInstances: types_1.SYSTEM_MAX_INSTANCES,
 }, function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var snapshot, _a, taskId, jobId, jobData, userId, modelId, result, generatedImage, bucket, uploadedUrls, imagesToProcess, i, imgUrl, imageBuffer, imageResponse, _b, _c, suffix, filename, file, uploadedUrl, error_2, errorMessage;
+    var snapshot, _a, taskId, jobId, jobData, userId, modelId, result, generatedImage, bucket, uploadedUrls, previousMetadata, newMetadata, imagesToProcess, i, imgUrl, imageBuffer, imageResponse, _b, _c, imageWithMetadata, suffix, filename, file, uploadedUrl, error_2, errorMessage;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
@@ -140,7 +141,7 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
                 return [4 /*yield*/, tryGenerateImage(jobData, MAX_RETRIES)];
             case 2:
                 result = _d.sent();
-                if (!!result.success) return [3 /*break*/, 5];
+                if (!(result.success === false)) return [3 /*break*/, 5];
                 // 모든 재시도 실패
                 console.error("\u2620\uFE0F Job ".concat(jobId, " \uC601\uAD6C \uC2E4\uD328 (").concat(MAX_RETRIES, "\uD68C \uC7AC\uC2DC\uB3C4 \uD6C4)"));
                 return [4 /*yield*/, snapshot.ref.update({
@@ -161,57 +162,81 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
                 console.log("\uD83C\uDFA8 \uC774\uBBF8\uC9C0 \uC0DD\uC131 \uC644\uB8CC (".concat(result.retries, "\uD68C \uC7AC\uC2DC\uB3C4 \uD6C4): ").concat(generatedImage.url.substring(0, 50), "..."));
                 _d.label = 6;
             case 6:
-                _d.trys.push([6, 17, , 20]);
+                _d.trys.push([6, 20, , 23]);
                 bucket = firestore_2.storage.bucket();
                 uploadedUrls = [];
+                previousMetadata = null;
+                if (!jobData.referenceImageUrl) return [3 /*break*/, 8];
+                console.log("\uD83D\uDCD6 \uB808\uD37C\uB7F0\uC2A4 \uC774\uBBF8\uC9C0\uC5D0\uC11C \uBA54\uD0C0\uB370\uC774\uD130 \uC77D\uAE30 \uC911...");
+                return [4 /*yield*/, (0, pngMetadata_1.readMetadataFromUrl)(jobData.referenceImageUrl)];
+            case 7:
+                previousMetadata = _d.sent();
+                if (previousMetadata) {
+                    console.log("\uD83D\uDCD6 \uC774\uC804 \uC138\uB300 \uC815\uBCF4 \uBC1C\uACAC: Generation ".concat(previousMetadata.currentGeneration));
+                }
+                _d.label = 8;
+            case 8:
+                newMetadata = (0, pngMetadata_1.createPromptHistory)(previousMetadata, jobData.prompt, generatedImage.modelId, userId, taskId);
+                console.log("\uD83D\uDCDD \uC0C8\uB85C\uC6B4 \uC138\uB300 \uC815\uBCF4: Generation ".concat(newMetadata.currentGeneration));
                 imagesToProcess = generatedImage.urls || [generatedImage.url];
                 console.log("\uD83D\uDCE6 ".concat(imagesToProcess.length, "\uC7A5 \uC774\uBBF8\uC9C0 \uCC98\uB9AC \uC911..."));
                 i = 0;
-                _d.label = 7;
-            case 7:
-                if (!(i < imagesToProcess.length)) return [3 /*break*/, 15];
+                _d.label = 9;
+            case 9:
+                if (!(i < imagesToProcess.length)) return [3 /*break*/, 18];
                 imgUrl = imagesToProcess[i];
                 imageBuffer = void 0;
-                if (!generatedImage.isBase64) return [3 /*break*/, 8];
+                if (!generatedImage.isBase64) return [3 /*break*/, 10];
                 // base64 데이터를 직접 Buffer로 변환
                 console.log("\uD83D\uDCE6 [Base64] \uC9C1\uC811 \uBCC0\uD658 \uC911...");
                 imageBuffer = Buffer.from(imgUrl, 'base64');
-                return [3 /*break*/, 11];
-            case 8: return [4 /*yield*/, (0, node_fetch_1.default)(imgUrl)];
-            case 9:
+                return [3 /*break*/, 13];
+            case 10: return [4 /*yield*/, (0, node_fetch_1.default)(imgUrl)];
+            case 11:
                 imageResponse = _d.sent();
                 if (!imageResponse.ok) {
                     throw new Error("\uC774\uBBF8\uC9C0 \uB2E4\uC6B4\uB85C\uB4DC \uC2E4\uD328: ".concat(imageResponse.statusText));
                 }
                 _c = (_b = Buffer).from;
                 return [4 /*yield*/, imageResponse.arrayBuffer()];
-            case 10:
+            case 12:
                 imageBuffer = _c.apply(_b, [_d.sent()]);
-                _d.label = 11;
-            case 11:
+                _d.label = 13;
+            case 13:
+                // PNG에 메타데이터 추가
+                console.log("\uD83D\uDCDD \uC774\uBBF8\uC9C0 ".concat(i + 1, "\uC5D0 \uBA54\uD0C0\uB370\uC774\uD130 \uCD94\uAC00 \uC911..."));
+                return [4 /*yield*/, (0, pngMetadata_1.addMetadataToPng)(imageBuffer, newMetadata)];
+            case 14:
+                imageWithMetadata = _d.sent();
                 suffix = imagesToProcess.length > 1 ? "_".concat(i + 1) : '';
                 filename = "generations/".concat(taskId, "/").concat(jobId).concat(suffix, "_").concat(generatedImage.modelId, ".png");
                 file = bucket.file(filename);
-                return [4 /*yield*/, file.save(Buffer.from(imageBuffer), {
+                return [4 /*yield*/, file.save(imageWithMetadata, {
                         contentType: 'image/png',
                         metadata: {
                             cacheControl: 'public, max-age=2592000',
-                            metadata: { taskId: taskId, jobId: jobId, modelId: generatedImage.modelId },
+                            metadata: {
+                                taskId: taskId,
+                                jobId: jobId,
+                                modelId: generatedImage.modelId,
+                                generation: String(newMetadata.currentGeneration),
+                                promptHistoryCount: String(newMetadata.promptHistory.length),
+                            },
                         },
                     })];
-            case 12:
+            case 15:
                 _d.sent();
                 return [4 /*yield*/, file.makePublic()];
-            case 13:
+            case 16:
                 _d.sent();
                 uploadedUrl = "https://storage.googleapis.com/".concat(bucket.name, "/").concat(filename);
                 uploadedUrls.push(uploadedUrl);
                 console.log("\u2601\uFE0F Storage \uC5C5\uB85C\uB4DC \uC644\uB8CC (".concat(i + 1, "/").concat(imagesToProcess.length, "): ").concat(uploadedUrl));
-                _d.label = 14;
-            case 14:
+                _d.label = 17;
+            case 17:
                 i++;
-                return [3 /*break*/, 7];
-            case 15: 
+                return [3 /*break*/, 9];
+            case 18: 
             // Job 상태 업데이트: completed
             return [4 /*yield*/, snapshot.ref.update({
                     status: 'completed',
@@ -222,12 +247,12 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
                     finishedAt: firestore_2.fieldValue.serverTimestamp(),
                     updatedAt: firestore_2.fieldValue.serverTimestamp(),
                 })];
-            case 16:
+            case 19:
                 // Job 상태 업데이트: completed
                 _d.sent();
                 console.log("\u2705 Job ".concat(jobId, " \uC644\uB8CC (").concat(uploadedUrls.length, "\uC7A5)"));
-                return [3 /*break*/, 20];
-            case 17:
+                return [3 /*break*/, 23];
+            case 20:
                 error_2 = _d.sent();
                 errorMessage = error_2 instanceof Error ? error_2.message : String(error_2);
                 console.error("\u274C Job ".concat(jobId, " Storage \uC5C5\uB85C\uB4DC \uC2E4\uD328:"), errorMessage);
@@ -237,13 +262,13 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
                         finishedAt: firestore_2.fieldValue.serverTimestamp(),
                         updatedAt: firestore_2.fieldValue.serverTimestamp(),
                     })];
-            case 18:
+            case 21:
                 _d.sent();
                 return [4 /*yield*/, refundJobPoints(taskId, jobData)];
-            case 19:
+            case 22:
                 _d.sent();
-                return [3 /*break*/, 20];
-            case 20: return [2 /*return*/];
+                return [3 /*break*/, 23];
+            case 23: return [2 /*return*/];
         }
     });
 }); });

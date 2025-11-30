@@ -34,9 +34,9 @@ const MODEL_CONFIG: Record<string, { service: string; apiType: string }> = {
   'realistic-vision': { service: 'Replicate', apiType: 'replicate' },
 };
 
-// 각 모델의 마지막 성공 시간 조회
-async function getModelStats(): Promise<Record<string, { lastSuccess: Date; count: number }>> {
-  const modelStats: Record<string, { lastSuccess: Date; count: number }> = {};
+// 각 모델의 마지막 성공/실패 시간 조회
+async function getModelStats(): Promise<Record<string, { lastSuccess?: Date; count: number; lastFailure?: Date; failureCount: number }>> {
+  const modelStats: Record<string, { lastSuccess?: Date; count: number; lastFailure?: Date; failureCount: number }> = {};
   
   try {
     // 최근 tasks에서 jobs 조회
@@ -46,22 +46,44 @@ async function getModelStats(): Promise<Record<string, { lastSuccess: Date; coun
       .get();
     
     for (const taskDoc of tasksSnapshot.docs) {
-      const jobsSnapshot = await taskDoc.ref.collection('jobs')
+      // 성공한 jobs
+      const completedJobs = await taskDoc.ref.collection('jobs')
         .where('status', '==', 'completed')
         .get();
       
-      jobsSnapshot.forEach((jobDoc) => {
+      completedJobs.forEach((jobDoc) => {
         const job = jobDoc.data();
         const modelId = job.modelId;
         const finishedAt = job.finishedAt?.toDate?.() || job.updatedAt?.toDate?.();
         
         if (modelId && finishedAt) {
           if (!modelStats[modelId]) {
-            modelStats[modelId] = { lastSuccess: finishedAt, count: 0 };
+            modelStats[modelId] = { count: 0, failureCount: 0 };
           }
           modelStats[modelId].count++;
-          if (finishedAt > modelStats[modelId].lastSuccess) {
+          if (!modelStats[modelId].lastSuccess || finishedAt > modelStats[modelId].lastSuccess) {
             modelStats[modelId].lastSuccess = finishedAt;
+          }
+        }
+      });
+      
+      // 실패한 jobs (환불 대상)
+      const failedJobs = await taskDoc.ref.collection('jobs')
+        .where('status', '==', 'failed')
+        .get();
+      
+      failedJobs.forEach((jobDoc) => {
+        const job = jobDoc.data();
+        const modelId = job.modelId;
+        const finishedAt = job.finishedAt?.toDate?.() || job.updatedAt?.toDate?.();
+        
+        if (modelId && finishedAt) {
+          if (!modelStats[modelId]) {
+            modelStats[modelId] = { count: 0, failureCount: 0 };
+          }
+          modelStats[modelId].failureCount++;
+          if (!modelStats[modelId].lastFailure || finishedAt > modelStats[modelId].lastFailure) {
+            modelStats[modelId].lastFailure = finishedAt;
           }
         }
       });
@@ -95,8 +117,9 @@ async function checkApiStatus(apiType: string): Promise<{ ok: boolean; balance?:
         if (!process.env.REPLICATE_API_TOKEN) {
           return { ok: false, error: 'API 토큰 미설정' };
         }
+        // Replicate는 Token 인증 사용
         const res = await fetch('https://api.replicate.com/v1/account', {
-          headers: { 'Authorization': `Bearer ${process.env.REPLICATE_API_TOKEN}` },
+          headers: { 'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}` },
         });
         if (!res.ok) {
           const errText = await res.text().catch(() => '');
@@ -231,17 +254,38 @@ export async function GET(request: NextRequest) {
   // 3. 모델별 결과 생성
   const results: AICredit[] = [];
   
+  // 최근 24시간 내 성공 기록이 있으면 정상으로 간주
+  const recentThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  
   for (const [modelId, config] of Object.entries(MODEL_CONFIG)) {
     const apiStatus = await checkApi(config.apiType);
     const stats = modelStats[modelId];
     
+    // 최근 성공 기록 확인
+    const hasRecentSuccess = stats?.lastSuccess && stats.lastSuccess > recentThreshold;
+    // 최근 실패 기록 확인 (성공보다 더 최근이면 실패로 간주)
+    const hasRecentFailure = stats?.lastFailure && 
+      (!stats.lastSuccess || stats.lastFailure > stats.lastSuccess);
+    
+    // 실패가 성공보다 더 최근이면 실패로 표시
+    const isWorking = apiStatus.ok || (hasRecentSuccess && !hasRecentFailure);
+    
+    let balanceText = apiStatus.balance || (isWorking ? '정상' : '오류');
+    if (!apiStatus.ok && hasRecentSuccess && !hasRecentFailure) {
+      // API 체크는 실패했지만 최근 성공 기록이 있고 실패가 없는 경우
+      balanceText = '정상 (최근 성공)';
+    } else if (hasRecentFailure) {
+      // 최근 실패가 있으면 오류로 표시
+      balanceText = '오류 (최근 실패)';
+    }
+    
     results.push({
       service: config.service,
       modelId,
-      balance: apiStatus.balance || (apiStatus.ok ? '✅ 정상' : '❌ 오류'),
+      balance: balanceText,
       unit: '-',
-      status: apiStatus.ok ? 'ok' : 'error',
-      error: apiStatus.error,
+      status: isWorking ? 'ok' : 'error',
+      error: isWorking ? undefined : (hasRecentFailure ? '최근 실패 기록 있음' : apiStatus.error),
       lastUpdated: now,
       lastSuccess: stats?.lastSuccess?.toISOString(),
       successCount: stats?.count || 0,

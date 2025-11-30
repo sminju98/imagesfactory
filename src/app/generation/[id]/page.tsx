@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useTranslation } from '@/lib/i18n';
 import { Loader2, CheckCircle, XCircle, Clock, Sparkles, Home, RefreshCw, AlertTriangle, Heart } from 'lucide-react';
@@ -81,6 +81,13 @@ export default function GenerationPage() {
   const [loading, setLoading] = useState(true);
   const [likedImages, setLikedImages] = useState<Set<string>>(new Set());
   const [likingImage, setLikingImage] = useState<string | null>(null);
+  
+  // 실시간 완료된 이미지 (생성 중에 하나씩 표시)
+  const [completedImages, setCompletedImages] = useState<Array<{
+    url: string;
+    modelId: string;
+    completedAt: Date;
+  }>>([]);
 
   // 좋아요 상태 불러오기
   useEffect(() => {
@@ -160,10 +167,20 @@ export default function GenerationPage() {
       modelCounts[config.modelId] = config.count;
     });
 
+    // 좋아요한 이미지 중 마지막 것을 레퍼런스 이미지로 설정
+    let referenceImageUrl: string | null = null;
+    if (likedImages.size > 0 && generation.imageUrls) {
+      const likedInResults = generation.imageUrls.filter(url => likedImages.has(url));
+      if (likedInResults.length > 0) {
+        referenceImageUrl = likedInResults[likedInResults.length - 1];
+      }
+    }
+
     // localStorage에 재생성 데이터 저장
     const regenerateData = {
       prompt: generation.prompt,
       modelCounts,
+      referenceImageUrl,
       timestamp: Date.now(),
     };
     localStorage.setItem('regenerateData', JSON.stringify(regenerateData));
@@ -224,6 +241,44 @@ export default function GenerationPage() {
 
     return () => unsubscribe();
   }, [generationId]);
+
+  // Jobs 컬렉션 실시간 구독 - 완료된 이미지 하나씩 표시
+  useEffect(() => {
+    if (!generationId || generation?.status === 'completed') return;
+
+    const jobsRef = collection(db, 'tasks', generationId, 'jobs');
+    
+    const unsubscribeJobs = onSnapshot(
+      jobsRef,
+      (snapshot) => {
+        const completed: Array<{
+          url: string;
+          modelId: string;
+          completedAt: Date;
+        }> = [];
+
+        snapshot.forEach((jobDoc) => {
+          const job = jobDoc.data();
+          if (job.status === 'completed' && job.imageUrl) {
+            completed.push({
+              url: job.imageUrl,
+              modelId: job.modelId || 'unknown',
+              completedAt: job.completedAt?.toDate?.() || new Date(),
+            });
+          }
+        });
+
+        // 완료 시간 순으로 정렬
+        completed.sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime());
+        setCompletedImages(completed);
+      },
+      (error) => {
+        console.error('Error listening to jobs:', error);
+      }
+    );
+
+    return () => unsubscribeJobs();
+  }, [generationId, generation?.status]);
 
   if (loading) {
     return (
@@ -300,9 +355,41 @@ export default function GenerationPage() {
                   ></div>
                 </div>
                 <p className="text-2xl font-bold text-indigo-600 mt-2">{generation.progress}%</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {completedImages.length} / {generation.totalImages} {t('home.images')} {t('generation.completed')}
+                </p>
               </div>
 
-              <p className="text-sm text-gray-500">
+              {/* 실시간 완료된 이미지 미리보기 */}
+              {completedImages.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4">
+                    ✨ {t('generation.completedPreview')}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {completedImages.map((img, idx) => (
+                      <div
+                        key={img.url}
+                        className="relative aspect-square rounded-lg overflow-hidden shadow-md bg-gray-100 animate-fade-in"
+                        style={{ animationDelay: `${idx * 100}ms` }}
+                      >
+                        <img
+                          src={img.url}
+                          alt={`Generated ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                          <span className="text-white text-xs font-medium">
+                            #{idx + 1} {MODEL_NAMES[img.modelId] || img.modelId}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-sm text-gray-500 mt-6">
                 {t('generation.estimatedTime')}: ~{Math.ceil((100 - generation.progress) / 100 * generation.totalImages * 30 / 60)} {t('generation.minutes')}
               </p>
             </div>

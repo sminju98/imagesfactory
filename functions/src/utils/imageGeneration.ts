@@ -579,30 +579,31 @@ async function generateWithPixArt(params: GenerateImageParams): Promise<Generate
 }
 
 /**
- * Realistic Vision v6 이미지 생성 (via Replicate)
+ * Realistic Vision v5.1 이미지 생성 (via Replicate)
  * 포토리얼리즘 특화, 인물/피부 질감 최적화
- * 버전 해시: fa61c3351b7fe2fe2497082fb459168e88ff1b66c845f12bfdaaa4f2139f6a9a
+ * lucataco/realistic-vision-v5.1 최신 버전
  */
 async function generateWithRealisticVision(params: GenerateImageParams): Promise<GeneratedImage> {
-  const { width = 768, height = 1024 } = params;
+  const { width = 512, height = 728 } = params;
   
   // 민감한 키워드 우회 처리
   const sanitizedPrompt = sanitizePrompt(params.prompt);
   let finalPrompt = isKorean(sanitizedPrompt) ? await translatePromptToEnglish(sanitizedPrompt) : sanitizedPrompt;
   finalPrompt = sanitizePrompt(finalPrompt);
 
-  console.log(`📸 [Realistic Vision v6] 이미지 생성 시작`);
+  console.log(`📸 [Realistic Vision v5.1] 이미지 생성 시작`);
 
-  // 버전 해시 방식으로 호출 (num_steps 파라미터 사용)
   return generateWithReplicate(
-    { ...params, prompt: finalPrompt + ', photorealistic, detailed, high quality, 8k', modelId: 'realistic-vision' },
-    'fa61c3351b7fe2fe2497082fb459168e88ff1b66c845f12bfdaaa4f2139f6a9a',
+    { ...params, prompt: finalPrompt, modelId: 'realistic-vision' },
+    '2c8e954decbf70b7607a4414e5785ef9e4de4b8c51d50fb8b8b349160e0ef6bb',
     {
+      prompt: finalPrompt + ', RAW photo, photorealistic, detailed, high quality, 8k uhd, film grain',
+      negative_prompt: '(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck',
       width: width,
       height: height,
-      num_steps: 30,
-      guidance_scale: 7.5,
-      negative_prompt: 'blurry, low quality, distorted, deformed, ugly, bad anatomy',
+      steps: 25,
+      guidance: 5,
+      scheduler: 'EulerA',
     }
   );
 }

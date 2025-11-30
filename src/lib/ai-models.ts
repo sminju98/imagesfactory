@@ -200,8 +200,8 @@ export async function generateWithPixArt(params: GenerateImageParams): Promise<G
 }
 
 /**
- * Realistic Vision v6 (via Replicate)
- * 문서: https://replicate.com/adirik/realistic-vision-v6.0
+ * Realistic Vision v5.1 (via Replicate)
+ * 문서: https://replicate.com/lucataco/realistic-vision-v5.1
  * 특징: 인물/피부 질감 최적화, 포토리얼리즘 최고, SD1.5 기반
  */
 export async function generateWithRealisticVision(params: GenerateImageParams): Promise<GeneratedImage> {
@@ -212,7 +212,7 @@ export async function generateWithRealisticVision(params: GenerateImageParams): 
     ? await translatePromptToEnglish(prompt) 
     : prompt;
 
-  console.log('📸 [Realistic Vision v6] 이미지 생성 시작:', finalPrompt.substring(0, 50));
+  console.log('📸 [Realistic Vision v5.1] 이미지 생성 시작:', finalPrompt.substring(0, 50));
 
   const input: any = {
     prompt: `${finalPrompt}, realistic, detailed skin texture, photorealistic, high quality, sharp focus`,
@@ -232,11 +232,11 @@ export async function generateWithRealisticVision(params: GenerateImageParams): 
   }
 
   const output = await replicate.run(
-    "adirik/realistic-vision-v6.0:deb62f7be8b59fec1a51f05c56c65e4b09c36e28a3e3d4e59d79bb4d9a10ae66",
+    "lucataco/realistic-vision-v5.1:2c8e954decbf70b7607a4414e5785ef9e4de4b8c51d50fb8b8b349160e0ef6bb",
     { input }
   ) as any;
 
-  console.log('✅ [Realistic Vision v6] 생성 완료');
+  console.log('✅ [Realistic Vision v5.1] 생성 완료');
 
   return {
     url: Array.isArray(output) ? output[0] : output,

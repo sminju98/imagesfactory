@@ -122,7 +122,8 @@ export default function PointsPage() {
         amount: finalAmount,
         orderId: createData.data.orderId,
         orderName: `ImageFactory 포인트 ${finalPoints.toLocaleString()}pt`,
-        customerName: user.displayName || user.email || 'Customer',
+        customerName: user.displayName || user.email?.split('@')[0] || 'Customer',
+        customerEmail: user.email || '',
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });

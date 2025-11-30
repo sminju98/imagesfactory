@@ -76,6 +76,10 @@
     "referenceImageDesc": "Similar style will be generated when you upload an image",
     "clickToUpload": "Click to upload image",
     "imageFormats": "PNG, JPG, WEBP (Max 10MB)",
+    "selectFromGallery": "Select from Gallery",
+    "fromGallery": "Selected from Gallery",
+    "generation": "Generation",
+    "viewPromptHistory": "View Prompt History",
     "uploadReference": "Upload Reference Image",
     "resultEmail": "Email for Results",
     "emailTip": "You'll receive a ZIP file via email when complete",
@@ -149,6 +153,7 @@
     "pendingDesc": "Image generation will start shortly",
     "processing": "AI is working hard on your images!",
     "processingDesc": "You will receive an email when complete",
+    "completedPreview": "Completed images preview",
     "estimatedTime": "Estimated time remaining",
     "minutes": "min",
     "completed": "Image Generation Complete!",
@@ -277,7 +282,10 @@
     "imageDetail": "Image Detail",
     "prompt": "Prompt",
     "model": "Model",
-    "createdAt": "Saved At"
+    "createdAt": "Saved At",
+    "selectFromGallery": "Select from Gallery",
+    "imageSelected": "1 selected",
+    "selectImage": "Select an image"
   },
   "points": {
     "title": "Charge Points",

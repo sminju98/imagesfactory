@@ -10,6 +10,7 @@ import { db, storage, fieldValue } from './utils/firestore';
 import { generateImage } from './utils/imageGeneration';
 import { Job, Task, User, SYSTEM_MAX_INSTANCES, GeneratedImage } from './types';
 import fetch from 'node-fetch';
+import { addMetadataToPng, readMetadataFromUrl, createPromptHistory, ImageMetadata } from './utils/pngMetadata';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000; // 재시도 간 대기 시간
@@ -107,7 +108,7 @@ export const jobWorker = onDocumentCreated(
         updatedAt: fieldValue.serverTimestamp(),
       });
 
-      await refundJobPoints(taskId, jobData);
+      // 환불은 checkTaskCompletion에서 일괄 처리 (중복 환불 방지)
       return;
     }
 
@@ -118,6 +119,26 @@ export const jobWorker = onDocumentCreated(
     try {
       const bucket = storage.bucket();
       const uploadedUrls: string[] = [];
+
+      // 레퍼런스 이미지에서 이전 메타데이터 읽기
+      let previousMetadata: ImageMetadata | null = null;
+      if (jobData.referenceImageUrl) {
+        console.log(`📖 레퍼런스 이미지에서 메타데이터 읽기 중...`);
+        previousMetadata = await readMetadataFromUrl(jobData.referenceImageUrl);
+        if (previousMetadata) {
+          console.log(`📖 이전 세대 정보 발견: Generation ${previousMetadata.currentGeneration}`);
+        }
+      }
+
+      // 새로운 메타데이터 생성 (프롬프트 히스토리 누적)
+      const newMetadata = createPromptHistory(
+        previousMetadata,
+        jobData.prompt,
+        generatedImage.modelId,
+        userId,
+        taskId
+      );
+      console.log(`📝 새로운 세대 정보: Generation ${newMetadata.currentGeneration}`);
 
       // Midjourney는 여러 이미지를 반환 (urls 배열)
       const imagesToProcess = generatedImage.urls || [generatedImage.url];
@@ -140,16 +161,26 @@ export const jobWorker = onDocumentCreated(
           imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
         }
 
+        // PNG에 메타데이터 추가
+        console.log(`📝 이미지 ${i + 1}에 메타데이터 추가 중...`);
+        const imageWithMetadata = await addMetadataToPng(imageBuffer, newMetadata);
+
         // Firebase Storage에 업로드
         const suffix = imagesToProcess.length > 1 ? `_${i + 1}` : '';
         const filename = `generations/${taskId}/${jobId}${suffix}_${generatedImage.modelId}.png`;
         const file = bucket.file(filename);
 
-        await file.save(Buffer.from(imageBuffer), {
+        await file.save(imageWithMetadata, {
           contentType: 'image/png',
           metadata: {
             cacheControl: 'public, max-age=2592000',
-            metadata: { taskId, jobId, modelId: generatedImage.modelId },
+            metadata: { 
+              taskId, 
+              jobId, 
+              modelId: generatedImage.modelId,
+              generation: String(newMetadata.currentGeneration),
+              promptHistoryCount: String(newMetadata.promptHistory.length),
+            },
           },
         });
 
@@ -184,57 +215,7 @@ export const jobWorker = onDocumentCreated(
         updatedAt: fieldValue.serverTimestamp(),
       });
 
-      await refundJobPoints(taskId, jobData);
+      // 환불은 checkTaskCompletion에서 일괄 처리 (중복 환불 방지)
     }
   }
 );
-
-/**
- * 실패한 Job에 대한 포인트 환불
- */
-async function refundJobPoints(taskId: string, jobData: Job): Promise<void> {
-  const taskRef = db.collection('tasks').doc(taskId);
-  
-  try {
-    await db.runTransaction(async (transaction) => {
-      const taskDoc = await transaction.get(taskRef);
-      if (!taskDoc.exists) {
-        console.error(`Task ${taskId} not found for refund`);
-        return;
-      }
-
-      const task = taskDoc.data() as Task;
-      const userRef = db.collection('users').doc(task.userId);
-      const userDoc = await transaction.get(userRef);
-      
-      if (!userDoc.exists) {
-        console.error(`User ${task.userId} not found for refund`);
-        return;
-      }
-
-      const userData = userDoc.data() as User;
-      const refundAmount = jobData.pointsCost;
-
-      transaction.update(userRef, {
-        points: fieldValue.increment(refundAmount),
-        updatedAt: fieldValue.serverTimestamp(),
-      });
-
-      const transactionRef = db.collection('pointTransactions').doc();
-      transaction.set(transactionRef, {
-        userId: task.userId,
-        amount: refundAmount,
-        type: 'refund',
-        description: `이미지 생성 실패 환불 (${jobData.modelId})`,
-        relatedGenerationId: taskId,
-        balanceBefore: userData.points,
-        balanceAfter: userData.points + refundAmount,
-        createdAt: fieldValue.serverTimestamp(),
-      });
-    });
-
-    console.log(`💰 포인트 환불 완료: ${jobData.pointsCost}pt → ${jobData.userId}`);
-  } catch (error) {
-    console.error('포인트 환불 실패:', error);
-  }
-}

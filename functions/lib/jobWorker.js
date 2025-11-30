@@ -2,6 +2,8 @@
 /**
  * Job Worker Firebase Function (v2)
  * Firestore Trigger: Job 문서가 생성되면 이미지 생성 작업 수행
+ *
+ * 재시도 로직: 함수 내에서 최대 3회까지 직접 재시도 후 실패 처리
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -13,7 +15,42 @@ const firestore_2 = require("./utils/firestore");
 const imageGeneration_1 = require("./utils/imageGeneration");
 const types_1 = require("./types");
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const pngMetadata_1 = require("./utils/pngMetadata");
 const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000; // 재시도 간 대기 시간
+/**
+ * 지연 함수
+ */
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * 이미지 생성 시도 (재시도 로직 포함)
+ */
+async function tryGenerateImage(jobData, maxRetries) {
+    let lastError = '';
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`🎨 [${jobData.modelId}] 이미지 생성 시도 ${attempt}/${maxRetries}`);
+            const generatedImage = await (0, imageGeneration_1.generateImage)({
+                prompt: jobData.prompt,
+                modelId: jobData.modelId,
+                referenceImageUrl: jobData.referenceImageUrl || undefined,
+                width: 1024,
+                height: 1024,
+            });
+            return { success: true, image: generatedImage, retries: attempt - 1 };
+        }
+        catch (error) {
+            lastError = error instanceof Error ? error.message : String(error);
+            console.error(`❌ [${jobData.modelId}] 시도 ${attempt}/${maxRetries} 실패:`, lastError);
+            // 마지막 시도가 아니면 대기 후 재시도
+            if (attempt < maxRetries) {
+                console.log(`⏳ ${RETRY_DELAY_MS}ms 후 재시도...`);
+                await delay(RETRY_DELAY_MS);
+            }
+        }
+    }
+    return { success: false, error: lastError, retries: maxRetries };
+}
 /**
  * Job 생성 시 이미지 생성 작업 수행 (v2)
  */
@@ -43,18 +80,39 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
         status: 'processing',
         updatedAt: firestore_2.fieldValue.serverTimestamp(),
     });
-    try {
-        // 1. AI 모델로 이미지 생성
-        const generatedImage = await (0, imageGeneration_1.generateImage)({
-            prompt: jobData.prompt,
-            modelId: jobData.modelId,
-            referenceImageUrl: jobData.referenceImageUrl || undefined,
-            width: 1024,
-            height: 1024,
+    // 이미지 생성 시도 (내부에서 재시도 처리)
+    const result = await tryGenerateImage(jobData, MAX_RETRIES);
+    if (result.success === false) {
+        // 모든 재시도 실패
+        console.error(`☠️ Job ${jobId} 영구 실패 (${MAX_RETRIES}회 재시도 후)`);
+        await snapshot.ref.update({
+            status: 'failed',
+            retries: result.retries,
+            errorMessage: result.error,
+            finishedAt: firestore_2.fieldValue.serverTimestamp(),
+            updatedAt: firestore_2.fieldValue.serverTimestamp(),
         });
-        console.log(`🎨 이미지 생성 완료: ${generatedImage.url.substring(0, 50)}...`);
+        // 환불은 checkTaskCompletion에서 일괄 처리 (중복 환불 방지)
+        return;
+    }
+    // 이미지 생성 성공
+    const generatedImage = result.image;
+    console.log(`🎨 이미지 생성 완료 (${result.retries}회 재시도 후): ${generatedImage.url.substring(0, 50)}...`);
+    try {
         const bucket = firestore_2.storage.bucket();
         const uploadedUrls = [];
+        // 레퍼런스 이미지에서 이전 메타데이터 읽기
+        let previousMetadata = null;
+        if (jobData.referenceImageUrl) {
+            console.log(`📖 레퍼런스 이미지에서 메타데이터 읽기 중...`);
+            previousMetadata = await (0, pngMetadata_1.readMetadataFromUrl)(jobData.referenceImageUrl);
+            if (previousMetadata) {
+                console.log(`📖 이전 세대 정보 발견: Generation ${previousMetadata.currentGeneration}`);
+            }
+        }
+        // 새로운 메타데이터 생성 (프롬프트 히스토리 누적)
+        const newMetadata = (0, pngMetadata_1.createPromptHistory)(previousMetadata, jobData.prompt, generatedImage.modelId, userId, taskId);
+        console.log(`📝 새로운 세대 정보: Generation ${newMetadata.currentGeneration}`);
         // Midjourney는 여러 이미지를 반환 (urls 배열)
         const imagesToProcess = generatedImage.urls || [generatedImage.url];
         console.log(`📦 ${imagesToProcess.length}장 이미지 처리 중...`);
@@ -74,15 +132,24 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
                 }
                 imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
             }
+            // PNG에 메타데이터 추가
+            console.log(`📝 이미지 ${i + 1}에 메타데이터 추가 중...`);
+            const imageWithMetadata = await (0, pngMetadata_1.addMetadataToPng)(imageBuffer, newMetadata);
             // Firebase Storage에 업로드
             const suffix = imagesToProcess.length > 1 ? `_${i + 1}` : '';
             const filename = `generations/${taskId}/${jobId}${suffix}_${generatedImage.modelId}.png`;
             const file = bucket.file(filename);
-            await file.save(Buffer.from(imageBuffer), {
+            await file.save(imageWithMetadata, {
                 contentType: 'image/png',
                 metadata: {
                     cacheControl: 'public, max-age=2592000',
-                    metadata: { taskId, jobId, modelId: generatedImage.modelId },
+                    metadata: {
+                        taskId,
+                        jobId,
+                        modelId: generatedImage.modelId,
+                        generation: String(newMetadata.currentGeneration),
+                        promptHistoryCount: String(newMetadata.promptHistory.length),
+                    },
                 },
             });
             await file.makePublic();
@@ -90,9 +157,10 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
             uploadedUrls.push(uploadedUrl);
             console.log(`☁️ Storage 업로드 완료 (${i + 1}/${imagesToProcess.length}): ${uploadedUrl}`);
         }
-        // 4. Job 상태 업데이트: completed
+        // Job 상태 업데이트: completed
         await snapshot.ref.update({
             status: 'completed',
+            retries: result.retries,
             imageUrl: uploadedUrls[0], // 대표 이미지
             imageUrls: uploadedUrls, // 모든 이미지 (Midjourney 4장)
             thumbnailUrl: uploadedUrls[0],
@@ -102,72 +170,16 @@ exports.jobWorker = (0, firestore_1.onDocumentCreated)({
         console.log(`✅ Job ${jobId} 완료 (${uploadedUrls.length}장)`);
     }
     catch (error) {
-        console.error(`❌ Job ${jobId} 실패:`, error);
-        const retries = (jobData.retries || 0) + 1;
+        // Storage 업로드 실패 (이미지 생성은 성공했으나 업로드 실패)
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (retries <= MAX_RETRIES) {
-            console.log(`🔄 Job ${jobId} 재시도 (${retries}/${MAX_RETRIES})`);
-            // 기존 Job을 pending으로 되돌려서 재시도 (새 Job 생성하지 않음)
-            await snapshot.ref.update({
-                status: 'pending',
-                retries,
-                errorMessage: `재시도 예정... (${retries}/${MAX_RETRIES})`,
-                updatedAt: firestore_2.fieldValue.serverTimestamp(),
-            });
-        }
-        else {
-            console.error(`☠️ Job ${jobId} 영구 실패 (재시도 ${MAX_RETRIES}회 초과)`);
-            await snapshot.ref.update({
-                status: 'failed',
-                errorMessage,
-                finishedAt: firestore_2.fieldValue.serverTimestamp(),
-                updatedAt: firestore_2.fieldValue.serverTimestamp(),
-            });
-            await refundJobPoints(taskId, jobData);
-        }
+        console.error(`❌ Job ${jobId} Storage 업로드 실패:`, errorMessage);
+        await snapshot.ref.update({
+            status: 'failed',
+            errorMessage: `Storage 업로드 실패: ${errorMessage}`,
+            finishedAt: firestore_2.fieldValue.serverTimestamp(),
+            updatedAt: firestore_2.fieldValue.serverTimestamp(),
+        });
+        // 환불은 checkTaskCompletion에서 일괄 처리 (중복 환불 방지)
     }
 });
-/**
- * 실패한 Job에 대한 포인트 환불
- */
-async function refundJobPoints(taskId, jobData) {
-    const taskRef = firestore_2.db.collection('tasks').doc(taskId);
-    try {
-        await firestore_2.db.runTransaction(async (transaction) => {
-            const taskDoc = await transaction.get(taskRef);
-            if (!taskDoc.exists) {
-                console.error(`Task ${taskId} not found for refund`);
-                return;
-            }
-            const task = taskDoc.data();
-            const userRef = firestore_2.db.collection('users').doc(task.userId);
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists) {
-                console.error(`User ${task.userId} not found for refund`);
-                return;
-            }
-            const userData = userDoc.data();
-            const refundAmount = jobData.pointsCost;
-            transaction.update(userRef, {
-                points: firestore_2.fieldValue.increment(refundAmount),
-                updatedAt: firestore_2.fieldValue.serverTimestamp(),
-            });
-            const transactionRef = firestore_2.db.collection('pointTransactions').doc();
-            transaction.set(transactionRef, {
-                userId: task.userId,
-                amount: refundAmount,
-                type: 'refund',
-                description: `이미지 생성 실패 환불 (${jobData.modelId})`,
-                relatedGenerationId: taskId,
-                balanceBefore: userData.points,
-                balanceAfter: userData.points + refundAmount,
-                createdAt: firestore_2.fieldValue.serverTimestamp(),
-            });
-        });
-        console.log(`💰 포인트 환불 완료: ${jobData.pointsCost}pt → ${jobData.userId}`);
-    }
-    catch (error) {
-        console.error('포인트 환불 실패:', error);
-    }
-}
 //# sourceMappingURL=jobWorker.js.map

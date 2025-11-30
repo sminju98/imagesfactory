@@ -179,7 +179,7 @@ async function processCompletedTask(taskId, task, imageUrls, resultPageUrl, fail
     let zipUrl;
     try {
         if (imageUrls.length >= 1) {
-            zipUrl = await (0, zip_1.createZipAndUpload)(taskId, imageUrls);
+            zipUrl = await (0, zip_1.createZipAndUpload)(imageUrls, taskId);
             await taskRef.update({
                 zipUrl,
                 updatedAt: firestore_2.fieldValue.serverTimestamp(),
