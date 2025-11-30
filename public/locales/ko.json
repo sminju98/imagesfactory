@@ -290,7 +290,7 @@
     "customAmount": "금액 직접 입력",
     "enterAmount": "금액 입력 (USD)",
     "youllGet": "받을 포인트",
-    "minMax": "$1 = 100 포인트 (최소 $1 ~ 최대 $1,000)",
+    "minMax": "$1 = 100 포인트 (최소 $10 ~ 최대 $1,000)",
     "orderSummary": "결제 정보",
     "amount": "결제 금액",
     "basePoints": "기본 포인트",
@@ -748,7 +748,7 @@
     "pointsUnit": "포인트",
     "pleaseLoginToContinue": "계속하려면 로그인해주세요",
     "pleaseLogin": "먼저 로그인해주세요",
-    "minAmount": "최소 충전 금액은 $1입니다",
+    "minAmount": "최소 충전 금액은 $10입니다",
     "maxAmount": "최대 충전 금액은 $1,000입니다",
     "info": "포인트 안내",
     "infoPointValue": "1 포인트 = $0.01 (1센트)",
@@ -762,7 +762,7 @@
     "customAmount": "직접 입력",
     "enterAmount": "금액 입력 (USD)",
     "pointsYouGet": "받을 포인트",
-    "exchangeRate": "$1 = 100 포인트 (최소 $1 ~ 최대 $1,000)",
+    "exchangeRate": "$1 = 100 포인트 (최소 $10 ~ 최대 $1,000)",
     "orderSummary": "주문 요약",
     "amount": "금액",
     "basePoints": "기본 포인트",
@@ -786,7 +786,10 @@
     "faqReceiveA": "A. 결제 확인 후 즉시 충전됩니다.",
     "faqInvoiceQ": "Q. 영수증을 받을 수 있나요?",
     "faqInvoiceA": "A. 네, webmaster@geniuscat.co.kr로 문의해주세요.",
-    "needHelp": "도움이 필요하신가요?"
+    "needHelp": "도움이 필요하신가요?",
+    "payWith": "결제 수단",
+    "paymentSuccess": "결제가 완료되었습니다! 포인트가 충전되었습니다.",
+    "paymentCancelled": "결제가 취소되었습니다."
   },
   "errors": {
     "generic": "오류가 발생했습니다. 다시 시도해주세요.",

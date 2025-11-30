@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { useTranslation } from '@/lib/i18n';
-import { Zap, Check, CreditCard } from 'lucide-react';
+import { Zap, Check, CreditCard, Loader2 } from 'lucide-react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { toast } from 'sonner';
 
 // 충전 패키지 (USD 기반, 1포인트 = $0.01)
 const POINT_PACKAGES = [
@@ -75,26 +77,81 @@ export default function PointsPage() {
   const bonusPoints = Math.floor(basePoints * (bonusPercent / 100));
   const finalPoints = basePoints + bonusPoints;
 
-  // 결제 요청
-  const handleCharge = async () => {
+  // PayPal Client ID
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+
+
+  // PayPal 주문 생성
+  const createPayPalOrder = async () => {
     if (!user) {
-      alert(t('points.pleaseLogin'));
+      toast.error(t('points.pleaseLogin'));
       router.push('/login');
-      return;
+      return '';
     }
 
-    if (finalAmount < 1) {
-      alert(t('points.minAmount'));
-      return;
+    if (finalAmount < 10) {
+      toast.error(t('points.minAmount'));
+      return '';
     }
 
     if (finalAmount > 1000) {
-      alert(t('points.maxAmount'));
-      return;
+      toast.error(t('points.maxAmount'));
+      return '';
     }
 
-    // 결제 페이지로 이동
-    router.push(`/payment/bank-transfer?amount=${finalAmount}&points=${finalPoints}`);
+    try {
+      const response = await fetch('/api/payment/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          amount: finalAmount,
+          points: finalPoints,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to create order');
+      }
+
+      return data.data.orderId;
+    } catch (error: any) {
+      console.error('Create order error:', error);
+      toast.error(error.message || t('common.error'));
+      return '';
+    }
+  };
+
+  // PayPal 결제 승인
+  const onPayPalApprove = async (data: any) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/payment/paypal/capture-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: data.orderID,
+          userId: user?.uid,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(t('points.paymentSuccess'));
+        // 페이지 새로고침하여 포인트 업데이트
+        window.location.reload();
+      } else {
+        throw new Error(result.error || 'Payment failed');
+      }
+    } catch (error: any) {
+      console.error('Capture error:', error);
+      toast.error(error.message || t('common.error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 달러 포맷팅
@@ -228,7 +285,7 @@ export default function PointsPage() {
                   setSelectedPackage(null);
                 }}
                 placeholder={t('points.enterAmount')}
-                min="1"
+                min="10"
                 max="1000"
                 className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -280,30 +337,69 @@ export default function PointsPage() {
           </div>
         </div>
 
-        {/* Payment Button */}
-        <button
-          onClick={handleCharge}
-          disabled={loading || !user || finalAmount === 0}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center space-x-2 ${
-            loading || !user || finalAmount === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
-          }`}
-        >
-          <CreditCard className="w-6 h-6" />
-          <span>
-            {loading
-              ? t('points.processing')
-              : !user
-              ? t('points.pleaseLogin')
-              : finalAmount === 0
-              ? t('points.selectAmount')
-              : `${t('points.pay')} ${formatUSD(finalAmount)}`}
-          </span>
-        </button>
+        {/* PayPal Button */}
+        {user && finalAmount > 0 ? (
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+              <CreditCard className="w-5 h-5 mr-2" />
+              {t('points.payWith')} PayPal
+            </h3>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                <span className="ml-2 text-gray-600">{t('points.processing')}</span>
+              </div>
+            ) : !paypalClientId ? (
+              <div className="text-center py-8 text-red-500">
+                <p>PayPal is not configured. Please contact support.</p>
+              </div>
+            ) : (
+              <PayPalScriptProvider
+                options={{
+                  clientId: paypalClientId,
+                  currency: 'USD',
+                }}
+              >
+                <PayPalButtons
+                  style={{
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'pay',
+                  }}
+                  createOrder={createPayPalOrder}
+                  onApprove={onPayPalApprove}
+                  onError={(err) => {
+                    console.error('PayPal error:', err);
+                    toast.error(t('common.error'));
+                  }}
+                  onCancel={() => {
+                    toast.info(t('points.paymentCancelled'));
+                  }}
+                />
+              </PayPalScriptProvider>
+            )}
+          </div>
+        ) : (
+          <div className="bg-gray-100 rounded-2xl p-6 mb-8 text-center">
+            {!user ? (
+              <div>
+                <p className="text-gray-600 mb-4">{t('points.pleaseLoginToContinue')}</p>
+                <button
+                  onClick={() => router.push('/login')}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                >
+                  {t('common.login')}
+                </button>
+              </div>
+            ) : (
+              <p className="text-gray-600">{t('points.selectAmount')}</p>
+            )}
+          </div>
+        )}
 
         {/* Notice */}
-        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
           <h3 className="font-bold text-yellow-900 mb-3">⚠️ {t('points.beforeYouPay')}</h3>
           <ul className="text-sm text-yellow-800 space-y-2">
             <li>• {t('points.noticeNonRefundable')}</li>

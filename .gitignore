@@ -81,3 +81,4 @@ ios/
 android/
 out/
 functions/.env
+.env.vercel

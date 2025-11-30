@@ -748,7 +748,7 @@
     "pointsUnit": "points",
     "pleaseLoginToContinue": "Please login to continue",
     "pleaseLogin": "Please login first",
-    "minAmount": "Minimum charge amount is $1",
+    "minAmount": "Minimum charge amount is $10",
     "maxAmount": "Maximum charge amount is $1,000",
     "info": "Points Info",
     "infoPointValue": "1 point = $0.01 (1 cent)",
@@ -786,7 +786,10 @@
     "faqReceiveA": "A. Points are credited instantly after payment confirmation.",
     "faqInvoiceQ": "Q. Can I get an invoice?",
     "faqInvoiceA": "A. Yes, please contact support at webmaster@geniuscat.co.kr",
-    "needHelp": "Need help?"
+    "needHelp": "Need help?",
+    "payWith": "Pay with",
+    "paymentSuccess": "Payment completed! Points have been added.",
+    "paymentCancelled": "Payment cancelled."
   },
   "errors": {
     "generic": "An error occurred. Please try again.",

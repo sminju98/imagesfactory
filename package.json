@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@paypal/react-paypal-js": "^8.9.2",
     "@tosspayments/payment-widget-sdk": "^0.12.1",
     "@types/archiver": "^7.0.0",
     "archiver": "^7.0.1",
