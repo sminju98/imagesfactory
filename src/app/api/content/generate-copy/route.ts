@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getTranslationFromRequest } from '@/lib/server-i18n';
+import { searchWithPerplexity, generateSearchQuery } from '@/lib/perplexity';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -19,8 +20,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // 오늘 날짜 가져오기
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    });
+    const todayISO = today.toISOString().split('T')[0];
+
     const systemPrompt = `당신은 카피라이터 전문가입니다.
 제공된 마케팅 콘셉트, 메시지, 대본을 바탕으로 각 포맷에 들어갈 최종 카피를 확정해주세요.
+
+오늘 날짜: ${todayStr} (${todayISO})
+
+시의성이 중요한 정보가 포함된 경우:
+- 오늘 날짜(${todayStr})를 참고하여 최근 7일~30일간의 최신 정보를 활용하세요
+- 날짜 관련 정보는 반드시 오늘 날짜를 기준으로 명시하세요
 
 다음 JSON 형식으로 응답해주세요:
 {
@@ -58,6 +75,24 @@ export async function POST(request: NextRequest) {
 
 JSON만 응답하고, 다른 설명은 추가하지 마세요.`;
 
+    // Perplexity로 최신 마케팅 트렌드 검색
+    console.log('🔍 Perplexity로 최신 마케팅 트렌드 검색 중...');
+    const searchQuery = generateSearchQuery(
+      concept.productName,
+      concept.keywords,
+      'trend'
+    );
+    const searchResult = await searchWithPerplexity(
+      `${searchQuery} SNS 콘텐츠 카피 트렌드`,
+      `${concept.strategy} ${message.mainCopy}`
+    );
+    
+    let trendContext = '';
+    if (searchResult.searchResults && !searchResult.error) {
+      trendContext = `\n\n[최신 SNS 콘텐츠 카피 트렌드]\n${searchResult.searchResults}`;
+      console.log('✅ 검색 결과 수집 완료');
+    }
+
     const userPrompt = `
 제품명: ${concept.productName}
 USP: ${concept.usp}
@@ -73,10 +108,11 @@ ${script.reelsStory?.map((s: any) => `${s.order}. ${s.caption}`).join('\n') || '
 
 카드뉴스 흐름:
 ${script.cardNewsFlow?.map((p: any) => `${p.order}. ${p.title}: ${p.body}`).join('\n') || ''}
+${trendContext}
 `;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5.1', // 최신 GPT 모델
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

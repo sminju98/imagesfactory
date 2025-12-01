@@ -19,24 +19,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 기본 쿼리
-    let query: FirebaseFirestore.Query = db.collection('contentProjects')
+    // Content Projects와 Reels Projects 모두 조회
+    const contentProjectsQuery = db.collection('contentProjects')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc');
+    
+    const reelsProjectsQuery = db.collection('reelsProjects')
       .where('userId', '==', userId)
       .orderBy('createdAt', 'desc');
 
-    // 상태 필터
+    // Content Projects 조회
+    let contentQuery: FirebaseFirestore.Query = contentProjectsQuery;
     if (status && ['processing', 'completed', 'failed', 'partial'].includes(status)) {
-      query = query.where('status', '==', status);
+      contentQuery = contentQuery.where('status', '==', status);
     }
-
-    // 페이지네이션
-    query = query.limit(limit).offset(offset);
-
-    const snapshot = await query.get();
+    const contentSnapshot = await contentQuery.limit(limit).offset(offset).get();
     
-    // 각 프로젝트의 태스크 정보도 함께 가져오기
-    const projects = await Promise.all(
-      snapshot.docs.map(async (doc) => {
+    // Reels Projects 조회
+    let reelsQuery: FirebaseFirestore.Query = reelsProjectsQuery;
+    if (status && ['processing', 'completed', 'failed', 'draft'].includes(status)) {
+      reelsQuery = reelsQuery.where('status', '==', status);
+    }
+    const reelsSnapshot = await reelsQuery.limit(limit).offset(offset).get();
+    
+    // Content Projects 처리
+    const contentProjects = await Promise.all(
+      contentSnapshot.docs.map(async (doc) => {
         const projectData = doc.data();
         
         // 태스크 요약 정보
@@ -84,25 +92,55 @@ export async function GET(request: NextRequest) {
 
         return {
           id: doc.id,
+          type: 'content',
           ...projectData,
           tasksSummary,
         };
       })
     );
+    
+    // Reels Projects 처리
+    const reelsProjects = reelsSnapshot.docs.map((doc) => {
+      const projectData = doc.data();
+      return {
+        id: doc.id,
+        type: 'reels',
+        ...projectData,
+        // Reels 프로젝트는 단계별 진행 상황을 표시
+        progress: {
+          currentStep: projectData.currentStep || 0,
+          totalSteps: 7,
+          completedSteps: projectData.currentStep || 0,
+        },
+      };
+    });
+    
+    // 두 프로젝트 타입을 합치고 날짜순 정렬
+    const allProjects = [...contentProjects, ...reelsProjects].sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    }).slice(0, limit);
 
-    // 전체 통계
-    const allProjectsSnapshot = await db.collection('contentProjects')
+    // 전체 통계 (Content + Reels)
+    const allContentSnapshot = await db.collection('contentProjects')
+      .where('userId', '==', userId)
+      .get();
+    
+    const allReelsSnapshot = await db.collection('reelsProjects')
       .where('userId', '==', userId)
       .get();
 
     const stats = {
-      total: allProjectsSnapshot.size,
+      total: allContentSnapshot.size + allReelsSnapshot.size,
       completed: 0,
       processing: 0,
       failed: 0,
+      content: allContentSnapshot.size,
+      reels: allReelsSnapshot.size,
     };
 
-    allProjectsSnapshot.docs.forEach(doc => {
+    allContentSnapshot.docs.forEach(doc => {
       const data = doc.data();
       switch (data.status) {
         case 'completed':
@@ -117,13 +155,29 @@ export async function GET(request: NextRequest) {
           break;
       }
     });
+    
+    allReelsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      switch (data.status) {
+        case 'completed':
+          stats.completed++;
+          break;
+        case 'processing':
+        case 'draft':
+          stats.processing++;
+          break;
+        case 'failed':
+          stats.failed++;
+          break;
+      }
+    });
 
     return NextResponse.json({
       success: true,
       data: {
-        projects,
+        projects: allProjects,
         stats,
-        hasMore: projects.length === limit,
+        hasMore: allProjects.length === limit,
       },
     });
 
