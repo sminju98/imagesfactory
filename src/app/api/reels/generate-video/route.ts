@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Veo3로 영상 생성 시작
-      const { operationId } = await generateVideoWithVeo3({
+      const { operationId, operation } = await generateVideoWithVeo3({
         prompt: combinedPrompt,
         referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
         aspectRatio: '9:16', // 릴스 세로 비율

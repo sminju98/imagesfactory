@@ -106,8 +106,10 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     console.error('대본 생성 오류:', error);
+    const errorMessage = error?.message || error?.toString() || '알 수 없는 오류';
+    console.error('상세 에러:', errorMessage);
     return NextResponse.json(
-      { success: false, error: '대본 생성에 실패했습니다.' },
+      { success: false, error: `대본 생성에 실패했습니다: ${errorMessage}` },
       { status: 500 }
     );
   }

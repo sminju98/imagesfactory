@@ -82,3 +82,5 @@ android/
 out/
 functions/.env
 .env.vercel
+imagefactory-5ccc6-ef0b85c83dfe.json
+test-grok-api.js

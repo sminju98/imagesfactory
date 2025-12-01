@@ -6,6 +6,12 @@
 interface PixazoTTSParams {
   text: string;
   voice?: string; // 음성 종류 (기본: 한국어 여성)
+  // 한국어 음성 모델 옵션 예시:
+  // - 'ko-female-1': 한국어 여성 음성 1
+  // - 'ko-female-2': 한국어 여성 음성 2
+  // - 'ko-male-1': 한국어 남성 음성 1
+  // - 'ko-KR-Standard-A': Google Cloud TTS 형식 (Pixazo가 Google TTS를 사용하는 경우)
+  // 실제 사용 가능한 모델명은 Pixazo API 문서 확인 필요
   speed?: number; // 속도 (0.5 ~ 2.0, 기본: 1.0)
   pitch?: number; // 음높이 (0.5 ~ 2.0, 기본: 1.0)
 }
@@ -42,7 +48,9 @@ export async function generateTTSWithPixazo(
       },
       body: JSON.stringify({
         text: params.text,
-        voice: params.voice || 'ko-female-1', // 한국어 여성 음성
+        // 기본값: Google Cloud TTS 형식 (기술 명세서 기준)
+        // 실제 사용 가능한 모델: ko-KR-Standard-A, ko-KR-Wavenet-A, ko-female-1 등
+        voice: params.voice || 'ko-KR-Standard-A', // 한국어 여성 음성 (Google Cloud TTS)
         speed: params.speed || 1.0,
         pitch: params.pitch || 1.0,
         format: 'mp3',

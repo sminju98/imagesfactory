@@ -1,8 +1,10 @@
 /**
  * Veo3 영상 생성 유틸리티
- * Google Gemini API의 Veo3 모델 사용
+ * Google GenAI SDK 사용
  * 문서: https://ai.google.dev/gemini-api/docs/video
  */
+
+import { GoogleGenAI } from '@google/genai';
 
 interface Veo3GenerateParams {
   prompt: string;
@@ -12,7 +14,6 @@ interface Veo3GenerateParams {
 }
 
 interface Veo3Operation {
-  name: string;
   done: boolean;
   response?: {
     generatedVideos: Array<{
@@ -26,75 +27,63 @@ interface Veo3Operation {
   };
 }
 
+// GoogleGenAI 인스턴스 생성
+function getGoogleGenAI() {
+  const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_VEO3_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GOOGLE_AI_API_KEY 또는 GOOGLE_VEO3_API_KEY가 설정되지 않았습니다.');
+  }
+
+  return new GoogleGenAI({
+    apiKey,
+  });
+}
+
 /**
  * Veo3로 영상 생성 시작 (비동기 작업)
  * @param params 생성 파라미터
- * @returns operation ID
+ * @returns operation 객체
  */
 export async function generateVideoWithVeo3(
   params: Veo3GenerateParams
-): Promise<{ operationId: string }> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('GOOGLE_AI_API_KEY가 설정되지 않았습니다.');
-  }
-
-  // Veo 3.1 모델 사용 (최신 버전)
-  const model = 'veo-3.1-generate-preview';
-  
-  // 요청 본문 구성
-  const requestBody: any = {
-    prompt: params.prompt,
-  };
-
-  // 참조 이미지가 있으면 추가 (최대 3개)
-  if (params.referenceImages && params.referenceImages.length > 0) {
-    requestBody.reference_images = params.referenceImages.slice(0, 3).map(url => ({
-      uri: url,
-    }));
-  }
-
-  // 비율 설정 (릴스는 9:16)
-  if (params.aspectRatio) {
-    requestBody.aspect_ratio = params.aspectRatio;
-  }
-
-  // 길이 설정 (기본 8초)
-  if (params.duration) {
-    requestBody.duration_seconds = params.duration;
-  }
+): Promise<{ operationId: string; operation: any }> {
+  const ai = getGoogleGenAI();
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateVideos?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    // Veo 3.1 모델 사용
+    const generateParams: any = {
+      model: 'veo-3.1-generate-preview',
+      prompt: params.prompt,
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Veo3 API 오류:', response.status, errorText);
-      throw new Error(`Veo3 API 오류: ${response.status} - ${errorText}`);
+    // 참조 이미지가 있으면 추가 (최대 3개)
+    // Veo3는 referenceImages를 직접 URL로 받을 수 있음
+    if (params.referenceImages && params.referenceImages.length > 0) {
+      generateParams.referenceImages = params.referenceImages.slice(0, 3);
     }
 
-    const data = await response.json();
-    
-    // 비동기 작업이므로 operation name 반환
-    // Google API는 operation 객체를 반환하거나 name 필드를 가질 수 있음
-    const operationId = data.name || data.operation?.name || data.operationId || data.id;
-    
-    if (!operationId) {
-      throw new Error('Operation ID를 받지 못했습니다.');
+    // 비율 설정 (릴스는 9:16)
+    if (params.aspectRatio) {
+      generateParams.aspectRatio = params.aspectRatio;
     }
+
+    // 길이 설정 (기본 8초)
+    if (params.duration) {
+      generateParams.duration = params.duration;
+    }
+
+    const operation = await ai.models.generateVideos(generateParams);
+    
+    // operation 객체에서 ID 추출
+    // 형식: models/veo-3.1-generate-preview/operations/xxxxx
+    const operationId = (operation as any).name || 
+                        (operation as any).operationId || 
+                        `operation_${Date.now()}`;
     
     return {
       operationId,
+      operation,
     };
   } catch (error: any) {
     console.error('Veo3 영상 생성 오류:', error);
@@ -104,60 +93,58 @@ export async function generateVideoWithVeo3(
 
 /**
  * Veo3 작업 상태 확인
- * @param operationId 작업 ID
+ * @param operation 작업 객체 또는 operation ID
  * @returns 작업 상태 및 결과
  */
 export async function checkVeo3Operation(
-  operationId: string
+  operation: any
 ): Promise<{ done: boolean; videoUrl?: string; error?: string }> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('GOOGLE_AI_API_KEY가 설정되지 않았습니다.');
-  }
+  const ai = getGoogleGenAI();
 
   try {
-    // operation ID에서 모델명 추출
-    // 형식: operations/veo-3.1-generate-preview/...
-    const operationPath = operationId.startsWith('operations/') 
-      ? operationId 
-      : `operations/${operationId}`;
-
-    // Google API의 operation 조회 엔드포인트
-    // 형식: operations/{operationId} 또는 models/{model}/operations/{operationId}
-    let operationUrl: string;
-    if (operationPath.includes('/')) {
-      // 이미 전체 경로인 경우
-      operationUrl = `https://generativelanguage.googleapis.com/v1beta/${operationPath}?key=${apiKey}`;
-    } else {
-      // 모델명 포함 경로 시도
-      operationUrl = `https://generativelanguage.googleapis.com/v1beta/operations/veo-3.1-generate-preview/${operationPath}?key=${apiKey}`;
-    }
-
-    const response = await fetch(operationUrl);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      return {
-        done: true,
-        error: `작업 조회 실패: ${response.status} - ${errorText}`,
-      };
-    }
-
-    const data: Veo3Operation = await response.json();
-    
-    if (data.done) {
-      if (data.error) {
+    // operation 객체가 이미 done 속성을 가지고 있는지 확인
+    if (operation.done !== undefined) {
+      if (operation.done) {
+        if (operation.error) {
+          return {
+            done: true,
+            error: operation.error.message || '영상 생성 실패',
+          };
+        }
+        
+        if (operation.response?.generatedVideos?.[0]?.video?.uri) {
+          return {
+            done: true,
+            videoUrl: operation.response.generatedVideos[0].video.uri,
+          };
+        }
+        
         return {
           done: true,
-          error: data.error.message || '영상 생성 실패',
+          error: '영상 URL을 찾을 수 없습니다.',
         };
       }
       
-      if (data.response?.generatedVideos?.[0]?.video?.uri) {
+      return { done: false };
+    }
+
+    // operation 객체로 상태 조회
+    const updatedOperation = await ai.operations.getVideosOperation({
+      operation,
+    });
+
+    if (updatedOperation.done) {
+      if ((updatedOperation as any).error) {
         return {
           done: true,
-          videoUrl: data.response.generatedVideos[0].video.uri,
+          error: (updatedOperation as any).error.message || '영상 생성 실패',
+        };
+      }
+      
+      if ((updatedOperation as any).response?.generatedVideos?.[0]?.video?.uri) {
+        return {
+          done: true,
+          videoUrl: (updatedOperation as any).response.generatedVideos[0].video.uri,
         };
       }
       
@@ -187,13 +174,15 @@ export async function generateVideoWithVeo3Sync(
   params: Veo3GenerateParams,
   maxWaitTime: number = 5 * 60 * 1000
 ): Promise<string> {
-  const { operationId } = await generateVideoWithVeo3(params);
+  const { operation } = await generateVideoWithVeo3(params);
   
   const startTime = Date.now();
   const pollInterval = 10000; // 10초마다 확인
 
+  let currentOperation = operation;
+
   while (Date.now() - startTime < maxWaitTime) {
-    const status = await checkVeo3Operation(operationId);
+    const status = await checkVeo3Operation(currentOperation);
     
     if (status.done) {
       if (status.videoUrl) {
@@ -204,8 +193,13 @@ export async function generateVideoWithVeo3Sync(
 
     // 대기 후 다시 확인
     await new Promise(resolve => setTimeout(resolve, pollInterval));
+    
+    // operation 업데이트
+    const ai = getGoogleGenAI();
+    currentOperation = await ai.operations.getVideosOperation({
+      operation: currentOperation,
+    });
   }
 
   throw new Error('영상 생성 시간 초과');
 }
-

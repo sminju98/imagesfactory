@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase-admin';
-import { generateMultipleTTS } from '@/lib/reels/pixazo';
+import { generateMultipleTTS } from '@/lib/reels/gemini-tts-service-account';
 import { generateSubtitlesWithGPT, convertToSRT, convertToWebVTT } from '@/lib/reels/subtitle';
 import { deductReelsPoints, refundReelsPoints } from '@/lib/reels/points';
 
@@ -77,9 +77,11 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // TTS 생성
+      // TTS 생성 (Google Cloud TTS)
+      // 기본 모델: ko-KR-Neural2-A (최신 Neural2 모델)
+      // 다른 옵션: ko-KR-Wavenet-A (고품질), ko-KR-Standard-A (표준)
       const ttsResult = await generateMultipleTTS([videoScript.narration], {
-        voice: 'ko-female-1',
+        voice: 'ko-KR-Neural2-A', // 한국어 여성 음성 (Neural2)
         speed: 1.0,
       });
 

@@ -582,8 +582,8 @@
     "step5Desc": "모든 이미지 자동 생성",
     "pricingTitle": "💰 콘텐츠 가격표",
     "contentTypes": {
-      "reels": "릴스/틱톡",
-      "reelsCount": "10컷",
+      "reels": "Reels Factory",
+      "reelsCount": "AI 영상 생성",
       "comic": "4컷 만화",
       "comicCount": "4컷",
       "cardnews": "카드뉴스",

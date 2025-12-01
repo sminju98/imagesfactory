@@ -94,10 +94,12 @@ function ReelsFactoryPageContent() {
     loadProjects();
   }, [user, searchParams]);
 
-  // 프로젝트가 있으면 현재 단계로 모달 열기
+  // 프로젝트가 있으면 현재 단계 설정 (모달은 자동으로 열지 않음)
   useEffect(() => {
     if (project && project.currentStep !== undefined && project.status !== 'completed') {
       setCurrentStep(project.currentStep);
+      // 모달은 사용자가 버튼을 클릭할 때만 열림
+      setIsStepModalOpen(false);
     }
   }, [project]);
 
@@ -128,8 +130,6 @@ function ReelsFactoryPageContent() {
   };
 
   const renderStepModal = () => {
-    if (!project) return null;
-
     switch (currentStep) {
       case 0:
         return (
@@ -137,10 +137,37 @@ function ReelsFactoryPageContent() {
             open={isStepModalOpen}
             onClose={() => setIsStepModalOpen(false)}
             project={project}
-            onComplete={(data) => handleStepComplete(0, data)}
+            onComplete={(data) => {
+              // 프로젝트가 없으면 새로 생성된 프로젝트로 설정
+              if (!project && data.id) {
+                setProject({
+                  id: data.id,
+                  userId: user.uid,
+                  inputPrompt: data.inputPrompt || '',
+                  refinedPrompt: data.refinedPrompt || '',
+                  uploadedImages: data.uploadedImages || [],
+                  options: data.options || { target: '', tone: '', purpose: '' },
+                  researchResults: [],
+                  selectedInsights: [],
+                  concepts: [],
+                  chosenConcept: null,
+                  videoScripts: [],
+                  videoClips: [],
+                  finalClips: [],
+                  finalReelUrl: '',
+                  currentStep: data.currentStep || 1,
+                  status: 'draft',
+                  pointsUsed: 0,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                } as ReelsProject);
+              }
+              handleStepComplete(0, data);
+            }}
           />
         );
       case 1:
+        if (!project) return null;
         return (
           <Step1Modal
             open={isStepModalOpen}
@@ -150,6 +177,7 @@ function ReelsFactoryPageContent() {
           />
         );
       case 2:
+        if (!project) return null;
         return (
           <Step2Modal
             open={isStepModalOpen}
@@ -159,6 +187,7 @@ function ReelsFactoryPageContent() {
           />
         );
       case 3:
+        if (!project) return null;
         return (
           <Step3Modal
             open={isStepModalOpen}
@@ -168,6 +197,7 @@ function ReelsFactoryPageContent() {
           />
         );
       case 4:
+        if (!project) return null;
         return (
           <Step4Modal
             open={isStepModalOpen}
@@ -177,6 +207,7 @@ function ReelsFactoryPageContent() {
           />
         );
       case 5:
+        if (!project) return null;
         return (
           <Step5Modal
             open={isStepModalOpen}
@@ -186,6 +217,7 @@ function ReelsFactoryPageContent() {
           />
         );
       case 6:
+        if (!project) return null;
         return (
           <Step6Modal
             open={isStepModalOpen}
@@ -291,7 +323,13 @@ function ReelsFactoryPageContent() {
                         단계: {stepNames[p.currentStep || 0]} ({p.currentStep || 0}/7)
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {p.createdAt?.toDate?.()?.toLocaleDateString('ko-KR')}
+                        {p.createdAt 
+                          ? (p.createdAt instanceof Date 
+                              ? p.createdAt.toLocaleDateString('ko-KR')
+                              : 'toDate' in p.createdAt 
+                                ? p.createdAt.toDate().toLocaleDateString('ko-KR')
+                                : '-')
+                          : '-'}
                       </div>
                     </div>
                   );

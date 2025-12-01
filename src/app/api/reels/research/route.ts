@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase-admin';
 import { searchWithPerplexity } from '@/lib/perplexity';
 import { deductReelsPoints, refundReelsPoints } from '@/lib/reels/points';
+import { extractKeywordsFromResearch } from '@/lib/reels/gpt';
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,7 +76,22 @@ export async function POST(request: NextRequest) {
       `${refinedPrompt} USP 및 차별화 포인트 (${todayStr} 기준 최신 정보)`,
     ];
 
-    const allResults: Array<{
+    // Perplexity로 리서치 수행 (모든 쿼리 결과 수집)
+    const allResearchText: string[] = [];
+
+    for (const query of searchQueries) {
+      const searchResult = await searchWithPerplexity(query, refinedPrompt);
+      
+      if (searchResult.searchResults && !searchResult.error) {
+        allResearchText.push(searchResult.searchResults);
+      }
+    }
+
+    // 모든 리서치 결과를 하나로 합치기
+    const combinedResearch = allResearchText.join('\n\n');
+
+    // GPT로 키워드 후보 추출
+    let allResults: Array<{
       id: string;
       category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general';
       content: string;
@@ -83,31 +99,34 @@ export async function POST(request: NextRequest) {
       selected: boolean;
     }> = [];
 
-    for (const query of searchQueries) {
-      const searchResult = await searchWithPerplexity(query, refinedPrompt);
-      
-      if (searchResult.searchResults && !searchResult.error) {
-        // 검색 결과를 카테고리별로 분류
-        const category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general' = 
-          query.includes('키워드') ? 'keyword' :
-          query.includes('페인포인트') ? 'painpoint' :
-          query.includes('트렌드') ? 'trend' :
-          query.includes('USP') ? 'usp' : 
-          query.includes('표현') ? 'expression' : 'general';
+    if (combinedResearch.trim().length > 0) {
+      try {
+        allResults = await extractKeywordsFromResearch(combinedResearch);
+      } catch (error) {
+        console.error('GPT 키워드 추출 오류:', error);
+        // GPT 실패 시 기존 방식으로 폴백
+        for (let i = 0; i < allResearchText.length; i++) {
+          const researchText = allResearchText[i];
+          const category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general' = 
+            searchQueries[i].includes('키워드') ? 'keyword' :
+            searchQueries[i].includes('페인포인트') ? 'painpoint' :
+            searchQueries[i].includes('트렌드') ? 'trend' :
+            searchQueries[i].includes('USP') ? 'usp' : 
+            searchQueries[i].includes('표현') ? 'expression' : 'general';
 
-        // 결과를 여러 인사이트로 분할
-        const insights = searchResult.searchResults
-          .split('\n')
-          .filter(line => line.trim().length > 20)
-          .slice(0, 3)
-          .map((content, index) => ({
-            id: `${Date.now()}-${category}-${index}`,
-            category: category as 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general',
-            content: content.trim(),
-            selected: false,
-          }));
+          const insights = researchText
+            .split('\n')
+            .filter(line => line.trim().length > 20)
+            .slice(0, 3)
+            .map((content, index) => ({
+              id: `${Date.now()}-${category}-${index}`,
+              category,
+              content: content.trim(),
+              selected: false,
+            }));
 
-        allResults.push(...insights);
+          allResults.push(...insights);
+        }
       }
     }
 

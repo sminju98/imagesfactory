@@ -59,8 +59,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 포인트 차감 (Step 0)
+    console.log('💰 Step 0 포인트 차감 시작:', { userId: user.uid, projectId, step: 0 });
     const pointsResult = await deductReelsPoints(user.uid, projectId, 0);
+    console.log('💰 Step 0 포인트 차감 결과:', pointsResult);
+    
     if (!pointsResult.success) {
+      console.error('❌ 포인트 차감 실패:', pointsResult.error);
       return NextResponse.json(
         { success: false, error: pointsResult.error },
         { status: 400 }
@@ -69,7 +73,9 @@ export async function POST(request: NextRequest) {
 
     try {
       // GPT로 프롬프트 교정
+      console.log('🤖 GPT 프롬프트 교정 시작');
       const result = await refinePromptWithGPT(prompt);
+      console.log('✅ GPT 프롬프트 교정 완료');
 
       // 프로젝트 업데이트
       await db.collection('reelsProjects').doc(projectId).update({

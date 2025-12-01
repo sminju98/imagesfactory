@@ -60,8 +60,8 @@ export interface ReelsProject {
     step5_video4?: any;
     step6?: any;
   };
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
 }
 
 /** 업로드된 이미지 */

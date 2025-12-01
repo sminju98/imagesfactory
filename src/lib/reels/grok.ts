@@ -108,6 +108,13 @@ ${params.uploadedImages.map((img, i) => `${i + 1}. ID: ${img.id}, URL: ${img.url
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Grok API 오류 상세:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        url: 'https://api.x.ai/v1/chat/completions',
+        model: 'grok-2-vision-1212',
+      });
       throw new Error(`Grok API 오류: ${response.status} - ${errorText}`);
     }
 

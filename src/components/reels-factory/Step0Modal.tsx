@@ -33,6 +33,34 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
     setLoading(true);
     try {
       const token = await auth.currentUser?.getIdToken();
+      let projectId = project?.id;
+
+      // 프로젝트가 없으면 먼저 생성
+      if (!projectId) {
+        const createResponse = await fetch('/api/reels/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            prompt,
+            images,
+            options,
+          }),
+        });
+
+        const createData = await createResponse.json();
+        if (!createData.success) {
+          alert(createData.error || '프로젝트 생성에 실패했습니다.');
+          setLoading(false);
+          return;
+        }
+
+        projectId = createData.data.projectId;
+      }
+
+      // 프롬프트 교정
       const response = await fetch('/api/reels/refine-prompt', {
         method: 'POST',
         headers: {
@@ -40,7 +68,7 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          projectId: project?.id,
+          projectId,
           prompt,
         }),
       });
@@ -48,6 +76,24 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
       const data = await response.json();
       if (data.success) {
         setRefinedPrompt(data.data.refinedPrompt);
+        // 프롬프트 교정만 하고 다음 단계로 넘어가지 않음
+        // 프로젝트가 없었으면 상태만 업데이트 (currentStep 변경 없음)
+        if (!project?.id) {
+          onComplete({
+            id: projectId,
+            inputPrompt: prompt,
+            refinedPrompt: data.data.refinedPrompt,
+            uploadedImages: images,
+            options,
+            // currentStep을 변경하지 않음 - 프롬프트 교정만 수행
+          });
+        } else {
+          // 기존 프로젝트의 경우 refinedPrompt만 업데이트
+          onComplete({
+            refinedPrompt: data.data.refinedPrompt,
+            // currentStep을 변경하지 않음
+          });
+        }
       } else {
         alert(data.error || '프롬프트 교정에 실패했습니다.');
       }

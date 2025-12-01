@@ -71,6 +71,62 @@ JSON 형식으로 응답:
 }
 
 /**
+ * Perplexity 리서치 결과에서 키워드 후보 추출 (GPT 사용)
+ */
+export async function extractKeywordsFromResearch(
+  researchResults: string
+): Promise<Array<{
+  id: string;
+  category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general';
+  content: string;
+  selected: boolean;
+}>> {
+  const systemPrompt = `당신은 마케팅 키워드 분석 전문가입니다.
+Perplexity 리서치 결과를 분석하여 릴스 제작에 활용할 수 있는 키워드 후보를 추출해주세요.
+
+각 키워드는 다음 카테고리로 분류:
+- keyword: 검색 키워드, 트렌드 키워드
+- painpoint: 소비자 페인포인트, 니즈
+- trend: 최신 트렌드, 밈
+- usp: 차별화 포인트, USP
+- expression: 마케팅 표현, 문구
+- general: 기타 유용한 인사이트
+
+JSON 형식:
+{
+  "keywords": [
+    { "id": "1", "category": "keyword", "content": "키워드 내용" },
+    { "id": "2", "category": "painpoint", "content": "페인포인트 내용" },
+    ...
+  ]
+}`;
+
+  const userPrompt = `다음은 Perplexity 리서치 결과입니다. 릴스 제작에 활용할 수 있는 키워드 후보를 추출해주세요:
+
+${researchResults}`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-5.1',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.7,
+    response_format: { type: 'json_object' },
+  });
+
+  const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
+  const keywords = result.keywords || [];
+  
+  return keywords.map((keyword: any, index: number) => ({
+    id: keyword.id || `keyword-${Date.now()}-${index}`,
+    category: keyword.category || 'general',
+    content: keyword.content || '',
+    selected: false,
+  }));
+}
+
+/**
  * Step2: 콘셉트 기획
  */
 export async function generateConceptsWithGPT(

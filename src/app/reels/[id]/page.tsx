@@ -286,11 +286,23 @@ export default function ReelsResultPage({ params }: ReelsResultPageProps) {
             </div>
             <div>
               <span className="font-semibold">생성일:</span>{' '}
-              {project.createdAt?.toDate?.()?.toLocaleString('ko-KR') || '-'}
+              {project.createdAt 
+                ? (project.createdAt instanceof Date 
+                    ? project.createdAt.toLocaleString('ko-KR')
+                    : 'toDate' in project.createdAt 
+                      ? project.createdAt.toDate().toLocaleString('ko-KR')
+                      : '-')
+                : '-'}
             </div>
             <div>
               <span className="font-semibold">수정일:</span>{' '}
-              {project.updatedAt?.toDate?.()?.toLocaleString('ko-KR') || '-'}
+              {project.updatedAt 
+                ? (project.updatedAt instanceof Date 
+                    ? project.updatedAt.toLocaleString('ko-KR')
+                    : 'toDate' in project.updatedAt 
+                      ? project.updatedAt.toDate().toLocaleString('ko-KR')
+                      : '-')
+                : '-'}
             </div>
           </div>
         </div>

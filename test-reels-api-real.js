@@ -8,12 +8,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// 테스트 데이터
-const TEST_PROMPT = '이미지팩토리를 홍보하는 릴스를 만들어보자';
+// 테스트 데이터 - ImageFactory 홍보 릴스
+const TEST_PROMPT = `ImageFactory는 AI를 활용한 이미지 생성 서비스입니다. 다양한 AI 모델(Midjourney, DALL-E 3, Stable Diffusion 등)을 사용하여 고품질 이미지를 생성할 수 있으며, 최신 AI 기술을 활용한 Reels Factory 기능도 제공합니다. 간단한 프롬프트만으로 전문적인 이미지와 릴스 영상을 만들 수 있는 혁신적인 플랫폼입니다.`;
 const TEST_OPTIONS = {
-  target: '20-40대 크리에이터, 마케터, 디자이너',
+  target: '20-40대 창작자, 마케터, 디자이너, 콘텐츠 크리에이터',
   tone: '친근하고 트렌디하며 전문적',
-  purpose: '서비스 홍보 및 사용자 유치',
+  purpose: 'ImageFactory 서비스 홍보 및 신규 사용자 유치',
 };
 
 // 환경 변수에서 토큰 가져오기 (또는 직접 입력)
@@ -117,13 +117,7 @@ async function step0() {
   console.log(`목적: ${TEST_OPTIONS.purpose}`);
   
   if (!AUTH_TOKEN) {
-    console.error('❌ AUTH_TOKEN이 필요합니다.');
-    console.log('\n사용 방법:');
-    console.log('1. 브라우저에서 로그인 후 개발자 도구 콘솔에서:');
-    console.log('   firebase.auth().currentUser.getIdToken().then(console.log)');
-    console.log('2. 환경 변수로 설정:');
-    console.log('   TEST_AUTH_TOKEN=your_token node test-reels-api.js');
-    console.log('\n또는 스크립트 내부의 AUTH_TOKEN 변수를 직접 수정하세요.');
+    console.error('❌ AUTH_TOKEN이 필요합니다. 환경 변수 TEST_AUTH_TOKEN을 설정하거나 스크립트를 수정하세요.');
     return false;
   }
   
@@ -280,8 +274,6 @@ async function step4() {
     
     if (videoResult.success) {
       console.log(`✅ 영상 ${i + 1} 생성 시작 (Operation ID: ${videoResult.data.operationId})`);
-      console.log(`💰 포인트 차감: ${videoResult.data.pointsDeducted}pt`);
-      console.log(`💳 잔액: ${videoResult.data.newBalance}pt`);
       
       // Veo3 작업 상태 확인 (폴링)
       let completed = false;
@@ -356,8 +348,6 @@ async function step5() {
     if (ttsResult.success) {
       console.log(`✅ 음성 생성 완료`);
       console.log(`✅ 자막 생성 완료`);
-      console.log(`💰 포인트 차감: ${ttsResult.data.pointsDeducted}pt`);
-      console.log(`💳 잔액: ${ttsResult.data.newBalance}pt`);
       
       // 오디오 다운로드
       if (ttsResult.data.audioUrl) {
@@ -369,19 +359,15 @@ async function step5() {
         }
       }
       
-      // 자막 파일 저장
-      if (ttsResult.data.subtitle) {
-        const srtPath = path.join(OUTPUT_DIR, `subtitle-${i + 1}.srt`);
-        fs.writeFileSync(srtPath, ttsResult.data.subtitle.srt || '', 'utf8');
-        console.log(`✅ 자막 저장: ${srtPath}`);
-      }
-      
       finalClips.push({
         videoIndex: i,
         videoUrl: videoClips[i]?.url,
         audioUrl: ttsResult.data.audioUrl,
         subtitle: ttsResult.data.subtitle,
       });
+      
+      console.log(`💰 포인트 차감: ${ttsResult.data.pointsDeducted}pt`);
+      console.log(`💳 잔액: ${ttsResult.data.newBalance}pt`);
     } else {
       console.error(`❌ TTS 생성 실패:`, ttsResult.error);
     }
@@ -621,8 +607,8 @@ async function main() {
     console.log('\n사용 방법:');
     console.log('1. 브라우저에서 로그인 후 개발자 도구 콘솔에서:');
     console.log('   firebase.auth().currentUser.getIdToken().then(console.log)');
-    console.log('2. 환경 변수로 설정:');
-    console.log('   TEST_AUTH_TOKEN=your_token node test-reels-api.js');
+    console.log('2. 또는 환경 변수로 설정:');
+    console.log('   TEST_AUTH_TOKEN=your_token node test-reels-api-real.js');
     console.log('\n또는 스크립트 내부의 AUTH_TOKEN 변수를 직접 수정하세요.');
     return;
   }

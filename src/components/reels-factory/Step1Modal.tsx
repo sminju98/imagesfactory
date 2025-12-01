@@ -7,15 +7,15 @@ import { auth } from '@/lib/firebase';
 interface Step1ModalProps {
   open: boolean;
   onClose: () => void;
-  project: ReelsProject;
+  project: ReelsProject | null;
   onComplete: (data: any) => void;
 }
 
 export default function Step1Modal({ open, onClose, project, onComplete }: Step1ModalProps) {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<any[]>(project.researchResults || []);
+  const [results, setResults] = useState<any[]>(project?.researchResults || []);
   const [selectedInsights, setSelectedInsights] = useState<string[]>(
-    project.selectedInsights || []
+    project?.selectedInsights || []
   );
 
   useEffect(() => {
@@ -35,8 +35,8 @@ export default function Step1Modal({ open, onClose, project, onComplete }: Step1
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          projectId: project.id,
-          refinedPrompt: project.refinedPrompt,
+          projectId: project?.id,
+          refinedPrompt: project?.refinedPrompt,
         }),
       });
 

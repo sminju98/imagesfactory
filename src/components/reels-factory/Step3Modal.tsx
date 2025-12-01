@@ -15,15 +15,27 @@ export default function Step3Modal({ open, onClose, project, onComplete }: Step3
   const [loading, setLoading] = useState(false);
   const [videoScripts, setVideoScripts] = useState<any[]>(project.videoScripts || []);
   const [activeTab, setActiveTab] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && (!videoScripts || videoScripts.length === 0)) {
+      // chosenConcept가 없으면 에러 표시
+      if (!project.chosenConcept) {
+        setError('콘셉트가 선택되지 않았습니다. Step 2에서 콘셉트를 선택해주세요.');
+        return;
+      }
       handleGenerateScripts();
     }
-  }, [open]);
+  }, [open, project.chosenConcept]);
 
   const handleGenerateScripts = async () => {
+    if (!project.chosenConcept) {
+      setError('콘셉트가 선택되지 않았습니다. Step 2에서 콘셉트를 선택해주세요.');
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     try {
       const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/reels/script', {
@@ -42,11 +54,15 @@ export default function Step3Modal({ open, onClose, project, onComplete }: Step3
       if (data.success) {
         setVideoScripts(data.data.videoScripts);
       } else {
-        alert(data.error || '대본 생성에 실패했습니다.');
+        const errorMsg = data.error || '대본 생성에 실패했습니다.';
+        setError(errorMsg);
+        alert(errorMsg);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error?.message || '대본 생성 중 오류가 발생했습니다.';
       console.error('대본 생성 오류:', error);
-      alert('대본 생성 중 오류가 발생했습니다.');
+      setError(errorMsg);
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -88,7 +104,25 @@ export default function Step3Modal({ open, onClose, project, onComplete }: Step3
             </button>
           </div>
 
-          {loading ? (
+          {error ? (
+            <div className="text-center py-12">
+              <div className="text-red-600 mb-4">
+                <p className="font-semibold text-lg">⚠️ 오류 발생</p>
+                <p className="mt-2">{error}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setError(null);
+                  if (project.chosenConcept) {
+                    handleGenerateScripts();
+                  }
+                }}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">대본 생성 중...</p>
@@ -125,19 +159,35 @@ export default function Step3Modal({ open, onClose, project, onComplete }: Step3
                   </div>
 
                   <div className="space-y-3">
-                    {videoScripts[activeTab].shots.map((shot: any, shotIndex: number) => (
-                      <div key={shotIndex} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="text-sm font-semibold">
-                            샷 {shotIndex + 1} ({shot.duration}초)
-                          </span>
+                    {videoScripts[activeTab].shots && Array.isArray(videoScripts[activeTab].shots) && videoScripts[activeTab].shots.map((shot: any, shotIndex: number) => {
+                      // shot이 객체인지 확인하고 안전하게 렌더링
+                      if (!shot || typeof shot !== 'object') {
+                        return null;
+                      }
+                      
+                      // shot 객체의 속성들을 안전하게 추출
+                      const duration = shot.duration || shot.time || 0;
+                      const description = shot.description || shot.scene || '';
+                      const visualPrompt = shot.visualPrompt || shot.onscreen_text || '';
+                      
+                      return (
+                        <div key={shotIndex} className="p-4 bg-gray-50 rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-sm font-semibold">
+                              샷 {shotIndex + 1} ({duration}초)
+                            </span>
+                          </div>
+                          {description && (
+                            <p className="text-gray-800 mb-2">{String(description)}</p>
+                          )}
+                          {visualPrompt && (
+                            <p className="text-sm text-gray-600 italic">
+                              {String(visualPrompt)}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-gray-800 mb-2">{shot.description}</p>
-                        <p className="text-sm text-gray-600 italic">
-                          {shot.visualPrompt}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="mt-4">
