@@ -47,13 +47,25 @@ export default function MyPage() {
   }, [authLoading, firebaseUser, router]);
 
   useEffect(() => {
-    if (user) {
-      fetchRecentGenerations();
-      fetchPointStats();
-      fetchTransactions();
-      fetchPayments();
+    if (user && !authLoading) {
+      setLoadingData(true);
+      Promise.all([
+        fetchRecentGenerations(),
+        fetchPointStats(),
+        fetchTransactions(),
+        fetchPayments(),
+      ]).finally(() => {
+        setLoadingData(false);
+      });
+    } else if (!authLoading && firebaseUser && !user) {
+      // Firebase 인증은 되었지만 Firestore에 사용자 정보가 없는 경우
+      console.warn('Firestore에 사용자 정보가 없습니다. 잠시 후 다시 시도합니다.');
+      // 잠시 후 다시 시도
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
-  }, [user]);
+  }, [user, authLoading, firebaseUser]);
 
   // 콘텐츠 저장소 데이터 로드
   useEffect(() => {

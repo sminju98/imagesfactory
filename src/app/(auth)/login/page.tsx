@@ -72,11 +72,37 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+      setError('');
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       
+      const user = userCredential.user;
+      
+      // Firestore에서 사용자 정보 확인 및 생성
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (!userDoc.exists()) {
+        // 신규 사용자인 경우 Firestore에 사용자 정보 생성
+        const { setDoc, serverTimestamp } = await import('firebase/firestore');
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || user.email?.split('@')[0] || 'User',
+          photoURL: user.photoURL || '',
+          provider: 'google',
+          points: 0,
+          emailVerified: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+      
+      // 상태 업데이트를 위해 잠시 대기
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // 구글은 기본적으로 이메일 인증됨
       router.push('/');
+      router.refresh(); // 페이지 새로고침으로 상태 동기화
     } catch (error: any) {
       console.error('Google login error:', error);
       console.error('Error code:', error.code);

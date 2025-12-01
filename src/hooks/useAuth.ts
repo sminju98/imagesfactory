@@ -13,43 +13,54 @@ export const useAuth = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('🔵 [useAuth] onAuthStateChanged 호출됨');
-      console.log('🔵 [useAuth] firebaseUser:', firebaseUser ? {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-      } : null);
-      
       setFirebaseUser(firebaseUser);
 
       if (firebaseUser) {
         try {
-          console.log('🔵 [useAuth] Firestore에서 사용자 정보 조회 중...', firebaseUser.uid);
+          // Firestore에서 사용자 정보 가져오기 (재시도 로직 포함)
+          let userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           
-          // Firestore에서 사용자 정보 가져오기
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          
-          console.log('🔵 [useAuth] Firestore 조회 결과:', {
-            exists: userDoc.exists(),
-            data: userDoc.exists() ? userDoc.data() : null,
-          });
+          // 문서가 없으면 잠시 후 재시도 (구글 로그인 후 생성 지연 대응)
+          if (!userDoc.exists()) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          }
           
           if (userDoc.exists()) {
             const userData = userDoc.data() as User;
-            console.log('✅ [useAuth] 사용자 정보 로드 성공:', userData);
             setUser(userData);
           } else {
-            console.error('🔴 [useAuth] Firestore에 사용자 문서가 없습니다!');
-            console.error('🔴 [useAuth] UID:', firebaseUser.uid);
-            console.error('🔴 [useAuth] 회원가입 시 Firestore 저장 실패 가능성');
-            setUser(null);
+            // Firestore에 사용자 정보가 없으면 기본 정보로 생성
+            const { setDoc, serverTimestamp } = await import('firebase/firestore');
+            const defaultUser: User = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+              photoURL: firebaseUser.photoURL || '',
+              provider: firebaseUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'password',
+              points: 0,
+              emailVerified: firebaseUser.emailVerified,
+              createdAt: new Date() as any,
+              updatedAt: new Date() as any,
+            };
+            
+            try {
+              await setDoc(doc(db, 'users', firebaseUser.uid), {
+                ...defaultUser,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              });
+              setUser(defaultUser);
+            } catch (createError) {
+              console.error('사용자 문서 생성 실패:', createError);
+              setUser(null);
+            }
           }
         } catch (error) {
-          console.error('🔴 [useAuth] Firestore 조회 에러:', error);
+          console.error('Firestore 조회 에러:', error);
           setUser(null);
         }
       } else {
-        console.log('🔵 [useAuth] 로그아웃 상태');
         setUser(null);
       }
 
