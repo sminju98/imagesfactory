@@ -169,7 +169,7 @@ export async function PUT(
       
       if (currentStep < 4) {
         // Step 0-3까지 완료된 경우, 각 단계별 환불
-        const stepResults = projectData.stepResults || {};
+        const stepResults: any = projectData.stepResults || {};
         
         if (stepResults.step0 && !stepResults.step0.refunded) {
           await refundReelsPoints(user.uid, projectId, 0);

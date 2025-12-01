@@ -198,14 +198,6 @@ export async function POST(request: NextRequest) {
       await refundReelsPoints(user.uid, projectId, 6);
       throw error;
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        finalReelUrl,
-        duration: 40, // 8초 × 5개
-      },
-    });
   } catch (error: any) {
     console.error('영상 결합 오류:', error);
     return NextResponse.json(

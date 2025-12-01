@@ -103,7 +103,8 @@ export default function ReelsResultPage({ params }: ReelsResultPageProps) {
               const stepNames = ['프롬프트 교정', '리서치', '콘셉트', '대본', '영상 생성', 'TTS+자막', '결합'];
               const isCompleted = step < project.currentStep;
               const isCurrent = step === project.currentStep;
-              const stepResult = project.stepResults?.[`step${step}`] || project.stepResults?.[`step${step}_video0`];
+              const stepResults: any = project.stepResults || {};
+              const stepResult = stepResults[`step${step}`] || stepResults[`step${step}_video0`];
               
               return (
                 <div key={step} className="flex items-center flex-1">

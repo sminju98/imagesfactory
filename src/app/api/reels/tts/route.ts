@@ -143,18 +143,6 @@ export async function POST(request: NextRequest) {
       await refundReelsPoints(user.uid, projectId, 5, 1);
       throw error;
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        audioUrl: ttsResult[0].audioUrl,
-        duration: ttsResult[0].duration,
-        subtitle: {
-          srt: srtContent,
-          vtt: vttContent,
-        },
-      },
-    });
   } catch (error: any) {
     console.error('TTS 생성 오류:', error);
     return NextResponse.json(

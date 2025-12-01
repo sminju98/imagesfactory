@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // GPT로 콘셉트 생성
-      const concepts = await generateConceptsWithGPT(
+      const generatedConcepts = await generateConceptsWithGPT(
         refinedPrompt,
         selectedInsights || [],
         options || { target: '', tone: '', purpose: '' }
@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
       // 프로젝트 업데이트
       const projectData = projectDoc.data();
       await db.collection('reelsProjects').doc(projectId).update({
-        concepts,
+        concepts: generatedConcepts,
         currentStep: 3,
         stepResults: {
           ...projectData?.stepResults,
           step2: {
-            concepts,
+            concepts: generatedConcepts,
             pointsUsed: pointsResult.pointsDeducted,
             completedAt: new Date(),
           },
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          concepts,
+          concepts: generatedConcepts,
           pointsDeducted: pointsResult.pointsDeducted,
           newBalance: pointsResult.newBalance,
         },
@@ -103,13 +103,6 @@ export async function POST(request: NextRequest) {
       await refundReelsPoints(user.uid, projectId, 2);
       throw error;
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        concepts,
-      },
-    });
   } catch (error: any) {
     console.error('콘셉트 생성 오류:', error);
     return NextResponse.json(

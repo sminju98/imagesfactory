@@ -100,14 +100,6 @@ export async function POST(request: NextRequest) {
       await refundReelsPoints(user.uid, projectId, 0);
       throw error;
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        refinedPrompt: result.refinedPrompt,
-        improvements: result.improvements,
-      },
-    });
   } catch (error: any) {
     console.error('프롬프트 교정 오류:', error);
     return NextResponse.json(

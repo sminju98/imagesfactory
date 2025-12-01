@@ -116,9 +116,9 @@ export async function GET(request: NextRequest) {
     });
     
     // 두 프로젝트 타입을 합치고 날짜순 정렬
-    const allProjects = [...contentProjects, ...reelsProjects].sort((a, b) => {
-      const aTime = a.createdAt?.toMillis?.() || 0;
-      const bTime = b.createdAt?.toMillis?.() || 0;
+    const allProjects = [...contentProjects, ...reelsProjects].sort((a: any, b: any) => {
+      const aTime = a.createdAt?.toMillis?.() || a.createdAt?.seconds * 1000 || 0;
+      const bTime = b.createdAt?.toMillis?.() || b.createdAt?.seconds * 1000 || 0;
       return bTime - aTime;
     }).slice(0, limit);
 

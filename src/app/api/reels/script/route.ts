@@ -104,13 +104,6 @@ export async function POST(request: NextRequest) {
       await refundReelsPoints(user.uid, projectId, 3);
       throw error;
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        videoScripts,
-      },
-    });
   } catch (error: any) {
     console.error('대본 생성 오류:', error);
     return NextResponse.json(

@@ -88,10 +88,12 @@ export async function POST(request: NextRequest) {
       
       if (searchResult.searchResults && !searchResult.error) {
         // 검색 결과를 카테고리별로 분류
-        const category = query.includes('키워드') ? 'keyword' :
-                        query.includes('페인포인트') ? 'painpoint' :
-                        query.includes('트렌드') ? 'trend' :
-                        query.includes('USP') ? 'usp' : 'expression';
+        const category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general' = 
+          query.includes('키워드') ? 'keyword' :
+          query.includes('페인포인트') ? 'painpoint' :
+          query.includes('트렌드') ? 'trend' :
+          query.includes('USP') ? 'usp' : 
+          query.includes('표현') ? 'expression' : 'general';
 
         // 결과를 여러 인사이트로 분할
         const insights = searchResult.searchResults
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
           .slice(0, 3)
           .map((content, index) => ({
             id: `${Date.now()}-${category}-${index}`,
-            category,
+            category: category as 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general',
             content: content.trim(),
             selected: false,
           }));
