@@ -50,10 +50,27 @@ export default function Step5Modal({ open, onClose, project, onComplete }: Step5
       const data = await response.json();
       if (data.success) {
         const updated = [...finalClips];
+        
+        // subtitle 객체를 안전하게 처리
+        let subtitleUrl = '';
+        if (data.data.subtitle) {
+          if (typeof data.data.subtitle === 'string') {
+            subtitleUrl = data.data.subtitle;
+          } else if (data.data.subtitle.srt) {
+            subtitleUrl = data.data.subtitle.srt;
+          } else if (data.data.subtitle.vtt) {
+            subtitleUrl = data.data.subtitle.vtt;
+          } else {
+            // subtitle이 {ratio, timeline} 같은 다른 구조일 수 있음
+            console.warn('예상치 못한 subtitle 구조:', data.data.subtitle);
+            subtitleUrl = '';
+          }
+        }
+        
         updated[videoIndex] = {
           ...updated[videoIndex],
           audioUrl: data.data.audioUrl,
-          subtitleUrl: data.data.subtitle.srt, // SRT 내용
+          subtitleUrl: subtitleUrl,
         };
         setFinalClips(updated);
         setCompleted((prev) => new Set(prev).add(videoIndex));

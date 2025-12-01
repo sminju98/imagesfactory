@@ -79,11 +79,22 @@ export async function POST(request: NextRequest) {
     // Perplexity로 리서치 수행 (모든 쿼리 결과 수집)
     const allResearchText: string[] = [];
 
+    // 각 쿼리에 타임아웃 설정 (30초)
     for (const query of searchQueries) {
-      const searchResult = await searchWithPerplexity(query, refinedPrompt);
-      
-      if (searchResult.searchResults && !searchResult.error) {
-        allResearchText.push(searchResult.searchResults);
+      try {
+        const searchPromise = searchWithPerplexity(query, refinedPrompt);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Perplexity API 타임아웃')), 30000)
+        );
+        
+        const searchResult = await Promise.race([searchPromise, timeoutPromise]) as any;
+        
+        if (searchResult.searchResults && !searchResult.error) {
+          allResearchText.push(searchResult.searchResults);
+        }
+      } catch (error: any) {
+        console.error(`Perplexity 쿼리 실패 (${query.substring(0, 50)}...):`, error);
+        // 개별 쿼리 실패는 계속 진행
       }
     }
 
@@ -101,8 +112,14 @@ export async function POST(request: NextRequest) {
 
     if (combinedResearch.trim().length > 0) {
       try {
-        allResults = await extractKeywordsFromResearch(combinedResearch);
-      } catch (error) {
+        // GPT 호출에도 타임아웃 설정 (60초)
+        const gptPromise = extractKeywordsFromResearch(combinedResearch);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('GPT 키워드 추출 타임아웃')), 60000)
+        );
+        
+        allResults = await Promise.race([gptPromise, timeoutPromise]) as typeof allResults;
+      } catch (error: any) {
         console.error('GPT 키워드 추출 오류:', error);
         // GPT 실패 시 기존 방식으로 폴백
         for (let i = 0; i < allResearchText.length; i++) {
@@ -128,6 +145,14 @@ export async function POST(request: NextRequest) {
           allResults.push(...insights);
         }
       }
+    } else {
+      // 리서치 결과가 없으면 기본 메시지 반환
+      allResults = [{
+        id: `no-results-${Date.now()}`,
+        category: 'general' as const,
+        content: '리서치 결과를 찾을 수 없습니다. 다시 시도해주세요.',
+        selected: false,
+      }];
     }
 
     // 포인트 차감 (Step 1)

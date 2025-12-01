@@ -28,6 +28,11 @@ export default function Step1Modal({ open, onClose, project, onComplete }: Step1
     setLoading(true);
     try {
       const token = await auth.currentUser?.getIdToken();
+      
+      // 타임아웃 설정 (2분)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      
       const response = await fetch('/api/reels/research', {
         method: 'POST',
         headers: {
@@ -38,17 +43,29 @@ export default function Step1Modal({ open, onClose, project, onComplete }: Step1
           projectId: project?.id,
           refinedPrompt: project?.refinedPrompt,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: '서버 오류가 발생했습니다.' }));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
 
       const data = await response.json();
       if (data.success) {
-        setResults(data.data.results);
+        setResults(data.data.results || []);
       } else {
-        alert(data.error || '리서치에 실패했습니다.');
+        throw new Error(data.error || '리서치에 실패했습니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('리서치 오류:', error);
-      alert('리서치 중 오류가 발생했습니다.');
+      if (error.name === 'AbortError') {
+        alert('리서치가 시간 초과되었습니다. 다시 시도해주세요.');
+      } else {
+        alert(error.message || '리서치 중 오류가 발생했습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -87,6 +104,7 @@ export default function Step1Modal({ open, onClose, project, onComplete }: Step1
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">리서치 중...</p>
+              <p className="mt-2 text-sm text-gray-500">Perplexity와 GPT를 통해 키워드를 추출하고 있습니다. 최대 2분 정도 소요될 수 있습니다.</p>
             </div>
           ) : (
             <>
