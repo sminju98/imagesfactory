@@ -53,7 +53,7 @@ JSON 형식으로 응답:
   const userPromptWithDate = `${prompt}\n\n위 프롬프트에서 시의성이 중요한 정보가 있다면, 오늘 날짜(${todayStr})를 참고하여 최근 정보를 찾도록 프롬프트를 교정해주세요.`;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-5.1-mini', // 빠른 응답을 위한 미니 모델
+    model: 'gpt-5.1', // 최신 GPT 모델
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPromptWithDate },
