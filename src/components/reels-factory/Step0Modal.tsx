@@ -75,14 +75,17 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
 
       const data = await response.json();
       if (data.success) {
-        setRefinedPrompt(data.data.refinedPrompt);
+        const refined = data.data.refinedPrompt;
+        setRefinedPrompt(refined);
+        // 교정된 프롬프트를 입력창에도 반영
+        setPrompt(refined);
         // 프롬프트 교정만 하고 다음 단계로 넘어가지 않음
         // 프로젝트가 없었으면 상태만 업데이트 (currentStep 변경 없음)
         if (!project?.id) {
           onComplete({
             id: projectId,
-            inputPrompt: prompt,
-            refinedPrompt: data.data.refinedPrompt,
+            inputPrompt: refined,
+            refinedPrompt: refined,
             uploadedImages: images,
             options,
             // currentStep을 변경하지 않음 - 프롬프트 교정만 수행
@@ -90,7 +93,8 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
         } else {
           // 기존 프로젝트의 경우 refinedPrompt만 업데이트
           onComplete({
-            refinedPrompt: data.data.refinedPrompt,
+            inputPrompt: refined,
+            refinedPrompt: refined,
             // currentStep을 변경하지 않음
           });
         }
@@ -144,18 +148,18 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
             }),
           });
 
-          const refineData = await refineResponse.json();
-          if (refineData.success) {
-            onComplete({
-              id: data.data.projectId,
-              inputPrompt: prompt,
-              refinedPrompt: refineData.data.refinedPrompt,
-              uploadedImages: images,
-              options,
-              currentStep: 1,
-            });
-            onClose();
-          }
+        const refineData = await refineResponse.json();
+        if (refineData.success) {
+          onComplete({
+            id: data.data.projectId,
+            inputPrompt: prompt,
+            refinedPrompt: refineData.data.refinedPrompt,
+            uploadedImages: images,
+            options,
+            currentStep: 1,
+          });
+          // onComplete에서 단계 이동을 처리하므로 onClose는 호출하지 않음
+        }
         }
       } else {
         // 기존 프로젝트 업데이트
@@ -177,7 +181,7 @@ export default function Step0Modal({ open, onClose, project, onComplete }: Step0
             refinedPrompt: refineData.data.refinedPrompt,
             currentStep: 1,
           });
-          onClose();
+          // onComplete에서 단계 이동을 처리하므로 onClose는 호출하지 않음
         }
       }
     } catch (error) {

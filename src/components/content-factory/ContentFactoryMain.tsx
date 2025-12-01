@@ -358,16 +358,18 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                     updatedAt: new Date(),
                   } as ReelsProject);
                 } else if (reelsProject) {
-                  // 기존 프로젝트 업데이트 시 currentStep은 변경하지 않음 (handleNext에서만 변경)
+                  // 기존 프로젝트 업데이트
                   const updatedProject = { ...reelsProject, ...data };
-                  // currentStep이 명시적으로 전달된 경우에만 업데이트
+                  // currentStep이 명시적으로 전달된 경우 업데이트 및 단계 이동
                   if (data.currentStep !== undefined) {
                     updatedProject.currentStep = data.currentStep;
+                    setReelsProject(updatedProject);
                     setReelsCurrentStep(data.currentStep);
+                  } else {
+                    setReelsProject(updatedProject);
                   }
-                  setReelsProject(updatedProject);
                 }
-                // currentStep이 1로 변경되는 경우에만 단계 이동
+                // currentStep이 명시적으로 전달되지 않았지만 1로 설정해야 하는 경우
                 if (data.currentStep === 1) {
                   setReelsCurrentStep(1);
                 }

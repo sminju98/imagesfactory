@@ -28,80 +28,78 @@ export default function Header() {
             </div>
           </Link>
 
-          {!loading && (
-            <div className="flex items-center space-x-4">
-              {/* 언어 선택 */}
-              <div className="relative">
-                <button
-                  onClick={() => setLangMenuOpen(!langMenuOpen)}
-                  className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                >
-                  <Globe className="w-4 h-4 text-gray-500" />
-                  <span>{currentLang?.flag} {currentLang?.name}</span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
-                {langMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    {SUPPORTED_LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code as LanguageCode);
-                          setLangMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${
-                          language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''
-                        }`}
-                      >
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {user ? (
-                <>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">{t('common.currentPoints')}</p>
-                    <p className="text-2xl font-bold text-indigo-600">
-                      {user.points.toLocaleString()}
-                    </p>
-                  </div>
-                  <Link
-                    href="/points"
-                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-md"
-                  >
-                    💰 {t('common.chargePoints')}
-                  </Link>
-                  <Link
-                    href="/mypage"
-                    className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <User className="w-5 h-5" />
-                    <span>{t('common.mypage')}</span>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    {t('common.login')}
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    <span>{t('common.signup')}</span>
-                  </Link>
-                </>
+          <div className="flex items-center space-x-4">
+            {/* 언어 선택 - 항상 표시 */}
+            <div className="relative">
+              <button
+                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                <Globe className="w-4 h-4 text-gray-500" />
+                <span>{currentLang?.flag} {currentLang?.name}</span>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+              {langMenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setLanguage(lang.code as LanguageCode);
+                        setLangMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${
+                        language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span>{lang.name}</span>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          )}
+
+            {!loading && user ? (
+              <>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">{t('common.currentPoints')}</p>
+                  <p className="text-2xl font-bold text-indigo-600">
+                    {user.points.toLocaleString()}
+                  </p>
+                </div>
+                <Link
+                  href="/points"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold shadow-md"
+                >
+                  💰 {t('common.chargePoints')}
+                </Link>
+                <Link
+                  href="/mypage"
+                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                  <span>{t('common.mypage')}</span>
+                </Link>
+              </>
+            ) : !loading ? (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                >
+                  {t('common.login')}
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>{t('common.signup')}</span>
+                </Link>
+              </>
+            ) : null}
+          </div>
         </div>
 
         {/* Mobile - 간단한 1줄 레이아웃 */}
@@ -116,59 +114,57 @@ export default function Header() {
             </div>
           </Link>
 
-          {!loading && (
-            <div className="flex items-center gap-2">
-              {/* 모바일 언어 선택 */}
-              <div className="relative">
-                <button
-                  onClick={() => setLangMenuOpen(!langMenuOpen)}
-                  className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  <span className="text-lg">{currentLang?.flag}</span>
-                </button>
-                {langMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    {SUPPORTED_LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code as LanguageCode);
-                          setLangMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${
-                          language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''
-                        }`}
-                      >
-                        <span>{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {user ? (
-                <>
-                  <span className="text-sm font-bold text-indigo-600">
-                    {user.points.toLocaleString()}pt
-                  </span>
-                  <Link
-                    href="/mypage"
-                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <User className="w-5 h-5" />
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold"
-                >
-                  {t('common.login')}
-                </Link>
+          <div className="flex items-center gap-2">
+            {/* 모바일 언어 선택 - 항상 표시 */}
+            <div className="relative">
+              <button
+                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                <span className="text-lg">{currentLang?.flag}</span>
+              </button>
+              {langMenuOpen && (
+                <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setLanguage(lang.code as LanguageCode);
+                        setLangMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2 ${
+                        language === lang.code ? 'bg-indigo-50 text-indigo-600' : ''
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span>{lang.name}</span>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          )}
+
+            {!loading && user ? (
+              <>
+                <span className="text-sm font-bold text-indigo-600">
+                  {user.points.toLocaleString()}pt
+                </span>
+                <Link
+                  href="/mypage"
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                </Link>
+              </>
+            ) : !loading ? (
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold"
+              >
+                {t('common.login')}
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </header>
