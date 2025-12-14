@@ -1,12 +1,14 @@
 /**
  * 개선된 자막 생성 엔진
- * - TTS 오디오 길이 기반 타이밍
+ * - Whisper API 기반 정확한 타이밍 추출
+ * - TTS 오디오 길이 기반 타이밍 (폴백)
  * - ASS/SRT 형식 지원
  * - 한국어/영어 문장 분할 최적화
  * - 스타일 커스터마이징
  */
 
 import OpenAI from 'openai';
+import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -68,10 +70,298 @@ const FONT_FALLBACKS = {
   en: ['Inter', 'Helvetica Neue', 'Arial'],
 };
 
-// ============ 핵심 함수 ============
+// ============ Whisper API 기반 자막 생성 ============
+
+export interface WhisperSubtitleOptions {
+  language: 'ko' | 'en';
+  audioUrl: string;        // TTS 오디오 URL
+  sceneId: string;
+}
 
 /**
- * GPT를 사용하여 자막 생성 (TTS 길이 기반)
+ * Whisper API를 사용하여 음성에서 정확한 자막 타이밍 추출
+ * TTS 오디오를 분석하여 단어/문장별 정확한 타임스탬프 생성
+ */
+export async function generateSubtitlesWithWhisper(
+  options: WhisperSubtitleOptions
+): Promise<SubtitleData> {
+  const { language, audioUrl, sceneId } = options;
+
+  try {
+    console.log(`[Whisper] 자막 생성 시작 - sceneId: ${sceneId}`);
+    
+    // 1. 오디오 파일 다운로드
+    const audioBuffer = await downloadAudioFile(audioUrl);
+    
+    // 2. Whisper API 호출 (verbose_json으로 세그먼트 타이밍 획득)
+    const transcription = await openai.audio.transcriptions.create({
+      file: await toFile(audioBuffer, 'audio.mp3', { type: 'audio/mpeg' }),
+      model: 'whisper-1',
+      language: language,
+      response_format: 'verbose_json',
+      timestamp_granularities: ['segment', 'word'],
+    });
+
+    console.log(`[Whisper] 트랜스크립션 완료:`, JSON.stringify(transcription).slice(0, 500));
+
+    // 3. 세그먼트를 자막 엔트리로 변환
+    const entries = convertWhisperToSubtitles(transcription, language);
+    
+    // 4. 전체 duration 계산
+    const totalDuration = entries.length > 0 
+      ? entries[entries.length - 1].endTime 
+      : 0;
+
+    console.log(`[Whisper] 자막 생성 완료 - ${entries.length}개 엔트리, ${totalDuration.toFixed(1)}초`);
+
+    return {
+      sceneId,
+      entries,
+      totalDuration,
+    };
+  } catch (error: any) {
+    console.error('[Whisper] 자막 생성 오류:', error);
+    throw new Error(`Whisper 자막 생성 실패: ${error.message}`);
+  }
+}
+
+/**
+ * 오디오 파일 다운로드
+ */
+async function downloadAudioFile(audioUrl: string): Promise<Buffer> {
+  // data: URL 처리 (base64)
+  if (audioUrl.startsWith('data:')) {
+    const base64Data = audioUrl.split(',')[1];
+    return Buffer.from(base64Data, 'base64');
+  }
+
+  // HTTP URL 처리
+  const response = await fetch(audioUrl);
+  if (!response.ok) {
+    throw new Error(`오디오 다운로드 실패: ${response.status}`);
+  }
+  
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+/**
+ * Whisper 응답을 자막 엔트리로 변환
+ */
+function convertWhisperToSubtitles(
+  transcription: any,
+  language: 'ko' | 'en'
+): SubtitleEntry[] {
+  const entries: SubtitleEntry[] = [];
+  
+  // segments가 있으면 사용 (문장 단위)
+  if (transcription.segments && transcription.segments.length > 0) {
+    transcription.segments.forEach((segment: any, index: number) => {
+      // 너무 짧은 세그먼트는 다음과 합치기
+      const text = segment.text?.trim();
+      if (!text) return;
+
+      entries.push({
+        index: index + 1,
+        startTime: segment.start || 0,
+        endTime: segment.end || segment.start + 2,
+        text,
+      });
+    });
+  } 
+  // words가 있으면 문장 단위로 그룹화
+  else if (transcription.words && transcription.words.length > 0) {
+    const groupedEntries = groupWordsIntoSentences(transcription.words, language);
+    return groupedEntries;
+  }
+  // 둘 다 없으면 전체 텍스트 사용
+  else if (transcription.text) {
+    entries.push({
+      index: 1,
+      startTime: 0,
+      endTime: transcription.duration || 8,
+      text: transcription.text.trim(),
+    });
+  }
+
+  // 자막 최적화 (너무 긴 자막 분할, 너무 짧은 자막 병합)
+  return optimizeSubtitleEntries(entries, language);
+}
+
+/**
+ * 단어를 문장 단위로 그룹화
+ */
+function groupWordsIntoSentences(
+  words: Array<{ word: string; start: number; end: number }>,
+  language: 'ko' | 'en'
+): SubtitleEntry[] {
+  const entries: SubtitleEntry[] = [];
+  let currentText = '';
+  let startTime = 0;
+  let endTime = 0;
+  let index = 1;
+
+  const sentenceEnders = language === 'ko' 
+    ? /[.?!。？！]/
+    : /[.?!]/;
+
+  words.forEach((word, i) => {
+    if (currentText === '') {
+      startTime = word.start;
+    }
+    
+    currentText += (currentText ? ' ' : '') + word.word;
+    endTime = word.end;
+
+    // 문장 종료 또는 3초 초과 시 분할
+    const isSentenceEnd = sentenceEnders.test(word.word);
+    const isDurationExceeded = endTime - startTime > 3;
+    const isLastWord = i === words.length - 1;
+
+    if (isSentenceEnd || isDurationExceeded || isLastWord) {
+      entries.push({
+        index: index++,
+        startTime,
+        endTime,
+        text: currentText.trim(),
+      });
+      currentText = '';
+    }
+  });
+
+  return entries;
+}
+
+/**
+ * 자막 엔트리 최적화
+ */
+function optimizeSubtitleEntries(
+  entries: SubtitleEntry[],
+  language: 'ko' | 'en'
+): SubtitleEntry[] {
+  const optimized: SubtitleEntry[] = [];
+  let index = 1;
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const duration = entry.endTime - entry.startTime;
+    const textLength = entry.text.length;
+
+    // 너무 짧은 자막 (1초 미만) + 다음 자막과 합치기
+    if (duration < 1 && i + 1 < entries.length) {
+      const next = entries[i + 1];
+      entries[i + 1] = {
+        ...next,
+        startTime: entry.startTime,
+        text: entry.text + ' ' + next.text,
+      };
+      continue;
+    }
+
+    // 너무 긴 자막 (4초 초과) 분할
+    if (duration > 4 && textLength > 20) {
+      const midPoint = Math.floor(textLength / 2);
+      const splitIndex = findSplitPoint(entry.text, midPoint, language);
+      const midTime = entry.startTime + duration / 2;
+
+      optimized.push({
+        index: index++,
+        startTime: entry.startTime,
+        endTime: midTime,
+        text: entry.text.slice(0, splitIndex).trim(),
+      });
+      optimized.push({
+        index: index++,
+        startTime: midTime,
+        endTime: entry.endTime,
+        text: entry.text.slice(splitIndex).trim(),
+      });
+    } else {
+      optimized.push({
+        ...entry,
+        index: index++,
+      });
+    }
+  }
+
+  return optimized;
+}
+
+/**
+ * 텍스트 분할 지점 찾기
+ */
+function findSplitPoint(text: string, targetIndex: number, language: 'ko' | 'en'): number {
+  // 구두점 근처에서 분할
+  const punctuation = language === 'ko' ? /[,、.。?!]/g : /[,.\s]/g;
+  let bestIndex = targetIndex;
+  let minDistance = Infinity;
+
+  let match;
+  while ((match = punctuation.exec(text)) !== null) {
+    const distance = Math.abs(match.index - targetIndex);
+    if (distance < minDistance) {
+      minDistance = distance;
+      bestIndex = match.index + 1;
+    }
+  }
+
+  // 공백에서 분할 (구두점 없을 때)
+  if (minDistance > 10) {
+    const spaceIndex = text.lastIndexOf(' ', targetIndex);
+    if (spaceIndex > 0) {
+      bestIndex = spaceIndex + 1;
+    }
+  }
+
+  return bestIndex;
+}
+
+// ============ 통합 자막 생성 함수 ============
+
+export interface SmartSubtitleOptions {
+  sceneId: string;
+  narration: string;
+  audioUrl?: string;       // TTS 오디오 URL (있으면 Whisper 사용)
+  audioDuration: number;
+  language: 'ko' | 'en';
+}
+
+/**
+ * 스마트 자막 생성 (Whisper 우선, GPT 폴백)
+ * - audioUrl이 있으면 Whisper로 정확한 타이밍 추출
+ * - 없으면 GPT로 예측 기반 타이밍 생성
+ */
+export async function generateSmartSubtitles(
+  options: SmartSubtitleOptions
+): Promise<SubtitleData> {
+  const { sceneId, narration, audioUrl, audioDuration, language } = options;
+
+  // Whisper 사용 (오디오 URL이 있는 경우)
+  if (audioUrl && !audioUrl.startsWith('data:')) {
+    try {
+      console.log(`[SmartSubtitle] Whisper 사용 - sceneId: ${sceneId}`);
+      return await generateSubtitlesWithWhisper({
+        sceneId,
+        audioUrl,
+        language,
+      });
+    } catch (error: any) {
+      console.warn(`[SmartSubtitle] Whisper 실패, GPT로 폴백: ${error.message}`);
+    }
+  }
+
+  // GPT 폴백
+  console.log(`[SmartSubtitle] GPT 사용 - sceneId: ${sceneId}`);
+  return await generateSubtitles(narration, sceneId, {
+    language,
+    audioDuration,
+  });
+}
+
+// ============ 기존 GPT 기반 함수 (폴백용) ============
+
+/**
+ * GPT를 사용하여 자막 생성 (TTS 길이 기반) - 폴백용
  */
 export async function generateSubtitles(
   narration: string,

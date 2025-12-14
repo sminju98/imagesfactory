@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, db } from '@/lib/firebase-admin';
 import { GenerateSubtitleRequest, GenerateSubtitleResponse } from '@/types/project.types';
 import { validateProjectState, getProject } from '@/lib/project/project-state-manager';
-import { generateSubtitles, convertToSRT, convertToASS } from '@/lib/project/subtitle-engine';
+import { generateSmartSubtitles, convertToSRT, convertToASS } from '@/lib/project/subtitle-engine';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
@@ -43,14 +43,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 프로젝트 언어 확인
+    // 프로젝트 언어 및 TTS 오디오 URL 확인
     const project = await getProject(projectId);
     const language = project?.language || 'ko';
+    
+    // 해당 씬의 TTS 오디오 URL 가져오기 (Whisper용)
+    const ttsAudio = project?.ttsAudios?.find((t: any) => t.sceneId === sceneId);
+    const audioUrl = ttsAudio?.audioUrl;
 
-    // 자막 생성 (TTS 길이 기반)
-    const subtitleData = await generateSubtitles(narration, sceneId, {
+    // 스마트 자막 생성 (Whisper 우선, GPT 폴백)
+    const subtitleData = await generateSmartSubtitles({
+      sceneId,
+      narration,
+      audioUrl,
+      audioDuration: audioDuration || ttsAudio?.duration || 8,
       language,
-      audioDuration: audioDuration || 8,
     });
 
     // SRT 및 ASS 형식으로 변환
