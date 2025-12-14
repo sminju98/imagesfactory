@@ -68,6 +68,13 @@ export default function ReelsLayout({
             
             <div className="flex items-center gap-4">
               <Link
+                href="/"
+                className="text-sm text-purple-200 hover:text-white transition-colors flex items-center gap-1"
+              >
+                🎨 ImageFactory
+              </Link>
+              <span className="text-white/20">|</span>
+              <Link
                 href="/reels"
                 className="text-sm text-purple-200 hover:text-white transition-colors"
               >

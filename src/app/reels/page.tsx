@@ -110,7 +110,7 @@ export default function ReelsProjectsPage() {
         <div>
           <h1 className="text-3xl font-bold text-white">내 프로젝트</h1>
           <p className="mt-1 text-purple-200">
-            AI로 40초 릴스를 자동 제작하세요
+            AI로 30초 릴스를 자동 제작하세요
           </p>
         </div>
         <Link

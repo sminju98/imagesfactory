@@ -12,32 +12,6 @@ interface ContentFactoryMainProps {
 // 글로벌 가격: 1 포인트 = $0.01 (1센트)
 const CONTENT_TYPES = [
   {
-    id: 'reels',
-    name: 'Reels/TikTok',
-    nameKo: '릴스/틱톡',
-    icon: Film,
-    count: '10 cuts',
-    countKo: '10컷',
-    price: 50, // $0.50
-    color: 'from-pink-500 to-rose-500',
-    bgColor: 'bg-pink-50',
-    textColor: 'text-pink-600',
-    borderColor: 'border-pink-400',
-  },
-  {
-    id: 'comic',
-    name: '4-Panel Comic',
-    nameKo: '4컷 만화',
-    icon: Grid2X2,
-    count: '4 panels',
-    countKo: '4컷',
-    price: 30, // $0.30
-    color: 'from-orange-500 to-amber-500',
-    bgColor: 'bg-orange-50',
-    textColor: 'text-orange-600',
-    borderColor: 'border-orange-400',
-  },
-  {
     id: 'cardnews',
     name: 'Card News',
     nameKo: '카드뉴스',
@@ -75,19 +49,6 @@ const CONTENT_TYPES = [
     bgColor: 'bg-red-50',
     textColor: 'text-red-600',
     borderColor: 'border-red-400',
-  },
-  {
-    id: 'detail',
-    name: 'Detail Page',
-    nameKo: '상세페이지',
-    icon: Image,
-    count: '2 types',
-    countKo: '2종',
-    price: 30, // $0.30
-    color: 'from-purple-500 to-violet-500',
-    bgColor: 'bg-purple-50',
-    textColor: 'text-purple-600',
-    borderColor: 'border-purple-400',
   },
 ];
 
@@ -142,7 +103,7 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
           </div>
           
           {/* 콘텐츠 타입 카드 그리드 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {CONTENT_TYPES.map((type) => {
               const isSelected = selectedType === type.id;
               return (

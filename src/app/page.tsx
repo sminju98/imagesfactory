@@ -544,10 +544,10 @@ export default function Home() {
 
         {/* 탭 네비게이션 */}
         <div className="mb-6">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-md">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-2xl">
             <button
               onClick={() => setActiveTab('image')}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all h-10 flex items-center justify-center ${
                 activeTab === 'image'
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -557,7 +557,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab('content')}
-              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all h-10 flex items-center justify-center ${
                 activeTab === 'content'
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -565,6 +565,12 @@ export default function Home() {
             >
               📄 ContentFactory
             </button>
+            <Link
+              href="/reels"
+              className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold text-gray-600 hover:text-purple-600 hover:bg-purple-50 transition-all h-10 flex items-center justify-center"
+            >
+              🎬 ReelsFactory
+            </Link>
           </div>
         </div>
 
