@@ -47,25 +47,13 @@ export default function MyPage() {
   }, [authLoading, firebaseUser, router]);
 
   useEffect(() => {
-    if (user && !authLoading) {
-      setLoadingData(true);
-      Promise.all([
-        fetchRecentGenerations(),
-        fetchPointStats(),
-        fetchTransactions(),
-        fetchPayments(),
-      ]).finally(() => {
-        setLoadingData(false);
-      });
-    } else if (!authLoading && firebaseUser && !user) {
-      // Firebase 인증은 되었지만 Firestore에 사용자 정보가 없는 경우
-      console.warn('Firestore에 사용자 정보가 없습니다. 잠시 후 다시 시도합니다.');
-      // 잠시 후 다시 시도
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+    if (user) {
+      fetchRecentGenerations();
+      fetchPointStats();
+      fetchTransactions();
+      fetchPayments();
     }
-  }, [user, authLoading, firebaseUser]);
+  }, [user]);
 
   // 콘텐츠 저장소 데이터 로드
   useEffect(() => {
@@ -384,7 +372,7 @@ export default function MyPage() {
             {/* Gallery Tab */}
             {activeTab === 'gallery' && (
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <GalleryTab />
+                <GalleryTab userId={user.uid} />
               </div>
             )}
 
@@ -826,10 +814,9 @@ export default function MyPage() {
             <div>
               <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><strong>{t('footer.companyName')}:</strong> {t('footer.companyNameValue')}</li>
-                <li><strong>{t('footer.representative')}:</strong> {t('footer.representativeValue')}</li>
-                <li><strong>{t('footer.businessNumber')}:</strong> {t('footer.businessNumberValue')}</li>
-                <li><strong>{t('footer.address')}:</strong> {t('footer.addressValue')}</li>
+                <li>{t('footer.companyName')}: MJ Studio</li>
+                <li>{t('footer.representative')}: Song Minju</li>
+                <li>{t('footer.businessNumber')}: 829-04-03406</li>
               </ul>
             </div>
             <div>
@@ -847,3 +834,4 @@ export default function MyPage() {
     </div>
   );
 }
+

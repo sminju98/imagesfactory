@@ -95,3 +95,4 @@ Gemini TTS 대신 Google Cloud TTS의 Neural2 엔진을 사용할 수 있습니�
 - [Gemini TTS 문서](https://cloud.google.com/text-to-speech/docs/gemini-tts)
 - [Google AI Studio](https://aistudio.google.com/generate-speech)
 
+

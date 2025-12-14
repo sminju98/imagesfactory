@@ -69,13 +69,19 @@ export async function POST(request: NextRequest) {
 
     try {
       // Grok로 대본 생성
-      const videoScripts = await generateScriptsWithGrok({
+      let videoScripts = await generateScriptsWithGrok({
         concept: chosenConcept,
         uploadedImages: projectData.uploadedImages || [],
         refinedPrompt: projectData.refinedPrompt || '',
       });
 
-      // 프로젝트 업데이트
+      // 모든 대본 자동 승인
+      videoScripts = videoScripts.map((script: any) => ({
+        ...script,
+        approved: true,
+      }));
+
+      // 프로젝트 업데이트 (대본 자동 승인)
       await db.collection('reelsProjects').doc(projectId).update({
         chosenConcept,
         videoScripts,

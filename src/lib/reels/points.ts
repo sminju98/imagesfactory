@@ -1,27 +1,36 @@
 /**
- * Reels Factory 포인트 관리 유틸리티
+ * Reels Factory 크레딧 관리 유틸리티
+ * 
+ * 가격 정책: 원가의 2배, 1크레딧 = 10원
+ * 
+ * 원가 기준 (Google Veo 3.1 사용):
+ * - Google Veo 3.1: ~$0.15/영상 (6초) = ₩210 → 42크레딧
+ * - Google TTS Neural2: $16/100만 문자
+ * - GPT-4o-mini: $0.15/1M input, $0.60/1M output
+ * - Perplexity: ~$0.005/query
+ * - Grok-2: ~$0.01/query
  */
 
 import { db, fieldValue } from '@/lib/firebase-admin';
 
-/** 단계별 포인트 비용 */
+/** 단계별 크레딧 비용 (원가 2배 기준) */
 export const REELS_STEP_POINTS: Record<number, number> = {
-  0: 10,   // 프롬프트 교정 (GPT-5.1)
-  1: 50,   // Perplexity 리서치
-  2: 30,   // GPT 콘셉트 (GPT-5.1)
-  3: 100,  // Grok 대본 (Grok-2)
-  4: 100,  // Veo3 영상 1개 (총 5개 = 500pt)
-  5: 20,   // TTS + 자막 1개 (총 5개 = 100pt)
-  6: 50,   // FFmpeg 결합
+  0: 1,     // 프롬프트 교정 (GPT) - 원가 ₩1 → 2원 → 1크레딧
+  1: 2,     // Perplexity 리서치 - 원가 ₩7 → 14원 → 2크레딧
+  2: 1,     // GPT 콘셉트 - 원가 ₩3 → 6원 → 1크레딧
+  3: 3,     // Grok 대본 - 원가 ₩14 → 28원 → 3크레딧
+  4: 50,    // Google Veo 3.1 영상 1개 (6초) - 원가 ₩210 → 420원 → 50크레딧 (예상)
+  5: 2,     // TTS + 자막 1개 - 원가 ₩11 → 22원 → 2크레딧
+  6: 10,    // FFmpeg 결합 - 서버 비용 → 10크레딧
 };
 
 /**
- * 단계별 포인트 차감
+ * 단계별 크레딧 차감
  * @param userId 사용자 ID
  * @param projectId 프로젝트 ID
  * @param step 단계 (0-6)
  * @param count 개수 (Step4, Step5의 경우 영상 개수)
- * @returns 차감된 포인트
+ * @returns 차감된 크레딧
  */
 export async function deductReelsPoints(
   userId: string,
@@ -169,4 +178,5 @@ export async function refundReelsPoints(
     console.error('포인트 환불 오류:', error);
   }
 }
+
 

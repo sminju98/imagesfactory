@@ -1,410 +1,239 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { ReelsProject } from '@/types/reels.types';
-import Step0Modal from '@/components/reels-factory/Step0Modal';
-import Step1Modal from '@/components/reels-factory/Step1Modal';
-import Step2Modal from '@/components/reels-factory/Step2Modal';
-import Step3Modal from '@/components/reels-factory/Step3Modal';
-import Step4Modal from '@/components/reels-factory/Step4Modal';
-import Step5Modal from '@/components/reels-factory/Step5Modal';
-import Step6Modal from '@/components/reels-factory/Step6Modal';
+import Link from 'next/link';
+import { Plus, Clock, CheckCircle2, XCircle, Loader2, Film, Play } from 'lucide-react';
 
-function ReelsFactoryPageContent() {
+const STEP_NAMES = ['입력', '리서치', '콘셉트', '대본', '영상', '음성', '완성'];
+
+export default function ReelsProjectsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [project, setProject] = useState<ReelsProject | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState<ReelsProject[]>([]);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isStepModalOpen, setIsStepModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 인증 상태 확인
+  // 실시간 프로젝트 구독
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        router.push('/login');
-      }
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // 복합 인덱스 없이 userId만으로 쿼리 (클라이언트 측 정렬)
+    const projectsRef = collection(db, 'reelsProjects');
+    const q = query(
+      projectsRef,
+      where('userId', '==', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      let projectsList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as ReelsProject[];
+
+      // 클라이언트 측에서 updatedAt 기준 정렬 (최신 순)
+      projectsList.sort((a, b) => {
+        const aTime = (a.updatedAt as any)?.toMillis?.() || (a.updatedAt as any)?.getTime?.() || 0;
+        const bTime = (b.updatedAt as any)?.toMillis?.() || (b.updatedAt as any)?.getTime?.() || 0;
+        return bTime - aTime;
+      });
+
+      // 최대 20개만
+      projectsList = projectsList.slice(0, 20);
+
+      setProjects(projectsList);
+      setLoading(false);
+    }, (error) => {
+      console.error('프로젝트 로드 오류:', error);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [user, authLoading]);
 
-  // 사용자의 최근 프로젝트 불러오기
-  useEffect(() => {
-    if (!user) return;
-
-    const loadProjects = async () => {
-      try {
-        // URL 파라미터에서 projectId 확인
-        const projectIdFromUrl = searchParams?.get('projectId');
-        
-        if (projectIdFromUrl) {
-          // 특정 프로젝트 로드
-          const projectDoc = await getDoc(doc(db, 'reelsProjects', projectIdFromUrl));
-          if (projectDoc.exists() && projectDoc.data().userId === user.uid) {
-            const projectData = {
-              id: projectDoc.id,
-              ...projectDoc.data(),
-            } as ReelsProject;
-            setProject(projectData);
-            setCurrentStep(projectData.currentStep || 0);
-            setIsStepModalOpen(true);
-          }
-        }
-
-        // 최근 프로젝트 목록 로드
-        const projectsRef = collection(db, 'reelsProjects');
-        const q = query(
-          projectsRef,
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc'),
-          limit(10)
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return (
+          <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+            <CheckCircle2 className="w-3 h-3" />
+            완료
+          </span>
         );
-        const snapshot = await getDocs(q);
-        const projectsList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as ReelsProject[];
-        
-        setProjects(projectsList);
-        
-        // URL 파라미터가 없고, 가장 최근 프로젝트가 진행 중이면 자동 선택
-        if (!projectIdFromUrl && projectsList.length > 0) {
-          const latest = projectsList[0];
-          if (latest.status !== 'completed' && latest.status !== 'failed') {
-            setProject(latest);
-            setCurrentStep(latest.currentStep || 0);
-          }
-        }
-      } catch (error) {
-        console.error('프로젝트 로드 오류:', error);
-      }
-    };
-
-    loadProjects();
-  }, [user, searchParams]);
-
-  // 프로젝트가 있으면 현재 단계 설정 (모달은 자동으로 열지 않음)
-  useEffect(() => {
-    if (project && project.currentStep !== undefined && project.status !== 'completed') {
-      setCurrentStep(project.currentStep);
-      // 모달은 사용자가 버튼을 클릭할 때만 열림
-      setIsStepModalOpen(false);
-    }
-  }, [project]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const handleStepComplete = (step: number, data: any) => {
-    // 프로젝트 상태 업데이트
-    if (project) {
-      setProject({
-        ...project,
-        ...data,
-        currentStep: step + 1,
-      });
+      case 'failed':
+        return (
+          <span className="flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
+            <XCircle className="w-3 h-3" />
+            실패
+          </span>
+        );
+      case 'processing':
+        return (
+          <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            처리중
+          </span>
+        );
+      default:
+        return (
+          <span className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">
+            <Clock className="w-3 h-3" />
+            진행중
+          </span>
+        );
     }
   };
 
-  const renderStepModal = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <Step0Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => {
-              // 프로젝트가 없으면 새로 생성된 프로젝트로 설정
-              if (!project && data.id) {
-                setProject({
-                  id: data.id,
-                  userId: user.uid,
-                  inputPrompt: data.inputPrompt || '',
-                  refinedPrompt: data.refinedPrompt || '',
-                  uploadedImages: data.uploadedImages || [],
-                  options: data.options || { target: '', tone: '', purpose: '' },
-                  researchResults: [],
-                  selectedInsights: [],
-                  concepts: [],
-                  chosenConcept: null,
-                  videoScripts: [],
-                  videoClips: [],
-                  finalClips: [],
-                  finalReelUrl: '',
-                  currentStep: data.currentStep || 1,
-                  status: 'draft',
-                  pointsUsed: 0,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                } as ReelsProject);
-              }
-              handleStepComplete(0, data);
-            }}
-          />
-        );
-      case 1:
-        if (!project) return null;
-        return (
-          <Step1Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(1, data)}
-          />
-        );
-      case 2:
-        if (!project) return null;
-        return (
-          <Step2Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(2, data)}
-          />
-        );
-      case 3:
-        if (!project) return null;
-        return (
-          <Step3Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(3, data)}
-          />
-        );
-      case 4:
-        if (!project) return null;
-        return (
-          <Step4Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(4, data)}
-          />
-        );
-      case 5:
-        if (!project) return null;
-        return (
-          <Step5Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(5, data)}
-          />
-        );
-      case 6:
-        if (!project) return null;
-        return (
-          <Step6Modal
-            open={isStepModalOpen}
-            onClose={() => setIsStepModalOpen(false)}
-            project={project}
-            onComplete={(data) => handleStepComplete(6, data)}
-          />
-        );
-      default:
-        return null;
-    }
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return '-';
+    const date = timestamp instanceof Date ? timestamp : timestamp.toDate?.() || new Date(timestamp);
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-pink-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* 헤더 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            🎬 Reels Factory
-          </h1>
-          <p className="text-gray-600">
-            이미지와 프롬프트만으로 40초 릴스를 자동 제작하세요
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* 헤더 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white">내 프로젝트</h1>
+          <p className="mt-1 text-purple-200">
+            AI로 40초 릴스를 자동 제작하세요
           </p>
         </div>
-
-        {/* 진행 단계 표시 */}
-        {project && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="flex items-center justify-between">
-              {[0, 1, 2, 3, 4, 5, 6].map((step) => (
-                <div key={step} className="flex items-center flex-1">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                      step < project.currentStep
-                        ? 'bg-green-500 text-white'
-                        : step === project.currentStep
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-200'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {step < project.currentStep ? '✓' : step + 1}
-                  </div>
-                  {step < 6 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${
-                        step < project.currentStep ? 'bg-green-500' : 'bg-gray-200'
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-600">
-              <span>입력</span>
-              <span>리서치</span>
-              <span>콘셉트</span>
-              <span>대본</span>
-              <span>영상</span>
-              <span>음성</span>
-              <span>완성</span>
-            </div>
-          </div>
-        )}
-
-        {/* 이전 프로젝트 목록 */}
-        {projects.length > 0 && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold mb-4">이전 프로젝트</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {projects.slice(0, 6).map((p) => {
-                  const stepNames = ['입력', '리서치', '콘셉트', '대본', '영상', 'TTS', '완성'];
-                  const isActive = project?.id === p.id;
-                  
-                  return (
-                    <div
-                      key={p.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition ${
-                        isActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => {
-                        setProject(p);
-                        setCurrentStep(p.currentStep || 0);
-                        setIsStepModalOpen(true);
-                        router.push(`/reels?projectId=${p.id}`);
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold">
-                          {p.inputPrompt?.substring(0, 30)}...
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          p.status === 'completed' ? 'bg-green-100 text-green-700' :
-                          p.status === 'failed' ? 'bg-red-100 text-red-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {p.status === 'completed' ? '완료' :
-                           p.status === 'failed' ? '실패' : '진행중'}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        단계: {stepNames[p.currentStep || 0]} ({p.currentStep || 0}/7)
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {p.createdAt 
-                          ? (p.createdAt instanceof Date 
-                              ? p.createdAt.toLocaleDateString('ko-KR')
-                              : 'toDate' in p.createdAt 
-                                ? p.createdAt.toDate().toLocaleDateString('ko-KR')
-                                : '-')
-                          : '-'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 시작 버튼 또는 프로젝트 상태 */}
-        {!project ? (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">새로운 릴스 프로젝트 시작</h2>
-              <p className="text-gray-600 mb-6">
-                간단한 프롬프트와 이미지로 전문적인 릴스를 만들어보세요
-              </p>
-              <button
-                onClick={() => {
-                  setCurrentStep(0);
-                  setIsStepModalOpen(true);
-                }}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
-              >
-                시작하기
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold mb-4">프로젝트 진행 중</h2>
-              <p className="text-gray-600 mb-4">
-                현재 Step {project.currentStep + 1}/7 진행 중입니다.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setIsStepModalOpen(true)}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  계속하기
-                </button>
-                {project.id && (
-                  <button
-                    onClick={() => router.push(`/reels/${project.id}`)}
-                    className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                  >
-                    결과 보기
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* Step 모달 */}
-        {renderStepModal()}
+        <Link
+          href="/reels/new"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+        >
+          <Plus className="w-5 h-5" />
+          새 릴스 만들기
+        </Link>
       </div>
+
+      {/* 로딩 */}
+      {(loading || authLoading) && (
+        <div className="flex justify-center py-20">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto" />
+            <p className="mt-4 text-purple-200">프로젝트를 불러오는 중...</p>
+          </div>
+        </div>
+      )}
+
+      {/* 빈 상태 */}
+      {!loading && !authLoading && projects.length === 0 && (
+        <div className="text-center py-20">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+            <Film className="w-12 h-12 text-purple-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            아직 프로젝트가 없어요
+          </h3>
+          <p className="text-purple-200 mb-6">
+            첫 번째 릴스를 만들어보세요!
+          </p>
+          <Link
+            href="/reels/new"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-xl"
+          >
+            <Plus className="w-5 h-5" />
+            새 릴스 만들기
+          </Link>
+        </div>
+      )}
+
+      {/* 프로젝트 그리드 */}
+      {!loading && !authLoading && projects.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className="group bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300"
+            >
+              {/* 썸네일 영역 */}
+              <div className="aspect-video bg-gradient-to-br from-purple-900/50 to-pink-900/50 relative">
+                {project.finalReelUrl ? (
+                  <video
+                    src={project.finalReelUrl}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Film className="w-12 h-12 text-white/20" />
+                  </div>
+                )}
+                
+                {/* 재생 버튼 오버레이 */}
+                {project.finalReelUrl && (
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Play className="w-12 h-12 text-white" />
+                  </div>
+                )}
+                
+                {/* 상태 배지 */}
+                <div className="absolute top-3 right-3">
+                  {getStatusBadge(project.status)}
+                </div>
+              </div>
+
+              {/* 컨텐츠 */}
+              <div className="p-5">
+                <h3 className="text-white font-medium line-clamp-2 mb-2">
+                  {project.inputPrompt || project.refinedPrompt || '제목 없음'}
+                </h3>
+                
+                {/* 진행 상태 */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between text-xs text-purple-200 mb-1">
+                    <span>진행률</span>
+                    <span>{STEP_NAMES[project.currentStep] || '입력'} ({project.currentStep + 1}/7)</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        project.status === 'completed'
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+                          : project.status === 'failed'
+                          ? 'bg-red-500'
+                          : 'bg-gradient-to-r from-purple-500 to-pink-500'
+                      }`}
+                      style={{ width: `${((project.currentStep + 1) / 7) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 메타 정보 */}
+                <div className="flex items-center justify-between text-xs text-purple-300 mb-4">
+                  <span>{formatDate(project.createdAt)}</span>
+                  <span>{project.pointsUsed || 0} pt 사용</span>
+                </div>
+
+                {/* 액션 버튼 */}
+                <div className="flex gap-2">
+                  <Link
+                    href={`/reels/${project.id}`}
+                    className="flex-1 text-center py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-sm font-medium rounded-lg transition-all"
+                  >
+                    {project.status === 'completed' ? '결과 보기' : '이어서 작업'}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
-export default function ReelsFactoryPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    }>
-      <ReelsFactoryPageContent />
-    </Suspense>
-  );
-}
-

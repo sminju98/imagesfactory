@@ -4,13 +4,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { db, fieldValue } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase-admin';
 import { searchWithPerplexity } from '@/lib/perplexity';
 import { deductReelsPoints, refundReelsPoints } from '@/lib/reels/points';
 import { extractKeywordsFromResearch } from '@/lib/reels/gpt';
 
 export async function POST(request: NextRequest) {
+  let projectId = '';
+  let userId = '';
+  
   try {
     // 인증 확인
     const authHeader = request.headers.get('authorization');
@@ -26,6 +29,7 @@ export async function POST(request: NextRequest) {
     try {
       const decodedToken = await auth.verifyIdToken(token);
       user = decodedToken;
+      userId = user.uid;
     } catch {
       return NextResponse.json(
         { success: false, error: '인증 토큰이 유효하지 않습니다.' },
@@ -33,7 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { projectId, refinedPrompt } = await request.json();
+    const body = await request.json();
+    projectId = body.projectId;
+    const { refinedPrompt } = body;
 
     if (!projectId || !refinedPrompt) {
       return NextResponse.json(
@@ -59,27 +65,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 오늘 날짜 가져오기
+    // 포인트 차감 (Step 1: 20 포인트)
+    const pointsResult = await deductReelsPoints(userId, projectId, 1);
+    if (!pointsResult.success) {
+      return NextResponse.json(
+        { success: false, error: pointsResult.error },
+        { status: 400 }
+      );
+    }
+
+    try {
+      // 오늘 날짜
     const today = new Date();
     const todayStr = today.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
-    const todayISO = today.toISOString().split('T')[0];
 
-    // Perplexity로 리서치 수행 (오늘 날짜 포함)
+      // Perplexity 검색 쿼리
     const searchQueries = [
-      `${refinedPrompt} 관련 최신 트렌드 키워드 2025 (오늘 날짜: ${todayStr} 기준 최신 정보)`,
-      `${refinedPrompt} 소비자 페인포인트 및 니즈 (${todayStr} 기준 최신 정보)`,
-      `${refinedPrompt} 마케팅 표현 및 밈 (${todayStr} 기준 최신 트렌드)`,
-      `${refinedPrompt} USP 및 차별화 포인트 (${todayStr} 기준 최신 정보)`,
+        `${refinedPrompt} 관련 최신 트렌드 키워드 2025 (${todayStr} 기준)`,
+        `${refinedPrompt} 소비자 페인포인트 및 니즈 (${todayStr} 기준)`,
+        `${refinedPrompt} 마케팅 표현 및 밈 (${todayStr} 기준)`,
+        `${refinedPrompt} USP 및 차별화 포인트 (${todayStr} 기준)`,
     ];
 
-    // Perplexity로 리서치 수행 (모든 쿼리 결과 수집)
     const allResearchText: string[] = [];
 
-    // 각 쿼리에 타임아웃 설정 (30초)
+      // 각 쿼리 실행
     for (const query of searchQueries) {
       try {
         const searchPromise = searchWithPerplexity(query, refinedPrompt);
@@ -87,21 +101,19 @@ export async function POST(request: NextRequest) {
           setTimeout(() => reject(new Error('Perplexity API 타임아웃')), 30000)
         );
         
-        const searchResult = await Promise.race([searchPromise, timeoutPromise]) as any;
+          const searchResult = (await Promise.race([searchPromise, timeoutPromise])) as any;
         
         if (searchResult.searchResults && !searchResult.error) {
           allResearchText.push(searchResult.searchResults);
         }
       } catch (error: any) {
-        console.error(`Perplexity 쿼리 실패 (${query.substring(0, 50)}...):`, error);
-        // 개별 쿼리 실패는 계속 진행
+          console.error(`Perplexity 쿼리 실패:`, error.message);
       }
     }
 
-    // 모든 리서치 결과를 하나로 합치기
     const combinedResearch = allResearchText.join('\n\n');
 
-    // GPT로 키워드 후보 추출
+      // GPT로 키워드 추출
     let allResults: Array<{
       id: string;
       category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general';
@@ -112,19 +124,18 @@ export async function POST(request: NextRequest) {
 
     if (combinedResearch.trim().length > 0) {
       try {
-        // GPT 호출에도 타임아웃 설정 (60초)
         const gptPromise = extractKeywordsFromResearch(combinedResearch);
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('GPT 키워드 추출 타임아웃')), 60000)
+            setTimeout(() => reject(new Error('GPT 타임아웃')), 60000)
         );
         
-        allResults = await Promise.race([gptPromise, timeoutPromise]) as typeof allResults;
+          allResults = (await Promise.race([gptPromise, timeoutPromise])) as typeof allResults;
       } catch (error: any) {
         console.error('GPT 키워드 추출 오류:', error);
-        // GPT 실패 시 기존 방식으로 폴백
+          // 폴백 처리
         for (let i = 0; i < allResearchText.length; i++) {
           const researchText = allResearchText[i];
-          const category: 'keyword' | 'painpoint' | 'trend' | 'usp' | 'expression' | 'general' = 
+            const category: typeof allResults[0]['category'] =
             searchQueries[i].includes('키워드') ? 'keyword' :
             searchQueries[i].includes('페인포인트') ? 'painpoint' :
             searchQueries[i].includes('트렌드') ? 'trend' :
@@ -146,37 +157,31 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      // 리서치 결과가 없으면 기본 메시지 반환
       allResults = [{
         id: `no-results-${Date.now()}`,
         category: 'general' as const,
-        content: '리서치 결과를 찾을 수 없습니다. 다시 시도해주세요.',
+          content: '리서치 결과를 찾을 수 없습니다.',
         selected: false,
       }];
     }
 
-    // 포인트 차감 (Step 1)
-    const pointsResult = await deductReelsPoints(user.uid, projectId, 1);
-    if (!pointsResult.success) {
-      return NextResponse.json(
-        { success: false, error: pointsResult.error },
-        { status: 400 }
-      );
-    }
+      // 각 카테고리에서 첫 번째 인사이트를 자동 선택
+      const autoSelectedIds = allResults
+        .filter((_, index) => index < 5) // 최대 5개 자동 선택
+        .map(r => r.id);
+      
+      // 선택된 인사이트 마킹
+      allResults = allResults.map(r => ({
+        ...r,
+        selected: autoSelectedIds.includes(r.id),
+      }));
 
-    try {
-      // 프로젝트 업데이트
+      // 프로젝트 업데이트 (기본 인사이트 자동 선택)
       await db.collection('reelsProjects').doc(projectId).update({
         researchResults: allResults,
+        selectedInsights: autoSelectedIds, // 자동 선택된 인사이트 저장
         currentStep: 2,
-        stepResults: {
-          step1: {
-            results: allResults,
-            pointsUsed: pointsResult.pointsDeducted,
-            completedAt: new Date(),
-          },
-        },
-        updatedAt: new Date(),
+        updatedAt: fieldValue.serverTimestamp(),
       });
 
       return NextResponse.json({
@@ -184,26 +189,20 @@ export async function POST(request: NextRequest) {
         data: {
           results: allResults,
           pointsDeducted: pointsResult.pointsDeducted,
-          newBalance: pointsResult.newBalance,
         },
       });
+
     } catch (error: any) {
-      await refundReelsPoints(user.uid, projectId, 1);
+      // 실패 시 환불
+      await refundReelsPoints(userId, projectId, 1);
       throw error;
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        results: allResults,
-      },
-    });
   } catch (error: any) {
     console.error('리서치 오류:', error);
     return NextResponse.json(
-      { success: false, error: '리서치에 실패했습니다.' },
+      { success: false, error: error.message || '리서치에 실패했습니다.' },
       { status: 500 }
     );
   }
 }
-

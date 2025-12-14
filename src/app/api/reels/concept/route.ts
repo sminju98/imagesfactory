@@ -75,15 +75,20 @@ export async function POST(request: NextRequest) {
         options || { target: '', tone: '', purpose: '' }
       );
 
-      // 프로젝트 업데이트
-      const projectData = projectDoc.data();
+      // 첫 번째 콘셉트를 기본 선택으로 설정
+      const defaultConcept = generatedConcepts.length > 0 ? generatedConcepts[0] : null;
+
+      // 프로젝트 업데이트 (기본 콘셉트 자동 선택)
+      const existingData = projectDoc.data();
       await db.collection('reelsProjects').doc(projectId).update({
         concepts: generatedConcepts,
+        chosenConcept: defaultConcept, // 첫 번째 콘셉트 자동 선택
         currentStep: 3,
         stepResults: {
-          ...projectData?.stepResults,
+          ...existingData?.stepResults,
           step2: {
             concepts: generatedConcepts,
+            chosenConcept: defaultConcept,
             pointsUsed: pointsResult.pointsDeducted,
             completedAt: new Date(),
           },

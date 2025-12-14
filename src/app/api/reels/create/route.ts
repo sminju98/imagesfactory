@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const projectData = {
       userId: user.uid,
       inputPrompt: prompt.trim(),
-      refinedPrompt: '',
+      refinedPrompt: prompt.trim(), // 교정 전에는 원본 프롬프트 사용
       uploadedImages: images || [],
       options: {
         target: options?.target || '',

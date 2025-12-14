@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "하루 종일 마스크와 건조한 공기 속에서 피부가 거칠어졌다면, 이제는 부드럽게 감싸주는 한 번의 보습 케어가 필요합니다. 맑게 빛나는 아기피부 같은 결을 그대로 되찾는 순간을 상상해 보세요.\n깨끗한 화이트톤 공간 위에 놓인 로션은 가벼운 제형이지만 깊은 보습감을 전해 줍니다. 손등과 피부 위에 스며드는 순간, 윤기가 돌며 매끄럽게 정리되는 피부 변화를 눈으로 확인해 보세요.\n사용 전 건조하고 푸석하던 피부가 로션 한 번으로 촉촉하게 차오르며, 잔 거칠음이 정돈된 듯 균일한 결로 변합니다. 빛을 받을 때마다 은은하게 반사되는 깔끔한 피부 표면을 떠올려 보세요.\n세련된 20-30대 여성 모델이 로션을 부드럽게 바른 뒤, 손끝으로 피부를 가볍게 눌러보고 미소 짓습니다. 메이크업 없이도 자신 있게 클로즈업을 허용하는 촉촉한 피부의 힘을 보여 줍니다.\n이제 매일 아침, 아기피부처럼 부드럽고 탄탄한 피부를 위한 첫 단계로 이 로션을 선택해 보세요. 부담스럽지 않은 가벼움과 지속되는 보습력으로, 당신의 일상을 한층 더 고급스럽게 완성해 줍니다.",
+  "scenes": [
+    {
+      "id": "ebdf6924-4952-480d-a883-b3d326ec3878",
+      "index": 0,
+      "prompt": "Minimal luxury skincare commercial, tall translucent lotion bottle on a glossy white surface, soft diffused lighting, gentle water reflections, slow camera push-in, no text, no labels readable, pure clean white background, elegant aesthetic, high-end beauty product mood",
+      "narration": "하루 종일 마스크와 건조한 공기 속에서 피부가 거칠어졌다면, 이제는 부드럽게 감싸주는 한 번의 보습 케어가 필요합니다. 맑게 빛나는 아기피부 같은 결을 그대로 되찾는 순간을 상상해 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "aea9207c-9043-4502-b242-72501f3e6b01",
+      "index": 1,
+      "prompt": "Close-up macro shot of a creamy lotion texture being spread on a smooth surface, soft light catching moist highlights, milky texture melting into skin, white background, slow cinematic movement, no text elements, luxurious clean skincare style",
+      "narration": "깨끗한 화이트톤 공간 위에 놓인 로션은 가벼운 제형이지만 깊은 보습감을 전해 줍니다. 손등과 피부 위에 스며드는 순간, 윤기가 돌며 매끄럽게 정리되는 피부 변화를 눈으로 확인해 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "929af66b-42f9-49e5-8052-c29bc83ffca2",
+      "index": 2,
+      "prompt": "Split-screen comparison of a woman's hand or cheek before and after applying skincare, left side slightly dry and dull, right side visibly smoother and more radiant, same lighting, white studio background, soft focus, no graphic lines or text, premium cosmetic look",
+      "narration": "사용 전 건조하고 푸석하던 피부가 로션 한 번으로 촉촉하게 차오르며, 잔 거칠음이 정돈된 듯 균일한 결로 변합니다. 빛을 받을 때마다 은은하게 반사되는 깔끔한 피부 표면을 떠올려 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "99698a75-d453-4ee2-89be-9d497f47cb15",
+      "index": 3,
+      "prompt": "Young adult female model in her 20s to 30s with clear skin in a bright white studio, close-up shot, gently applying lotion to her face, then lightly pressing cheeks with fingertips, soft smile, subtle glow on skin, no text in frame, refined and modern beauty vibe",
+      "narration": "세련된 20-30대 여성 모델이 로션을 부드럽게 바른 뒤, 손끝으로 피부를 가볍게 눌러보고 미소 짓습니다. 메이크업 없이도 자신 있게 클로즈업을 허용하는 촉촉한 피부의 힘을 보여 줍니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "643a56dd-e5c2-47ee-8f7f-e5cec93bd8c3",
+      "index": 4,
+      "prompt": "Final hero shot of the lotion bottle standing upright, subtle mist or glow behind it, white monochrome background, soft backlight halo, reflection on glossy surface, camera slowly pulling back, optional blurred model in background touching her face, ultra-clean visual, no text",
+      "narration": "이제 매일 아침, 아기피부처럼 부드럽고 탄탄한 피부를 위한 첫 단계로 이 로션을 선택해 보세요. 부담스럽지 않은 가벼움과 지속되는 보습력으로, 당신의 일상을 한층 더 고급스럽게 완성해 줍니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 52,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 럭스",
+    "styleDescription": "깨끗한 화이트톤 영상에 어울리는 고급스럽고 세련된 반투명 배경 자막",
+    "mood": "프리미엄, 세련된, 미니멀"
+  }
+}

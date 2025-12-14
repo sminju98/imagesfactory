@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "바르는 순간 아기피부처럼 부드럽게 변하는 스킨 로션, 오늘은 그 특별한 보습 비밀을 고급스럽게 보여드릴게요. 깨끗한 화이트 톤 속에서 더욱 돋보이는 순수한 텍스처를 함께 느껴보세요.\n맑은 빛이 스며드는 듯한 로션 한 방울이 건조한 피부 위에 얹혀질 때, 무겁지 않게 퍼지면서도 깊숙이 채워지는 풍부한 보습감을 피부 전체로 전달합니다. 끈적임 없이 산뜻하게 마무리되는 감촉에도 집중해보세요.\n사용 전 피부는 잔잔한 결과 건조한 윤기 부족이 느껴지지만, 로션을 고르게 바른 후에는 결이 한층 정리되고, 빛을 은은하게 반사하는 아기피부 같은 매끄러운 질감으로 정돈됩니다.\n세안 후 바로 바르면 속당김이 사라지고, 하루가 지나도 촉촉함이 오래 유지되어 메이크업 전에도, 밤 케어에도 부담 없이 사용할 수 있는 데일리 보습 로션으로 자신 있게 추천할 수 있습니다.\n제품을 사용한 모델의 표정에서 드러나는 만족감처럼, 거울을 볼 때마다 피부가 점점 더 맑아지고 탄탄해지는 변화를 직접 느끼며, 나만 아는 프리미엄 스킨 케어 루틴을 완성해보세요.",
+  "scenes": [
+    {
+      "id": "f657b35a-3fc7-4719-a33d-1443591c203e",
+      "index": 0,
+      "prompt": "Vertical video. Minimalist studio with a clean white background and soft diffused lighting. A premium glass bottle of skin lotion stands on a glossy white surface. Slow, elegant camera close-up gliding around the bottle, subtle light reflections on the curves, a gentle highlight on the creamy texture visible through frosted glass. No text, only visual focus on luxury and purity.",
+      "narration": "바르는 순간 아기피부처럼 부드럽게 변하는 스킨 로션, 오늘은 그 특별한 보습 비밀을 고급스럽게 보여드릴게요. 깨끗한 화이트 톤 속에서 더욱 돋보이는 순수한 텍스처를 함께 느껴보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "b967326d-882c-4e4f-971f-f4470311d2c9",
+      "index": 1,
+      "prompt": "Extreme close-up of the lotion texture on a white ceramic plate, then on fingertips. Thick yet silky emulsion slowly spreading under a soft light, showing dewy shine. The background remains bright white, with soft shadows creating a premium cosmetic ad mood. Camera moves in slow motion, focusing on the glow and hydration effect, no text anywhere.",
+      "narration": "맑은 빛이 스며드는 듯한 로션 한 방울이 건조한 피부 위에 얹혀질 때, 무겁지 않게 퍼지면서도 깊숙이 채워지는 풍부한 보습감을 피부 전체로 전달합니다. 끈적임 없이 산뜻하게 마무리되는 감촉에도 집중해보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "a0aa9e78-cf58-47ec-83fe-86fb7cb751b2",
+      "index": 2,
+      "prompt": "Split-screen shot on a white background: on the left, a close-up of a forearm or cheek skin before application, slightly dry with visible texture under soft light; on the right, after gently applying the lotion, the skin looks smoother, more even, and has a subtle luminous glow. The camera slowly zooms in on the after side, emphasizing the refined, baby-soft texture. No text, just pure visuals.",
+      "narration": "사용 전 피부는 잔잔한 결과 건조한 윤기 부족이 느껴지지만, 로션을 고르게 바른 후에는 결이 한층 정리되고, 빛을 은은하게 반사하는 아기피부 같은 매끄러운 질감으로 정돈됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "ea02d4a9-8d55-4232-945f-50110e9f3aad",
+      "index": 3,
+      "prompt": "Bathroom vanity scene in a bright, white-toned interior. A young woman in her 20s or early 30s applies the lotion to her face after cleansing. Close-up of her massaging the product into her skin; the texture melts in without residue. Time-lapse style cut showing her skin staying hydrated and fresh throughout the day under the same soft, white lighting. No on-screen text.",
+      "narration": "세안 후 바로 바르면 속당김이 사라지고, 하루가 지나도 촉촉함이 오래 유지되어 메이크업 전에도, 밤 케어에도 부담 없이 사용할 수 있는 데일리 보습 로션으로 자신 있게 추천할 수 있습니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "732235f3-b20a-4109-a71e-7e231a13a299",
+      "index": 4,
+      "prompt": "Final hero shot in the same white studio: the lotion bottle centered, with a soft-focus young woman in the background touching her face with a satisfied, relaxed expression. Her skin looks radiant and smooth. Gentle light rays highlight micro water droplets in the air, suggesting hydration. Slow push-in toward the bottle and her serene smile. No text or logos shown, only visual storytelling.",
+      "narration": "제품을 사용한 모델의 표정에서 드러나는 만족감처럼, 거울을 볼 때마다 피부가 점점 더 맑아지고 탄탄해지는 변화를 직접 느끼며, 나만 아는 프리미엄 스킨 케어 루틴을 완성해보세요.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 54,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 2,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 프리미엄 글로우",
+    "styleDescription": "깨끗한 화이트톤 배경에서도 선명하게 보이는 고급스러운 화이트 자막 스타일로, 반투명 배경과 은은한 그림자로 세련된 프리미엄 뷰티 광고 무드를 강화합니다.",
+    "mood": "고급스럽고 세련된 프리미엄 뷰티"
+  }
+}

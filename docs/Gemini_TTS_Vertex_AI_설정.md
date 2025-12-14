@@ -66,3 +66,4 @@ GOOGLE_CLOUD_LOCATION=us-central1
 3. 환경 변수 설정
 4. 코드 수정하여 서비스 계정 인증 사용
 
+

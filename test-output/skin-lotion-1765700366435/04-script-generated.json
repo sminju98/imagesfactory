@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "script": "하루 종일 이어지는 건조함 때문에 거칠어진 피부가 걱정될 때, 피부 본연의 촉촉한 윤기와 매끄러움을 되찾아 줄 새로운 보습 케어가 필요합니다. 이 로션은 바르는 순간 부드럽게 녹아들어, 마치 아기 피부를 만지는 듯한 탄탄한 촉촉함을 선사하도록 섬세하게 설계되었습니다.\n맑고 깨끗한 화이트 톤 공간 속, 최소한의 디자인으로 완성된 로션 병은 군더더기 없이 세련된 인상을 주며, 고농축 보습 성분이 피부 깊숙이 스며들어 하루 종일 편안한 촉촉함과 은은한 윤기를 유지할 수 있도록 도와줍니다.\n사용 전과 후를 나란히 비교해 보면 미세한 건조 라인과 푸석한 질감이 점차 정돈되며, 피부 톤이 한층 균일하고 매끄럽게 정리되는 변화를 자연스럽게 확인할 수 있어 매일의 스킨케어 루틴에 대한 만족감이 커집니다.\n손끝에 닿는 텍스처는 끈적임 없이 부드럽게 펼쳐지면서도 충분한 보습감을 남기고, 바른 직후부터 피부 표면이 정돈되며 은은하게 차오르는 탄력과 유연함이 느껴져 민감한 날에도 안심하고 사용할 수 있습니다.\n사용 후 촉촉하게 빛나는 피부를 가진 모델의 편안한 미소와 자신감 있는 표정은, 매일 아침 이 로션 한 번으로 메이크업 전 피부 컨디션을 정갈하게 정돈하고 싶은 20, 30대 여성에게 설레는 변화를 기대하게 합니다.\n지금 당신의 스킨케어 루틴에 이 로션을 더해 보세요. 과한 광택이 아닌 차분한 수분 광이 오래 유지되며, 시간이 지날수록 피부가 스스로 건강한 윤기와 부드러움을 회복하는 고급스러운 보습 경험을 느낄 수 있습니다.",
+  "scenes": [
+    {
+      "id": "75640a0f-4a4c-4e9e-81ef-ec4e13944720",
+      "index": 0,
+      "prompt": "Vertical video, minimalist white studio background, soft diffused lighting, luxury glass lotion bottle standing on a glossy white surface, subtle reflections, slow cinematic push-in close-up, water droplets lightly shimmering on the bottle, no text, no labels visible, high-end skincare commercial style",
+      "narration": "하루 종일 이어지는 건조함 때문에 거칠어진 피부가 신경 쓰일 때, 맨얼굴에서도 자신 있게 빛나는 촉촉함을 위한 새로운 보습 루틴이 필요해집니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "ad88537e-539e-4f42-aa42-1234de503c4b",
+      "index": 1,
+      "prompt": "Ultra close-up of the lotion bottle in a clean white environment, creamy texture slowly flowing from an open pump onto a smooth porcelain plate, rich yet lightweight consistency, soft focus background, glowy highlights on the product, elegant and refined skincare ad aesthetic, no text elements",
+      "narration": "맑고 깨끗한 화이트 톤 공간 속 고급스러운 로션 병이 정갈하게 놓여 있고, 부드럽게 흐르는 텍스처가 눈에 보일 만큼 촉촉한 보습력과 세련된 사용감을 자연스럽게 보여줍니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "ad2830d2-e262-49a4-9bbd-1f84226562cd",
+      "index": 2,
+      "prompt": "Split-screen comparison shot on pure white background, left side shows dry, slightly rough skin texture on a young woman's cheek, right side shows visibly smoother, dewy and plump skin after using lotion, soft even lighting, subtle glow effect on the after side, no text, beauty commercial style",
+      "narration": "사용 전과 후를 나란히 비교해 보면 미세한 건조 라인과 푸석한 결이 점차 정돈되고, 피부 톤이 전체적으로 균일해지며 촉촉하게 차오른 듯 매끄러운 변화를 분명하게 느낄 수 있습니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "6feef4c0-fa6f-437e-87db-28d4c1b3f5b3",
+      "index": 3,
+      "prompt": "Macro shot of a hand gently applying lotion to the back of the other hand, close-up on skin texture transforming from dull and dry to smooth and luminous, soft natural highlights, subtle bokeh white background, slow motion rubbing and absorbing movement, no visible text or UI",
+      "narration": "손등 위에 올린 로션이 끈적임 없이 부드럽게 퍼지며 스며들고, 바른 직후부터 피부 결이 정돈되면서 은은한 수분 광과 탄력이 함께 살아나 편안하고 촉촉한 촉감이 오래 유지됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "86a94ff0-b393-40df-b4f5-4bef1411b3e2",
+      "index": 4,
+      "prompt": "Portrait shot of a woman in her 20s-30s with clear glowing skin, standing in a bright white room, gently touching her cheek with a satisfied, relaxed smile, soft backlight creating a halo effect, minimal styling and clean look, slow camera movement around her face, luxury skincare campaign vibe, no text",
+      "narration": "사용 후 촉촉하게 빛나는 피부를 가진 모델이 편안한 미소로 볼을 살짝 만지며, 메이크업 전에도 자신 있게 드러낼 수 있는 부드럽고 유연한 피부 상태에 대한 만족스러운 자신감을 자연스럽게 표현합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "bf35c29e-b84f-4da9-a3f0-3564a1465817",
+      "index": 5,
+      "prompt": "Final hero shot in vertical format, luxury lotion bottle centered on a glossy white pedestal, soft glowing light from behind creating a subtle halo, delicate water mist in the air, gentle camera pull-back revealing the serene white space, reflections on the surface, premium skincare ad, no on-screen text",
+      "narration": "당신의 데일리 스킨케어 루틴에 이 로션을 더해 보세요. 과한 광택이 아닌 차분한 수분 광이 오래 이어지며, 시간이 지날수록 피부 본연의 부드러움과 건강한 윤기를 되찾는 고급스러운 변화를 느끼게 됩니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "AppleSDGothicNeo-Bold",
+    "fontSize": 52,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 럭셔리 스킨케어",
+    "styleDescription": "깨끗한 화이트톤 배경 위에서도 선명하게 읽히는, 반투명 블랙 배경과 중간 두께의 라인을 사용한 고급스럽고 세련된 자막 스타일",
+    "mood": "프리미엄, 차분함, 세련됨"
+  }
+}

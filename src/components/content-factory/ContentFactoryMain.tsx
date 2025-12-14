@@ -1,20 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Factory, Sparkles, Film, Grid2X2, Layers, Youtube, LayoutTemplate, ArrowRight, Zap, Check, Image, Video } from 'lucide-react';
+import { useState } from 'react';
+import { Factory, Sparkles, Film, Grid2X2, Layers, Youtube, LayoutTemplate, ArrowRight, Zap, Check, Image } from 'lucide-react';
 import ContentFactoryModal from './ContentFactoryModal';
 import { useTranslation } from '@/lib/i18n';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { ReelsProject } from '@/types/reels.types';
-import Step0Modal from '@/components/reels-factory/Step0Modal';
-import Step1Modal from '@/components/reels-factory/Step1Modal';
-import Step2Modal from '@/components/reels-factory/Step2Modal';
-import Step3Modal from '@/components/reels-factory/Step3Modal';
-import Step4Modal from '@/components/reels-factory/Step4Modal';
-import Step5Modal from '@/components/reels-factory/Step5Modal';
-import Step6Modal from '@/components/reels-factory/Step6Modal';
 
 interface ContentFactoryMainProps {
   selectedImageIds?: string[];
@@ -24,17 +13,16 @@ interface ContentFactoryMainProps {
 const CONTENT_TYPES = [
   {
     id: 'reels',
-    name: 'Reels Factory',
-    nameKo: 'Reels Factory',
-    icon: Video,
-    count: 'AI 영상 생성',
-    countKo: 'AI 영상 생성',
-    price: 0, // Reels Factory로 이동하므로 가격 표시 안 함
+    name: 'Reels/TikTok',
+    nameKo: '릴스/틱톡',
+    icon: Film,
+    count: '10 cuts',
+    countKo: '10컷',
+    price: 50, // $0.50
     color: 'from-pink-500 to-rose-500',
     bgColor: 'bg-pink-50',
     textColor: 'text-pink-600',
     borderColor: 'border-pink-400',
-    isExternal: true, // Reels Factory로 이동하는 링크
   },
   {
     id: 'comic',
@@ -105,33 +93,11 @@ const CONTENT_TYPES = [
 
 export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFactoryMainProps) {
   const { t } = useTranslation();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  
-  // Reels Factory 상태
-  const [isReelsModalOpen, setIsReelsModalOpen] = useState(false);
-  const [reelsProject, setReelsProject] = useState<ReelsProject | null>(null);
-  const [reelsCurrentStep, setReelsCurrentStep] = useState(0);
-  const [user, setUser] = useState<any>(null);
-
-  // 인증 상태 확인
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const selectContentType = (typeId: string) => {
-    if (typeId === 'reels') {
-      // 릴스 타입 클릭 시 Reels Factory 모달 열기
-      setIsReelsModalOpen(true);
-      setReelsCurrentStep(0);
-      setReelsProject(null);
-      return;
-    }
     setSelectedType(typeId === selectedType ? null : typeId);
   };
 
@@ -145,11 +111,6 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
     }
     if (!selectedType) {
       alert(t('contentFactory.selectContentType'));
-      return;
-    }
-    // 릴스 타입은 Reels Factory로 이동하므로 여기서는 처리하지 않음
-    if (selectedType === 'reels') {
-      router.push('/reels');
       return;
     }
     setIsModalOpen(true);
@@ -184,24 +145,17 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {CONTENT_TYPES.map((type) => {
               const isSelected = selectedType === type.id;
-              const isReels = type.id === 'reels';
-              
               return (
                 <button
                   key={type.id}
                   onClick={() => selectContentType(type.id)}
                   className={`relative ${type.bgColor} rounded-xl p-4 text-center border-2 transition-all hover:shadow-md ${
                     isSelected ? type.borderColor + ' shadow-lg' : 'border-transparent'
-                  } ${isReels ? 'ring-2 ring-pink-300' : ''}`}
+                  }`}
                 >
-                  {isSelected && !isReels && (
+                  {isSelected && (
                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
                       <Check className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                  {isReels && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                      <Video className="w-4 h-4 text-white" />
                     </div>
                   )}
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mx-auto mb-3 text-white shadow-lg`}>
@@ -209,22 +163,15 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
                   </div>
                   <h4 className={`font-semibold ${type.textColor}`}>{getContentTypeName(type.id)}</h4>
                   <p className="text-sm text-gray-600 mt-1">{getContentTypeCount(type.id)}</p>
-                  {!isReels && (
-                    <>
-                      <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
-                      <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
-                    </>
-                  )}
-                  {isReels && (
-                    <p className="text-sm font-semibold text-pink-600 mt-2">시작하기</p>
-                  )}
+                  <p className="text-xl font-bold text-gray-900 mt-2">{type.price}P</p>
+                  <p className="text-xs text-gray-500">${(type.price / 100).toFixed(2)}</p>
                 </button>
               );
             })}
           </div>
 
-          {/* 선택 요약 - 릴스는 제외 */}
-          {selectedType && selectedTypeData && selectedType !== 'reels' && (
+          {/* 선택 요약 */}
+          {selectedType && selectedTypeData && (
             <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -324,140 +271,6 @@ export default function ContentFactoryMain({ selectedImageIds = [] }: ContentFac
         selectedContentType={selectedType || ''}
         totalPrice={totalPrice}
       />
-
-      {/* Reels Factory Modals */}
-      {isReelsModalOpen && (
-        <>
-          {reelsCurrentStep === 0 && (
-            <Step0Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                if (!reelsProject && data.id) {
-                  // 프로젝트 생성 시 currentStep은 0으로 유지
-                  setReelsProject({
-                    id: data.id,
-                    userId: user?.uid || '',
-                    inputPrompt: data.inputPrompt || '',
-                    refinedPrompt: data.refinedPrompt || '',
-                    uploadedImages: data.uploadedImages || [],
-                    options: data.options || { target: '', tone: '', purpose: '' },
-                    researchResults: [],
-                    selectedInsights: [],
-                    concepts: [],
-                    chosenConcept: null,
-                    videoScripts: [],
-                    videoClips: [],
-                    finalClips: [],
-                    finalReelUrl: '',
-                    currentStep: data.currentStep !== undefined ? data.currentStep : 0, // currentStep이 전달되면 사용, 없으면 0
-                    status: 'draft',
-                    pointsUsed: 0,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                  } as ReelsProject);
-                } else if (reelsProject) {
-                  // 기존 프로젝트 업데이트
-                  const updatedProject = { ...reelsProject, ...data };
-                  // currentStep이 명시적으로 전달된 경우 업데이트 및 단계 이동
-                  if (data.currentStep !== undefined) {
-                    updatedProject.currentStep = data.currentStep;
-                    setReelsProject(updatedProject);
-                    setReelsCurrentStep(data.currentStep);
-                  } else {
-                    setReelsProject(updatedProject);
-                  }
-                }
-                // currentStep이 명시적으로 전달되지 않았지만 1로 설정해야 하는 경우
-                if (data.currentStep === 1) {
-                  setReelsCurrentStep(1);
-                }
-              }}
-            />
-          )}
-          {reelsCurrentStep === 1 && reelsProject && (
-            <Step1Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                setReelsProject({ ...reelsProject, ...data, currentStep: 2 });
-                setReelsCurrentStep(2);
-              }}
-            />
-          )}
-          {reelsCurrentStep === 2 && reelsProject && (
-            <Step2Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                // chosenConcept가 포함된 데이터로 업데이트
-                const updatedProject = {
-                  ...reelsProject,
-                  ...data,
-                  chosenConcept: data.chosenConcept || reelsProject.chosenConcept,
-                  concepts: data.concepts || reelsProject.concepts,
-                  currentStep: 3,
-                };
-                setReelsProject(updatedProject);
-                setReelsCurrentStep(3);
-              }}
-            />
-          )}
-          {reelsCurrentStep === 3 && reelsProject && (
-            <Step3Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                setReelsProject({ ...reelsProject, ...data, currentStep: 4 });
-                setReelsCurrentStep(4);
-              }}
-            />
-          )}
-          {reelsCurrentStep === 4 && reelsProject && (
-            <Step4Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                setReelsProject({ ...reelsProject, ...data, currentStep: 5 });
-                setReelsCurrentStep(5);
-              }}
-            />
-          )}
-          {reelsCurrentStep === 5 && reelsProject && (
-            <Step5Modal
-              open={isReelsModalOpen}
-              onClose={() => setIsReelsModalOpen(false)}
-              project={reelsProject}
-              onComplete={(data) => {
-                setReelsProject({ ...reelsProject, ...data, currentStep: 6 });
-                setReelsCurrentStep(6);
-              }}
-            />
-          )}
-          {reelsCurrentStep === 6 && reelsProject && (
-            <Step6Modal
-              open={isReelsModalOpen}
-              onClose={() => {
-                setIsReelsModalOpen(false);
-                if (reelsProject?.id) {
-                  router.push(`/reels/${reelsProject.id}`);
-                }
-              }}
-              project={reelsProject}
-              onComplete={(data) => {
-                if (reelsProject?.id) {
-                  router.push(`/reels/${reelsProject.id}`);
-                }
-              }}
-            />
-          )}
-        </>
-      )}
     </>
   );
 }

@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "하루 종일 이어지는 건조함 때문에 피부가 거칠게 느껴진다면, 이제는 한 번의 터치로 변화를 경험해 보세요. 부드럽게 스며드는 이 로션은 첫 발림부터 촉촉한 윤기를 선사하며 당신의 일상을 다르게 만듭니다.\n깨끗한 화이트 톤의 공간에서 투명한 보틀이 은은하게 빛나고, 한 방울의 제형이 손등 위에 떨어지는 순간 고급스러운 광채가 퍼지듯 피부 위에서 섬세하게 펼쳐집니다.\n로션을 바르기 전에는 잔건조와 푸석함이 눈에 띄지만, 부드럽게 마사지하듯 흡수시키면 피부 결이 정돈되고 은은한 탄력과 윤기가 살아나 탱탱한 아기피부처럼 변해갑니다.\n사용 전후를 나란히 비교해 보면 모공 주변의 거친 느낌이 부드럽게 정리되고, 미세한 주름과 각질로 인해 흐릿해 보이던 피부 톤이 더욱 매끈하고 환하게 정돈된 모습으로 바뀝니다.\n마지막 한 겹을 덧바른 뒤 거울을 바라보는 순간, 모델의 얼굴에는 스스로도 놀란 듯한 만족스러운 미소가 번지며 손끝으로 볼을 살짝 만지며 새로워진 촉촉함과 부드러움을 천천히 느껴봅니다.",
+  "scenes": [
+    {
+      "id": "eb8e549d-b659-4aab-913a-7d5d1f87a216",
+      "index": 0,
+      "prompt": "Minimal luxury skincare commercial, vertical shot. Clean white studio background, soft diffused lighting. A sleek glass lotion bottle with subtle gold accents rotates slowly on a glossy white surface, gentle highlights reflecting off the curves. Close-up macro shot of a droplet forming at the pump, creamy texture catching the light. Elegant, calm, premium cosmetic aesthetic, no text, no labels visible.",
+      "narration": "하루 종일 이어지는 건조함 때문에 피부가 거칠게 느껴진다면, 이제는 한 번의 터치로 변화를 경험해 보세요. 부드럽게 스며드는 이 로션은 첫 발림부터 촉촉한 윤기를 선사합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "34d73c82-c318-4bc1-be58-c4b2efc34bbf",
+      "index": 1,
+      "prompt": "Ultra close-up of the lotion bottle on a pure white background. The cap opens in slow motion, a small amount of creamy lotion pumped onto a smooth, fair hand. Texture appears rich yet lightweight, gliding across the skin as the hand tilts under soft studio lighting. Subtle reflections, delicate shadows, luxurious and clean, no text anywhere.",
+      "narration": "깨끗한 화이트 톤의 공간에서 투명한 보틀이 은은하게 빛나고, 한 방울의 제형이 손등 위에 떨어지는 순간 고급스러운 광채가 번지듯 피부 위에서 섬세하게 퍼져 나갑니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "1a811a52-8c42-4818-aa48-e9b0a5d7a5d9",
+      "index": 2,
+      "prompt": "Split-screen vertical shot on a white background: on the left, close-up of dry, slightly rough skin on a young woman’s cheek and hand; on the right, the same areas after applying lotion, now smooth, dewy, and soft. Gentle camera push-in, soft focus, subtle glow on the improved skin. Premium skincare ad style, no text elements.",
+      "narration": "로션을 바르기 전에는 잔건조와 푸석함이 눈에 띄지만, 부드럽게 마사지하듯 흡수시키면 피부 결이 정돈되고 은은한 탄력과 윤기가 살아나 탱탱한 아기피부처럼 변해갑니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "1464c296-586b-4b37-b749-0d462df39f91",
+      "index": 3,
+      "prompt": "Before-and-after comparison on a clean white backdrop. Full-screen close-up of a young woman’s cheek and jawline transitions smoothly from dull, slightly flaky texture to refined, hydrated, glowing skin. Light sweeps gently across the surface, highlighting minimized texture and even tone. Elegant, clinical yet luxurious look, no overlaid text.",
+      "narration": "사용 전후를 나란히 비교해 보면 모공 주변의 거친 느낌이 부드럽게 정리되고, 미세한 주름과 각질로 흐릿해 보이던 피부 톤이 더욱 매끈하고 환하게 정돈된 모습으로 바뀌어 보입니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "d2b2c97c-03dd-4e46-ba74-0c695a838937",
+      "index": 4,
+      "prompt": "Vertical close-up of a woman in her 20s-30s with clear, luminous skin, standing in a bright white studio. She gently taps her cheek with her fingertips, feeling the softness, then smiles with a calm, satisfied expression. The lotion bottle stands beside her slightly out of focus. Soft backlight creates a subtle halo, premium beauty film look, no text.",
+      "narration": "마지막 한 겹을 덧바른 뒤 거울을 바라보는 순간, 모델의 얼굴에는 만족스러운 미소가 번지고 손끝으로 볼을 천천히 만지며 새로워진 촉촉함과 부드러운 피부 변화를 깊게 느껴봅니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 52,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "프리미엄_화이트톤_스킨케어",
+    "styleDescription": "화이트톤 배경 위에서 또렷하게 보이는 고급 스킨케어 광고용 자막. 깔끔한 산세리프 폰트와 반투명 배경으로 세련된 분위기를 유지하면서도 가독성을 극대화한 스타일.",
+    "mood": "고급스럽고 세련된"
+  }
+}

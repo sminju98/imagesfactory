@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "sceneId": "84dc7031-2e57-49ee-94be-88152d743bc7",
+      "videoUrl": null,
+      "error": "Operation name is required."
+    },
+    {
+      "sceneId": "07af4f49-9ae7-4401-ad01-8a81622adeef",
+      "videoUrl": null,
+      "error": "Operation name is required."
+    },
+    {
+      "sceneId": "03598320-0c5e-458e-88f7-c2e08bd1d968",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]}]}}"
+    },
+    {
+      "sceneId": "83569720-29dc-4360-9278-b191ec6adcf1",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]}]}}"
+    },
+    {
+      "sceneId": "44d147b5-e467-41b2-8a26-5fe6e7111a2d",
+      "videoUrl": null,
+      "error": "Operation name is required."
+    }
+  ]
+}

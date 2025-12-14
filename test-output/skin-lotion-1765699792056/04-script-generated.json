@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "하루 종일 메마른 피부가 고민이라면, 지금부터는 촉촉함이 먼저 떠오르는 자신만의 피부 루틴을 시작해 보세요. 바르는 순간 아기 피부처럼 매끄럽게 채워주는 특별한 보습 경험을 만나보세요.\n깨끗한 화이트 톤 공간에서 단 하나의 스킨 로션만이 빛나듯 놓여 있습니다. 복잡한 성분 대신, 필요한 보습과 탄력을 담아 매일 믿고 쓸 수 있는 데일리 케어의 기준을 새롭게 제안합니다.\n손끝에 닿는 텍스처는 끈적임 없이 부드럽게 퍼지면서도 풍부한 보습막을 남깁니다. 건조함으로 거칠어진 피부 결을 세심하게 감싸며, 시간이 지나도 촉촉함이 유지되는 차분한 탄력을 선사합니다.\n사용 전에는 푸석하고 칙칙했던 피부가 사용 후에는 매끈하고 환하게 정돈된 느낌으로 변화합니다. 모공과 결이 정리된 듯 부드러워 보이는 피부는 마치 필터를 씌운 듯 자연스럽게 빛납니다.\n거울 앞에 선 그녀의 표정에는 만족스러운 미소와 여유가 스며 있습니다. 매일 아침 이 로션 하나로 시작하는 루틴이 자신감을 채워 주고, 손이 갈수록 더 좋아지는 피부를 느끼게 합니다.",
+  "scenes": [
+    {
+      "id": "3b943dc5-68d8-4a5f-b2f2-f7002c19c9c5",
+      "index": 0,
+      "prompt": "Vertical video, clean white studio background, soft diffused lighting. Elegant glass bottle of moisturizing skin lotion standing alone on a glossy white surface, subtle reflections. Slow cinematic push-in close-up, delicate highlights on the liquid texture inside, gentle shimmer, premium skincare commercial aesthetic, no text, no labels in frame.",
+      "narration": "하루 종일 메마른 피부가 고민이라면, 지금부터는 촉촉함이 먼저 떠오르는 자신만의 피부 루틴을 시작해 보세요. 바르는 순간 아기 피부처럼 매끄럽게 채워주는 특별한 보습 경험을 만나보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "e562855d-3b6d-43d0-9f39-27ba1c4be8bb",
+      "index": 1,
+      "prompt": "Minimalistic white interior, vertical shot. The same lotion bottle centered on a white pedestal, soft backlight creating a halo effect. Gentle particles of mist or light floating in the air, camera orbiting slowly around the product, close-up details of the cap and bottle curves, ultra-clean premium beauty ad style, no text anywhere.",
+      "narration": "깨끗한 화이트 톤 공간에서 단 하나의 스킨 로션만이 빛나듯 놓여 있습니다. 복잡한 성분 대신, 필요한 보습과 탄력을 담아 매일 믿고 쓸 수 있는 데일리 케어의 기준을 새롭게 제안합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "6645fa08-f37d-4ee0-a5ef-77755f894cb8",
+      "index": 2,
+      "prompt": "Macro close-up of a woman's hand in a bright white bathroom setting, vertical frame. A small amount of silky lotion pumped onto the skin, then slowly spread across the back of the hand, creamy texture melting in, subtle glow appearing. Soft focus background, bokeh lights, ultra-smooth skin surface, no on-screen text.",
+      "narration": "손끝에 닿는 텍스처는 끈적임 없이 부드럽게 퍼지면서도 풍부한 보습막을 남깁니다. 건조함으로 거칠어진 피부 결을 세심하게 감싸며, 시간이 지나도 촉촉함이 유지되는 차분한 탄력을 선사합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "037f47ff-5ef9-4450-9a2b-4bb8e52f2536",
+      "index": 3,
+      "prompt": "Split-screen vertical shot on a pure white background: on the left, a close-up of dull, dry facial skin with visible texture; on the right, after-application glowing smooth skin, refined texture and soft radiance. Gentle camera movement, seamless fade between before and after, premium cosmetic comparison, no text overlays.",
+      "narration": "사용 전에는 푸석하고 칙칙했던 피부가 사용 후에는 매끈하고 환하게 정돈된 느낌으로 변화합니다. 모공과 결이 정리된 듯 부드러워 보이는 피부는 마치 필터를 씌운 듯 자연스럽게 빛납니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "e237ae3c-c27c-42bf-8c47-799c6d2c6744",
+      "index": 4,
+      "prompt": "Vertical close-up of a woman in her mid-20s to early 30s with luminous, soft skin, standing in a bright white room. She gently touches her cheek, smiling subtly with a relaxed, confident expression. The lotion bottle is softly blurred in the foreground. Slow motion, cinematic lighting, airy, luxurious skincare mood, no text elements.",
+      "narration": "거울 앞에 선 그녀의 표정에는 만족스러운 미소와 여유가 스며 있습니다. 매일 아침 이 로션 하나로 시작하는 루틴이 자신감을 채워 주고, 손이 갈수록 더 좋아지는 피부를 느끼게 합니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 54,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 3,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 럭셔리 뷰티",
+    "styleDescription": "깨끗한 화이트톤 배경 위에서도 또렷하게 보이는, 프리미엄 스킨케어 광고 감성의 세련된 자막 스타일",
+    "mood": "고급스럽고 세련된"
+  }
+}

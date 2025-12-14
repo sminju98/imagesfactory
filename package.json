@@ -14,9 +14,10 @@
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.0",
-    "@google/genai": "^1.30.0",
+    "@google/genai": "^1.33.0",
     "@hookform/resolvers": "^3.9.0",
     "@paypal/react-paypal-js": "^8.9.2",
+    "@runwayml/sdk": "^3.11.0",
     "@tosspayments/payment-sdk": "^1.9.2",
     "@tosspayments/payment-widget-sdk": "^0.12.1",
     "@types/archiver": "^7.0.0",

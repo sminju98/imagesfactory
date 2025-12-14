@@ -35,9 +35,7 @@
     "name": "Name",
     "effectiveDate": "Effective Date",
     "backToHome": "Back to Home",
-    "viewTerms": "View Terms of Service",
-    "retry": "Retry",
-    "loginRequired": "Login required"
+    "viewTerms": "View Terms of Service"
   },
   "header": {
     "imageGeneration": "Image Generation",
@@ -76,10 +74,6 @@
     "referenceImageDesc": "Similar style will be generated when you upload an image",
     "clickToUpload": "Click to upload image",
     "imageFormats": "PNG, JPG, WEBP (Max 10MB)",
-    "selectFromGallery": "Select from Gallery",
-    "fromGallery": "Selected from Gallery",
-    "generation": "Generation",
-    "viewPromptHistory": "View Prompt History",
     "uploadReference": "Upload Reference Image",
     "resultEmail": "Email for Results",
     "emailTip": "You'll receive a ZIP file via email when complete",
@@ -153,7 +147,6 @@
     "pendingDesc": "Image generation will start shortly",
     "processing": "AI is working hard on your images!",
     "processingDesc": "You will receive an email when complete",
-    "completedPreview": "Completed images preview",
     "estimatedTime": "Estimated time remaining",
     "minutes": "min",
     "completed": "Image Generation Complete!",
@@ -253,7 +246,7 @@
     "failReason": "Failure Reason"
   },
   "gallery": {
-    "title": "❤️ Favorites Gallery",
+    "title": "📸 My Gallery",
     "all": "All",
     "liked": "Liked",
     "uploaded": "Uploaded",
@@ -269,23 +262,7 @@
     "filterByModel": "Filter by Model",
     "sortBy": "Sort by",
     "newest": "Newest",
-    "oldest": "Oldest",
-    "totalImages": "{{count}} images total",
-    "empty": "No saved images",
-    "emptyDesc": "Like your favorite images from the result page!",
-    "confirmDelete": "Are you sure you want to remove this image from gallery?",
-    "confirmBulkDelete": "Are you sure you want to delete {{count}} selected images?",
-    "selectMode": "Select Mode",
-    "selectAll": "Select All",
-    "deselectAll": "Deselect All",
-    "deleteSelected": "Delete {{count}}",
-    "imageDetail": "Image Detail",
-    "prompt": "Prompt",
-    "model": "Model",
-    "createdAt": "Saved At",
-    "selectFromGallery": "Select from Gallery",
-    "imageSelected": "1 selected",
-    "selectImage": "Select an image"
+    "oldest": "Oldest"
   },
   "points": {
     "title": "Charge Points",
@@ -582,8 +559,8 @@
     "step5Desc": "Auto-generate all images",
     "pricingTitle": "💰 Content Pricing",
     "contentTypes": {
-      "reels": "Reels Factory",
-      "reelsCount": "AI Video Generation",
+      "reels": "Reels/TikTok",
+      "reelsCount": "10 cuts",
       "comic": "4-Panel Comic",
       "comicCount": "4 panels",
       "cardnews": "Card News",
@@ -738,14 +715,10 @@
     "hours": "Weekdays 10:00 AM - 6:00 PM",
     "companyInfo": "Company Info",
     "companyName": "Company",
-    "companyNameValue": "MJ Studio",
     "representative": "CEO",
-    "representativeValue": "Minju Song",
     "businessNumber": "Business No.",
-    "businessNumberValue": "829-04-03406",
     "ecommerceNumber": "E-commerce No.",
     "address": "Address",
-    "addressValue": "6F-S42, 68 Bongeunsa-ro 30-gil, Gangnam-gu, Seoul, South Korea",
     "policies": "Terms & Policies",
     "pricing": "Pricing",
     "allRightsReserved": "All rights reserved."
@@ -756,7 +729,7 @@
     "pointsUnit": "points",
     "pleaseLoginToContinue": "Please login to continue",
     "pleaseLogin": "Please login first",
-    "minAmount": "Minimum charge amount is $10",
+    "minAmount": "Minimum charge amount is $1",
     "maxAmount": "Maximum charge amount is $1,000",
     "info": "Points Info",
     "infoPointValue": "1 point = $0.01 (1 cent)",
@@ -794,10 +767,7 @@
     "faqReceiveA": "A. Points are credited instantly after payment confirmation.",
     "faqInvoiceQ": "Q. Can I get an invoice?",
     "faqInvoiceA": "A. Yes, please contact support at webmaster@geniuscat.co.kr",
-    "needHelp": "Need help?",
-    "payWith": "Pay with",
-    "paymentSuccess": "Payment completed! Points have been added.",
-    "paymentCancelled": "Payment cancelled."
+    "needHelp": "Need help?"
   },
   "errors": {
     "generic": "An error occurred. Please try again.",

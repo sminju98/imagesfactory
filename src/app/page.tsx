@@ -5,10 +5,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import Header from '@/components/Header';
 import Link from 'next/link';
-import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Lightbulb, Loader2, Heart } from 'lucide-react';
+import { Sparkles, Mail, Image as ImageIcon, Zap, CheckCircle, Lightbulb, Loader2 } from 'lucide-react';
 import PromptCorrectionModal from '@/components/image-factory/PromptCorrectionModal';
 import ContentFactoryMain from '@/components/content-factory/ContentFactoryMain';
-import GalleryPickerModal from '@/components/gallery/GalleryPickerModal';
 
 // AI 모델 타입 정의
 interface AIModel {
@@ -22,7 +21,6 @@ interface AIModel {
   logo?: string;
   maxCount?: number; // 모델별 최대 생성 수량
   step?: number; // 수량 증감 단위 (예: 4장 단위)
-  imagesPerRequest?: number; // 요청당 생성되는 이미지 수 (미드저니: 4장)
 }
 
 // AI 모델 데이터 (병렬 처리 기준 최대치 설정)
@@ -35,14 +33,12 @@ const AI_MODELS: AIModel[] = [
     id: 'midjourney',
     name: 'Midjourney v6.1',
     description: 'Best for creative artwork · 4 images per request · API: Maginary',
-    pointsPerImage: 60, // 1 request = 4 images = 60pt (15pt/장)
+    pointsPerImage: 60, // 1 request = 4 images = $0.60
     badge: 'BEST',
     color: 'bg-indigo-100 border-indigo-300',
     company: 'Midjourney',
     logo: '🎨',
     maxCount: 10,
-    step: 1, // 1회 요청 = 4장 생성
-    imagesPerRequest: 4, // 요청당 4장 생성
   },
   // ===== 👑 2. GPT-Image (OpenAI 최신) =====
   {
@@ -174,8 +170,8 @@ const AI_MODELS: AIModel[] = [
   },
   {
     id: 'realistic-vision',
-    name: 'Realistic Vision v5.1',
-    description: 'Best skin texture · SD1.5 based · API: lucataco/realistic-vision-v5.1',
+    name: 'Realistic Vision v6.0',
+    description: 'Best skin texture · SD1.5 based · API: adirik/realistic-vision-v6.0',
     pointsPerImage: 2,
     badge: 'Portrait',
     color: 'bg-cyan-50 border-cyan-200',
@@ -215,21 +211,12 @@ export default function Home() {
   const [referenceImagePreview, setReferenceImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
   
-  // 레퍼런스 이미지 메타데이터 (세대 정보)
-  const [referenceMetadata, setReferenceMetadata] = useState<{
-    generation: number;
-    promptHistory: Array<{ generation: number; prompt: string; modelId: string; timestamp: string }>;
-  } | null>(null);
-  
   // 새로운 기능: GPT 교정/추천 상태
   const [activeTab, setActiveTab] = useState<'image' | 'content'>('image');
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
   const [isRecommendingModel, setIsRecommendingModel] = useState(false);
   const [gptRecommendation, setGptRecommendation] = useState<string | null>(null);
   const [correctionInfo, setCorrectionInfo] = useState<{ purpose: string; size: string } | null>(null);
-  
-  // 갤러리 선택 모달
-  const [isGalleryPickerOpen, setIsGalleryPickerOpen] = useState(false);
 
   // 사용자 이메일 동기화
   useEffect(() => {
@@ -265,12 +252,6 @@ export default function Home() {
             if (Object.keys(validModelCounts).length > 0) {
               setSelectedModels(validModelCounts);
             }
-          }
-
-          // 좋아요한 이미지를 레퍼런스 이미지로 설정
-          if (regenerateData.referenceImageUrl) {
-            setReferenceImagePreview(regenerateData.referenceImageUrl);
-            setReferenceImage(null); // URL만 사용 (파일 객체 없음)
           }
         }
         
@@ -360,35 +341,6 @@ export default function Home() {
   const removeReferenceImage = () => {
     setReferenceImage(null);
     setReferenceImagePreview('');
-    setReferenceMetadata(null);
-  };
-
-  // 이미지 URL에서 메타데이터 읽기
-  const fetchImageMetadata = async (imageUrl: string) => {
-    try {
-      const response = await fetch(`/api/image/metadata?url=${encodeURIComponent(imageUrl)}`);
-      const data = await response.json();
-      
-      if (data.success && data.data.hasMetadata) {
-        setReferenceMetadata({
-          generation: data.data.generation,
-          promptHistory: data.data.promptHistory,
-        });
-        console.log(`📖 레퍼런스 이미지 메타데이터 로드: Generation ${data.data.generation}`);
-      } else {
-        setReferenceMetadata(null);
-      }
-    } catch (error) {
-      console.error('메타데이터 읽기 실패:', error);
-      setReferenceMetadata(null);
-    }
-  };
-
-  // 갤러리에서 이미지 선택
-  const handleGallerySelect = (imageUrl: string) => {
-    setReferenceImagePreview(imageUrl);
-    setReferenceImage(null); // 파일 객체는 없음 (URL만 사용)
-    fetchImageMetadata(imageUrl); // 메타데이터 읽기
   };
 
   // 모델 선택/해제
@@ -440,9 +392,7 @@ export default function Home() {
     Object.entries(selectedModels).forEach(([modelId, count]) => {
       const model = AI_MODELS.find(m => m.id === modelId);
       if (model && count > 0) {
-        // 미드저니는 1회 요청당 4장 생성
-        const imagesPerRequest = model.imagesPerRequest || 1;
-        totalImages += count * imagesPerRequest;
+        totalImages += count;
         totalPoints += model.pointsPerImage * count;
       }
     });
@@ -486,14 +436,8 @@ export default function Home() {
     try {
       let referenceImageUrl = '';
 
-      // 갤러리에서 선택한 이미지가 있으면 해당 URL 사용 (파일 업로드 없이)
-      if (!referenceImage && referenceImagePreview) {
-        // 이미 Storage에 있는 URL이므로 바로 사용
-        referenceImageUrl = referenceImagePreview;
-        console.log('✅ 갤러리 이미지 URL 사용:', referenceImageUrl);
-      }
-      // 새로 업로드한 참고 이미지가 있으면 Storage에 업로드 + 갤러리에 저장
-      else if (referenceImage) {
+      // 참고 이미지가 있으면 먼저 Storage에 업로드 + 갤러리에 저장
+      if (referenceImage) {
         setUploadingImage(true);
         try {
           // FormData로 갤러리 업로드 API 호출
@@ -737,77 +681,28 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
-                  <div className="mt-2 space-y-1">
-                    <p className="text-sm text-gray-600">
-                      {referenceImage ? (
-                        <>📎 {referenceImage.name} ({(referenceImage.size / 1024).toFixed(0)} KB)</>
-                      ) : (
-                        <>💖 {t('home.fromGallery') || '갤러리에서 선택됨'}</>
-                      )}
-                    </p>
-                    {/* 세대 정보 표시 */}
-                    {referenceMetadata && referenceMetadata.generation > 0 && (
-                      <div className="p-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
-                        <p className="text-sm font-medium text-purple-700">
-                          🧬 {t('home.generation') || '세대'} {referenceMetadata.generation} → {referenceMetadata.generation + 1}
-                        </p>
-                        {referenceMetadata.promptHistory.length > 0 && (
-                          <details className="mt-1">
-                            <summary className="text-xs text-purple-600 cursor-pointer hover:underline">
-                              {t('home.viewPromptHistory') || '프롬프트 히스토리 보기'} ({referenceMetadata.promptHistory.length}개)
-                            </summary>
-                            <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
-                              {referenceMetadata.promptHistory.map((gen, idx) => (
-                                <p key={idx} className="text-xs text-gray-600 pl-2 border-l-2 border-purple-300">
-                                  <span className="font-medium">Gen {gen.generation}:</span> {gen.prompt.slice(0, 100)}{gen.prompt.length > 100 ? '...' : ''}
-                                </p>
-                              ))}
-                            </div>
-                          </details>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <p className="mt-2 text-sm text-gray-600">
+                    📎 {referenceImage?.name} ({(referenceImage!.size / 1024).toFixed(0)} KB)
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {/* 파일 업로드 */}
-                  <label className="block cursor-pointer">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-700 font-medium mb-1">
-                        {t('home.clickToUpload')}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {t('home.imageFormats')}
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                  </label>
-
-                  {/* 또는 구분선 */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 border-t border-gray-200"></div>
-                    <span className="text-sm text-gray-400">{t('common.or') || '또는'}</span>
-                    <div className="flex-1 border-t border-gray-200"></div>
+                <label className="block cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-700 font-medium mb-1">
+                      {t('home.clickToUpload')}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {t('home.imageFormats')}
+                    </p>
                   </div>
-
-                  {/* 갤러리에서 선택 */}
-                  {user && (
-                    <button
-                      onClick={() => setIsGalleryPickerOpen(true)}
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-pink-200 rounded-lg text-pink-600 font-medium hover:from-pink-100 hover:to-rose-100 hover:border-pink-300 transition-all"
-                    >
-                      <Heart className="w-5 h-5" />
-                      <span>{t('home.selectFromGallery') || '갤러리에서 선택'}</span>
-                    </button>
-                  )}
-                </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
               )}
             </div>
 
@@ -883,7 +778,7 @@ export default function Home() {
                           <p className="text-xs text-gray-500 mb-1">by {model.company}</p>
                           <p className="text-sm text-gray-600">{model.description}</p>
                           <p className="text-sm font-semibold text-indigo-600 mt-1">
-                            {model.pointsPerImage}pt / {model.imagesPerRequest ? `${model.imagesPerRequest}${t('home.images')}` : t('home.perImage')}
+                            {model.pointsPerImage}pt / {t('home.perImage')}
                           </p>
                         </div>
                       </div>
@@ -921,12 +816,7 @@ export default function Home() {
                             >
                               +
                             </button>
-                            <span className="text-sm text-gray-600">
-                              {model.imagesPerRequest && model.imagesPerRequest > 1 
-                                ? `x ${model.imagesPerRequest} = ${count * model.imagesPerRequest}${t('home.images')}`
-                                : t('home.images')
-                              }
-                            </span>
+                            <span className="text-sm text-gray-600">{t('home.images')}</span>
                           </div>
                           <div className="ml-auto text-right">
                             <p className="text-sm text-gray-600">{t('home.subtotal')}</p>
@@ -958,14 +848,9 @@ export default function Home() {
                     const model = AI_MODELS.find(m => m.id === modelId);
                     if (!model || count === 0) return null;
 
-                    const imagesPerRequest = model.imagesPerRequest || 1;
-                    const actualImages = count * imagesPerRequest;
-
                     return (
                       <div key={modelId} className="flex justify-between text-sm">
-                        <span>
-                          {model.name}: {imagesPerRequest > 1 ? `${count} x ${imagesPerRequest}` : count} {t('home.images')}
-                        </span>
+                        <span>{model.name}: {count} {t('home.images')}</span>
                         <span className="font-semibold">
                           {(model.pointsPerImage * count).toLocaleString()}pt
                         </span>
@@ -1072,10 +957,10 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">{t('footer.companyInfo')}</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><strong>{t('footer.companyName')}:</strong> {t('footer.companyNameValue')}</li>
-                <li><strong>{t('footer.representative')}:</strong> {t('footer.representativeValue')}</li>
-                <li><strong>{t('footer.businessNumber')}:</strong> {t('footer.businessNumberValue')}</li>
-                <li><strong>{t('footer.address')}:</strong> {t('footer.addressValue')}</li>
+                <li><strong>{t('footer.companyName')}:</strong> 엠제이스튜디오(MJ Studio)</li>
+                <li><strong>{t('footer.representative')}:</strong> Song Minju</li>
+                <li><strong>{t('footer.businessNumber')}:</strong> 829-04-03406</li>
+                <li><strong>{t('footer.address')}:</strong> Seoul, South Korea</li>
               </ul>
             </div>
             <div>
@@ -1107,13 +992,6 @@ export default function Home() {
         onClose={() => setIsCorrectionModalOpen(false)}
         prompt={prompt}
         onCorrect={handlePromptCorrected}
-      />
-
-      {/* 갤러리 선택 모달 */}
-      <GalleryPickerModal
-        isOpen={isGalleryPickerOpen}
-        onClose={() => setIsGalleryPickerOpen(false)}
-        onSelect={handleGallerySelect}
       />
     </div>
   );

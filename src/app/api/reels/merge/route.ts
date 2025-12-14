@@ -1,10 +1,15 @@
 /**
  * Step6: FFmpeg 영상 결합 API
  * POST /api/reels/merge
+ * 
+ * 서버 내에서 직접 처리:
+ * 1. URL에서 영상/오디오 다운로드
+ * 2. FFmpeg로 결합
+ * 3. Firebase Storage에 업로드
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { db, storage } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase-admin';
 import { deductReelsPoints, refundReelsPoints } from '@/lib/reels/points';
 import { exec } from 'child_process';
@@ -16,79 +21,136 @@ import * as os from 'os';
 const execAsync = promisify(exec);
 
 /**
+ * URL에서 파일 다운로드
+ */
+async function downloadFile(url: string, destPath: string): Promise<void> {
+  console.log(`📥 다운로드: ${url.substring(0, 50)}...`);
+  
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`다운로드 실패: ${response.status}`);
+  }
+  
+  const buffer = await response.arrayBuffer();
+  await fs.writeFile(destPath, Buffer.from(buffer));
+  
+  console.log(`✅ 저장됨: ${destPath}`);
+}
+
+/**
+ * Firebase Storage에 파일 업로드
+ */
+async function uploadToStorage(filePath: string, destName: string): Promise<string> {
+  const bucket = storage.bucket();
+  const destination = `ai-content/final-reels/${destName}`;
+  
+  await bucket.upload(filePath, {
+    destination,
+    metadata: {
+      contentType: 'video/mp4',
+      cacheControl: 'public, max-age=31536000',
+    },
+  });
+  
+  const file = bucket.file(destination);
+  await file.makePublic();
+  
+  return `https://storage.googleapis.com/${bucket.name}/${destination}`;
+}
+
+/**
  * FFmpeg로 영상 결합
- * 실제 환경에서는 Cloud Functions나 Cloud Run에서 실행
  */
 async function mergeVideosWithFFmpeg(
-  videoUrls: string[],
-  audioUrls: string[],
-  subtitleUrls: string[]
+  finalClips: any[],
+  projectId: string
 ): Promise<string> {
-  // 임시 디렉토리 생성
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'reels-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'reels-merge-'));
+  
+  console.log(`📁 임시 디렉토리: ${tempDir}`);
   
   try {
-    // 1. 영상 다운로드 (실제로는 Storage에서 직접 처리)
-    const videoPaths: string[] = [];
-    for (let i = 0; i < videoUrls.length; i++) {
-      const videoPath = path.join(tempDir, `video-${i}.mp4`);
-      // 실제로는 Storage에서 다운로드
-      // await downloadFromStorage(videoUrls[i], videoPath);
-      videoPaths.push(videoPath);
-    }
-
-    // 2. 음성 다운로드
-    const audioPaths: string[] = [];
-    for (let i = 0; i < audioUrls.length; i++) {
-      const audioPath = path.join(tempDir, `audio-${i}.mp3`);
-      // await downloadFromStorage(audioUrls[i], audioPath);
-      audioPaths.push(audioPath);
-    }
-
-    // 3. 각 영상에 음성 합성
     const mergedVideoPaths: string[] = [];
-    for (let i = 0; i < videoPaths.length; i++) {
-      const outputPath = path.join(tempDir, `merged-${i}.mp4`);
+    
+    // 각 클립에 대해 영상 + 오디오 결합
+    for (let i = 0; i < finalClips.length; i++) {
+      const clip = finalClips[i];
       
-      // FFmpeg 명령어: 영상 + 음성 합성
-      // 자막이 있으면 자막도 추가
-      let ffmpegCmd = `ffmpeg -i "${videoPaths[i]}" -i "${audioPaths[i]}" `;
-      
-      if (subtitleUrls[i]) {
-        const subtitlePath = path.join(tempDir, `subtitle-${i}.srt`);
-        // await downloadFromStorage(subtitleUrls[i], subtitlePath);
-        ffmpegCmd += `-vf "subtitles='${subtitlePath}'" `;
+      if (!clip.url) {
+        console.log(`⚠️ 클립 ${i + 1}: 영상 URL 없음, 스킵`);
+        continue;
       }
       
-      ffmpegCmd += `-c:v libx264 -c:a aac -shortest "${outputPath}"`;
+      console.log(`🎬 클립 ${i + 1}/${finalClips.length} 처리 중...`);
       
-      await execAsync(ffmpegCmd);
-      mergedVideoPaths.push(outputPath);
+      const videoPath = path.join(tempDir, `video-${i}.mp4`);
+      const audioPath = path.join(tempDir, `audio-${i}.mp3`);
+      const outputPath = path.join(tempDir, `merged-${i}.mp4`);
+      
+      // 1. 영상 다운로드
+      await downloadFile(clip.url, videoPath);
+      
+      // 2. 오디오가 있으면 다운로드 후 결합, 없으면 영상만 사용
+      if (clip.audioUrl) {
+        await downloadFile(clip.audioUrl, audioPath);
+        
+        // FFmpeg: 영상 + 오디오 결합 (영상의 원본 오디오 제거 후 새 오디오 추가)
+        const ffmpegCmd = `ffmpeg -y -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest "${outputPath}"`;
+        
+        console.log(`🔧 FFmpeg 실행 중...`);
+        try {
+          await execAsync(ffmpegCmd);
+          mergedVideoPaths.push(outputPath);
+        } catch (ffmpegError: any) {
+          console.error(`FFmpeg 오류 (클립 ${i + 1}):`, ffmpegError.stderr || ffmpegError.message);
+          // 오디오 결합 실패 시 원본 영상만 사용
+          mergedVideoPaths.push(videoPath);
+        }
+      } else {
+        // 오디오 없이 영상만 사용
+        mergedVideoPaths.push(videoPath);
+      }
     }
-
-    // 4. 5개 영상을 순서대로 결합
+    
+    if (mergedVideoPaths.length === 0) {
+      throw new Error('결합할 영상이 없습니다.');
+    }
+    
+    // 3. 모든 영상을 순서대로 결합
+    console.log(`📹 ${mergedVideoPaths.length}개 영상 결합 중...`);
+    
     const concatListPath = path.join(tempDir, 'concat-list.txt');
     const concatList = mergedVideoPaths
       .map((p) => `file '${p}'`)
       .join('\n');
     await fs.writeFile(concatListPath, concatList);
-
+    
     const finalOutputPath = path.join(tempDir, 'final-reel.mp4');
     
-    // FFmpeg concat 명령어
-    const concatCmd = `ffmpeg -f concat -safe 0 -i "${concatListPath}" -c copy "${finalOutputPath}"`;
-    await execAsync(concatCmd);
-
-    // 5. 최종 영상을 Storage에 업로드
-    // const finalUrl = await uploadToStorage(finalOutputPath);
+    // FFmpeg concat (코덱 재인코딩으로 호환성 확보)
+    const concatCmd = `ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k "${finalOutputPath}"`;
     
-    // 시뮬레이션
-    const finalUrl = `https://storage.googleapis.com/reels/final-${Date.now()}.mp4`;
+    console.log(`🔧 최종 결합 중...`);
+    await execAsync(concatCmd);
+    
+    // 4. Firebase Storage에 업로드
+    console.log(`☁️ Storage 업로드 중...`);
+    const finalUrl = await uploadToStorage(
+      finalOutputPath, 
+      `${projectId}-${Date.now()}.mp4`
+    );
+    
+    console.log(`✅ 최종 릴스 완성: ${finalUrl}`);
     
     return finalUrl;
   } finally {
     // 임시 파일 정리
-    await fs.rm(tempDir, { recursive: true, force: true });
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      console.log(`🧹 임시 파일 정리 완료`);
+    } catch (cleanupError) {
+      console.error('임시 파일 정리 실패:', cleanupError);
+    }
   }
 }
 
@@ -142,17 +204,14 @@ export async function POST(request: NextRequest) {
     }
 
     const finalClips = projectData.finalClips || [];
-    if (finalClips.length !== 5) {
+    const completedClips = finalClips.filter((c: any) => c.status === 'completed' && c.url);
+    
+    if (completedClips.length === 0) {
       return NextResponse.json(
-        { success: false, error: '모든 영상의 TTS가 완료되지 않았습니다.' },
+        { success: false, error: '완료된 영상이 없습니다. TTS 생성을 먼저 완료해주세요.' },
         { status: 400 }
       );
     }
-
-    // 영상 URL, 음성 URL, 자막 URL 추출
-    const videoUrls = finalClips.map((clip: any) => clip.url);
-    const audioUrls = finalClips.map((clip: any) => clip.audioUrl);
-    const subtitleUrls = finalClips.map((clip: any) => clip.subtitleUrl);
 
     // 포인트 차감 (Step 6)
     const pointsResult = await deductReelsPoints(user.uid, projectId, 6);
@@ -163,21 +222,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 프로젝트 상태 업데이트 (처리 중)
+    await db.collection('reelsProjects').doc(projectId).update({
+      status: 'processing',
+      'stepStatus.step6': 'processing',
+      updatedAt: new Date(),
+    });
+
     try {
       // FFmpeg로 결합
-      console.log('FFmpeg로 영상 결합 시작...');
-      const finalReelUrl = await mergeVideosWithFFmpeg(videoUrls, audioUrls, subtitleUrls);
+      console.log(`🎬 FFmpeg 영상 결합 시작 (${completedClips.length}개 클립)...`);
+      const finalReelUrl = await mergeVideosWithFFmpeg(completedClips, projectId);
+
+      // 영상 길이 계산 (6초 x 클립 수)
+      const totalDuration = completedClips.length * 6;
 
       // 프로젝트 업데이트
       await db.collection('reelsProjects').doc(projectId).update({
         finalReelUrl,
         status: 'completed',
-        currentStep: 6,
+        'stepStatus.step6': 'completed',
+        currentStep: 7, // 완료
         stepResults: {
           ...projectData.stepResults,
           step6: {
             finalReelUrl,
-            duration: 40,
+            duration: totalDuration,
+            clipCount: completedClips.length,
             pointsUsed: pointsResult.pointsDeducted,
             completedAt: new Date(),
           },
@@ -189,21 +260,33 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           finalReelUrl,
-          duration: 40,
+          duration: totalDuration,
+          clipCount: completedClips.length,
           pointsDeducted: pointsResult.pointsDeducted,
           newBalance: pointsResult.newBalance,
         },
       });
     } catch (error: any) {
+      console.error('영상 결합 실패:', error);
+      
+      // 포인트 환불
       await refundReelsPoints(user.uid, projectId, 6);
+      
+      // 프로젝트 상태 업데이트 (실패)
+      await db.collection('reelsProjects').doc(projectId).update({
+        status: 'failed',
+        'stepStatus.step6': 'failed',
+        'stepError.step6': error.message || '영상 결합 실패',
+        updatedAt: new Date(),
+      });
+      
       throw error;
     }
   } catch (error: any) {
     console.error('영상 결합 오류:', error);
     return NextResponse.json(
-      { success: false, error: '영상 결합에 실패했습니다.' },
+      { success: false, error: error.message || '영상 결합에 실패했습니다.' },
       { status: 500 }
     );
   }
 }
-

@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "하루가 끝나면 거칠어진 피부 때문에 은근히 신경 쓰이죠. 건조함과 미세한 결까지 감추고 싶다면, 지금부터 이 로션에 집중해 보세요. 맑고 환한 첫인상을 만드는 비밀은 생각보다 아주 작은 한 병에서 시작됩니다.\n손끝에 닿는 순간 느껴지는 촉촉한 제형이 피부 결을 부드럽게 감싸면서, 건조해 갈라진 부분까지 빈틈없이 채워 줍니다. 끈적임 없이 가볍게 스며들어, 바르는 동안에도 고급스러운 스파 케어를 받은 듯한 여유를 선사합니다.\n한쪽은 평소처럼 둔탁하고 푸석한 피부, 다른 한쪽은 로션을 바른 뒤 매끈하게 정돈된 피부를 나란히 비교해 보세요. 모공과 잔결이 정리된 듯 정돈되며, 아기피부처럼 탱탱하고 탄탄해진 광채가 자연스럽게 살아납니다.\n시간이 지날수록 수분이 증발하지 않도록 피부 속을 촘촘히 잠가 주어, 메이크업 전 베이스로도 완벽하게 어울립니다. 건조한 사무실과 일상 속에서도 처음 바른 듯한 촉촉함과 편안함이 오래 유지되도록 도와줍니다.\n마지막으로 거울 앞에 선 그녀의 표정을 떠올려 보세요. 하루 종일 이어지는 부드럽고 매끈한 피부 덕분에, 가까이에서도 자신 있게 미소 짓게 되는 순간이 찾아옵니다. 지금, 당신의 피부도 아기피부의 자신감을 느껴 보세요.",
+  "scenes": [
+    {
+      "id": "43531e05-62b0-4b05-8d84-597631532226",
+      "index": 0,
+      "prompt": "Vertical video, clean white studio background, minimal luxury cosmetic setup on a glossy white surface, soft diffused lighting, close-up of an elegant glass lotion bottle with metallic cap, subtle reflections, shallow depth of field, slow camera push-in, no text, no labels",
+      "narration": "하루가 끝나면 거칠어진 피부 때문에 은근히 신경 쓰이죠. 건조함과 미세한 결까지 감추고 싶다면, 지금부터 이 로션에 집중해 보세요. 맑고 환한 첫인상을 만드는 비밀은 생각보다 아주 작은 한 병에서 시작됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "408442f4-e79b-4ddd-b9bc-67645b51ab7d",
+      "index": 1,
+      "prompt": "Extreme close-up of a female hand pumping a small amount of lotion onto fingertips, creamy and dewy texture catching the light, then slowly spreading the lotion across the back of the hand, smooth gliding motion, white background, skincare commercial style, no text",
+      "narration": "손끝에 닿는 순간 느껴지는 촉촉한 제형이 피부 결을 부드럽게 감싸면서, 건조해 갈라진 부분까지 빈틈없이 채워 줍니다. 끈적임 없이 가볍게 스며들어, 바르는 동안에도 고급스러운 스파 케어를 받은 듯한 여유를 선사합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "838d4390-d59a-492d-98c8-467fa7b538fd",
+      "index": 2,
+      "prompt": "Split-screen vertical shot: on the left, a close-up of dull, slightly dry cheek skin with visible texture; on the right, after using lotion, the cheek looks smooth, dewy and refined, soft glow, same lighting and angle for clear comparison, white studio background, no text",
+      "narration": "한쪽은 평소처럼 둔탁하고 푸석한 피부, 다른 한쪽은 로션을 바른 뒤 매끈하게 정돈된 피부를 나란히 비교해 보세요. 모공과 잔결이 정리된 듯 정돈되며, 아기피부처럼 탱탱하고 탄탄해진 광채가 자연스럽게 살아납니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "942aa886-aeae-428b-959f-e6dd1f20bf3f",
+      "index": 3,
+      "prompt": "Medium close-up of a woman in her late twenties applying lotion on her face in front of a softly lit mirror, bright white bathroom interior, her skin gradually appears more plump and hydrated, subtle bokeh lights in background, cinematic slow motion, no text",
+      "narration": "시간이 지날수록 수분이 증발하지 않도록 피부 속을 촘촘히 잠가 주어, 메이크업 전 베이스로도 완벽하게 어울립니다. 건조한 사무실과 일상 속에서도 처음 바른 듯한 촉촉함과 편안함이 오래 유지되도록 도와줍니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "088e9785-a6d4-4c04-9e17-fc61bcec5f98",
+      "index": 4,
+      "prompt": "Close-up of the same woman looking into the mirror with a relaxed, satisfied expression, her skin looks baby-soft, luminous and smooth, soft white background, gentle lens flare, then a slow, elegant rotation shot of the lotion bottle on white surface, luxury aesthetic, no text",
+      "narration": "마지막으로 거울 앞에 선 그녀의 표정을 떠올려 보세요. 하루 종일 이어지는 부드럽고 매끈한 피부 덕분에, 가까이에서도 자신 있게 미소 짓게 되는 순간이 찾아옵니다. 지금, 당신의 피부도 아기피부의 자신감을 느껴 보세요.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "AppleSDGothicNeo-Bold",
+    "fontSize": 54,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 3,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "프리미엄_글로우",
+    "styleDescription": "고급 화장품 광고에 어울리는 세련된 화이트 자막, 반투명 배경과 적당한 두께의 테두리로 깨끗한 화이트톤 영상 위에서도 선명하게 읽히는 스타일",
+    "mood": "고급스럽고 세련된"
+  }
+}

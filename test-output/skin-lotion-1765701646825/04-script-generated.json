@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "script": "당신의 피부가 오늘보다 더 어려 보일 수 있다면 어떨까요? 가볍게 한 번 바르는 것만으로, 메마른 피부가 차분히 정돈되고 빛을 되찾는 순간을 떠올려 보세요. 거울 앞에 설 때마다 자신 있게 미소 짓게 되는 변화를 지금 소개합니다.\n피부 속까지 스며드는 듯한 촉촉함이 먼저 밀려오고, 곧이어 부드럽게 정돈된 결이 손끝으로 느껴집니다. 건조함은 잊고, 하루 종일 편안하게 유지되는 수분 보호막이 섬세하게 피부를 감싸 줍니다.\n사용 전에는 거칠게 일어난 피부 결과 잔잔한 붉은기, 메마른 느낌이 먼저 눈에 들어옵니다. 하지만 로션을 바른 직후에는 매끄럽게 정돈된 표면과 은은한 윤기가 돌아, 마치 필터를 씌운 듯 깨끗한 인상이 완성됩니다.\n시간이 지날수록 피부는 더 편안해지고, 피붓결은 정돈되며, 메이크업 없이도 자연스러운 생기가 살아납니다. 매일 아침, 이 로션 하나만으로 자신의 피부가 조금씩 어려지는 변화를 직접 확인해 보세요.\n지금 당신의 화장대에 필요한 건 또 하나의 제품이 아니라, 스스로를 더 아껴 주는 선택입니다. 촉촉하고 부드러운 아기피부 같은 감촉을 원하는 당신에게, 이 로션이 하루의 시작과 끝을 책임지는 작은 럭셔리가 되어 줄 것입니다.",
+  "scenes": [
+    {
+      "id": "4322b70e-cc65-4d1d-bff9-053e0d6e8abb",
+      "index": 0,
+      "prompt": "Vertical video, minimal studio setup with a clean pure white background. Slow rotating close-up shot of an elegant glass lotion bottle with soft reflections, subtle water droplets on the surface, gentle diffused lighting, shallow depth of field, high-end skincare advertising style, no text, no labels visible.",
+      "narration": "당신의 피부가 오늘보다 더 어려 보일 수 있다면 어떨까요? 가볍게 한 번 바르는 것만으로, 메마른 피부가 차분히 정돈되고 빛을 되찾는 순간을 떠올려 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "ba3ea478-cf34-4a2a-889d-362ae3a5a28c",
+      "index": 1,
+      "prompt": "Macro shot sequence on white background showing a smooth hand applying a small drop of lotion to the back of the other hand. The texture of the lotion looks rich and silky, spreading effortlessly, with soft glossy highlights. Slow-motion capture, luxurious skincare commercial aesthetic, no text.",
+      "narration": "피부 속까지 스며드는 듯한 촉촉함이 먼저 밀려오고, 곧이어 부드럽게 정돈된 결이 손끝으로 느껴집니다. 건조함은 잊고, 하루 종일 편안하게 유지되는 수분 보호막이 섬세하게 피부를 감싸 줍니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "75e69eab-33d7-4c07-812e-173f1de91b55",
+      "index": 2,
+      "prompt": "Split-screen before-and-after shot of a young adult woman’s cheek and jawline on a white studio background. Left side slightly dull, visibly dry texture; right side smooth, plump, softly glowing skin. Gentle lighting, subtle skin detail, refined color grading, premium beauty ad look, no text.",
+      "narration": "사용 전에는 거칠게 일어난 피부 결과 잔잔한 붉은기, 메마른 느낌이 먼저 눈에 들어옵니다. 하지만 로션을 바른 직후에는 매끄럽게 정돈된 표면과 은은한 윤기가 돌아, 마치 필터를 씌운 듯 깨끗한 인상이 완성됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "d66e2e12-e0d3-438d-91d9-f0d0ebb07a99",
+      "index": 3,
+      "prompt": "Medium close-up of a woman in her twenties in a white tank top, in front of a bright white background. She gently touches her cheek, smiling softly with visible confidence. Her skin looks dewy and supple. Slow push-in camera movement, soft backlight halo, cinematic skincare film style, no text.",
+      "narration": "시간이 지날수록 피부는 더 편안해지고, 피붓결은 정돈되며, 메이크업 없이도 자연스러운 생기가 살아납니다. 매일 아침, 이 로션 하나만으로 자신의 피부가 조금씩 어려지는 변화를 직접 확인해 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "2ba2f702-ae56-4264-85eb-c02b925605b4",
+      "index": 4,
+      "prompt": "Final hero shot: the lotion bottle centered on a glossy white surface with soft reflections, subtle mist or steam in the background suggesting hydration. In the distance, slightly out of focus, the satisfied model’s silhouette touching her face. Elegant, slow camera glide, high-end luxury brand feel, no text.",
+      "narration": "지금 당신의 화장대에 필요한 건 또 하나의 제품이 아니라, 스스로를 더 아껴 주는 선택입니다. 촉촉하고 부드러운 아기피부 같은 감촉을 원하는 당신에게, 이 로션이 하루의 시작과 끝을 책임지는 작은 럭셔리가 되어 줄 것입니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "AppleSDGothicNeo-Bold",
+    "fontSize": 52,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 럭셔리",
+    "styleDescription": "깨끗한 화이트톤 배경 위에서도 선명하게 읽히는 프리미엄 자막 스타일. 굵은 고딕체와 반투명 블랙 배경을 사용해 고급 화장품 광고 느낌을 살리고, 화면 하단 중앙에 안정감 있게 배치합니다.",
+    "mood": "고급스럽고 세련된"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "script": "한 번의 바름으로 피부 결이 매끄럽게 정돈되고, 촉촉함이 오래 유지되는 프리미엄 보습 로션을 소개합니다. 까다로운 20-30대 여성의 눈에도 만족스러운 섬세한 텍스처와 산뜻한 마무리를 느껴보세요.\n깨끗한 화이트톤 공간 속에서 잔여감 없이 스며드는 제형이 피부 위에서 자연스럽게 녹아들며, 건조하고 거칠던 표면을 아기피부처럼 부드럽게 감싸는 변화를 시각적으로 확인해보세요.\n사용 전에는 모공과 잔갈라짐이 눈에 띄던 피부가, 사용 후에는 결이 정돈되고 윤기가 도는 듯 차분하게 빛나며, 표면은 매트하지 않지만 끈적임 없이 탄탄해 보이는 질감으로 연출됩니다.\n하루 종일 에어컨과 외부 자극에 시달리는 20-30대 여성 피부를 위해 보습 성분과 피부 장벽 케어 성분을 균형 있게 담아, 속건조와 당김을 동시에 완화해주는 데 집중했습니다.\n고급스러운 투명 보틀과 미니멀한 디자인은 화장대 어디에 두어도 세련된 오브제로 어울리며, 손에 쥐었을 때 적당한 무게감과 부드러운 펌핑 사용감으로 일상의 작은 리추얼을 완성합니다.\n지금 바로 피부 컨디션이 안 좋은 날에도 자신 있게 가까이에서 카메라를 마주할 수 있도록, 바를수록 촉촉하고 어려 보이는 아기피부 결을 선사하는 이 로션을 경험해보세요.",
+  "scenes": [
+    {
+      "id": "ea641398-478c-479a-9ad1-9412f8653649",
+      "index": 0,
+      "prompt": "Ultra clean white studio background, soft diffused lighting, slow cinematic close-up of an elegant glass lotion bottle with silver details standing on a glossy white surface, subtle water droplets and gentle light reflections, minimal luxury skincare aesthetic, no text, no labels readable, no people",
+      "narration": "한 번의 바름으로 피부 결이 매끄럽게 정돈되고, 촉촉함이 오래 유지되는 프리미엄 보습 로션을 소개합니다. 까다로운 20-30대 여성의 눈에도 만족스러운 섬세한 텍스처와 산뜻한 마무리를 느껴보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "fbca1e3f-8ae5-437a-9a43-e15dd9c96a6b",
+      "index": 1,
+      "prompt": "White background macro shot of a hand pumping silky lotion onto the back of another hand, thick creamy texture spreading smoothly, soft highlights on the product, close-up of moist glowing skin as the lotion absorbs, luxury skincare commercial lighting, no text, no words",
+      "narration": "깨끗한 화이트톤 공간 속에서 잔여감 없이 스며드는 제형이 피부 위에서 자연스럽게 녹아들며, 건조하고 거칠던 표면을 아기피부처럼 부드럽게 감싸는 변화를 시각적으로 확인해보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "3f947402-e4f5-4354-9f6e-14017063d704",
+      "index": 2,
+      "prompt": "Split-screen comparison on a white background: left side shows a close-up of dull, slightly rough skin on a cheek, right side shows the same area after application, smoother and more radiant, soft glow effect, subtle pores minimized, no text, no on-screen graphics",
+      "narration": "사용 전에는 모공과 잔갈라짐이 눈에 띄던 피부가, 사용 후에는 결이 정돈되고 윤기가 도는 듯 차분하게 빛나며, 표면은 매트하지 않지만 끈적임 없이 탄탄해 보이는 질감으로 연출됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "8080829d-0b5c-42cc-b94e-6cb0db8ddd44",
+      "index": 3,
+      "prompt": "Close-up of a young woman in her 20s gently touching her cheek, white studio background, soft side lighting emphasizing hydrated plump skin, subtle bokeh in the background, slow motion as she lightly presses her skin to show bounce and moisture, no text anywhere",
+      "narration": "하루 종일 에어컨과 외부 자극에 시달리는 20-30대 여성 피부를 위해 보습 성분과 피부 장벽 케어 성분을 균형 있게 담아, 속건조와 당김을 동시에 완화해주는 데 집중했습니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "c7021da8-05c1-4877-bd0b-e11d5360bcc1",
+      "index": 4,
+      "prompt": "Stylish vanity scene in a bright white bathroom, the lotion bottle placed among minimal glass accessories, reflections on a marble-like white counter, hand reaching in to pick up the bottle, slow tilt showing elegant design and subtle transparency, no text, purely visual",
+      "narration": "고급스러운 투명 보틀과 미니멀한 디자인은 화장대 어디에 두어도 세련된 오브제로 어울리며, 손에 쥐었을 때 적당한 무게감과 부드러운 펌핑 사용감으로 일상의 작은 리추얼을 완성합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "52b65903-e4f0-485b-a3f2-fdf6b8ce2f90",
+      "index": 5,
+      "prompt": "Final hero shot in white studio: the lotion bottle centered on a glossy pedestal, soft light rays from behind creating a subtle halo, quick cuts of the model’s satisfied, relaxed face and close-up of baby-soft glowing skin, then back to the bottle, no on-screen text, no captions",
+      "narration": "지금 바로 피부 컨디션이 안 좋은 날에도 자신 있게 가까이에서 카메라를 마주할 수 있도록, 바를수록 촉촉하고 어려 보이는 아기피부 결을 선사하는 이 로션을 경험해보세요.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 54,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "화이트 프리미엄 스킨케어",
+    "styleDescription": "깨끗한 화이트톤과 잘 어울리는 고급스럽고 세련된 자막 스타일로, 반투명 블랙 배경과 깔끔한 고딕체를 사용해 제품의 프리미엄 이미지를 강조합니다.",
+    "mood": "고급스럽고 전문적인"
+  }
+}

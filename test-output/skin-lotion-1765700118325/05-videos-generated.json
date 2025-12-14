@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "sceneId": "ebdf6924-4952-480d-a883-b3d326ec3878",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":401,\"message\":\"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\"status\":\"UNAUTHENTICATED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"CREDENTIALS_MISSING\",\"domain\":\"googleapis.com\",\"metadata\":{\"method\":\"google.ai.generativelanguage.v1beta.PredictionService.PredictLongRunning\",\"service\":\"generativelanguage.googleapis.com\"}}]}}"
+    },
+    {
+      "sceneId": "aea9207c-9043-4502-b242-72501f3e6b01",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":401,\"message\":\"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\"status\":\"UNAUTHENTICATED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"CREDENTIALS_MISSING\",\"domain\":\"googleapis.com\",\"metadata\":{\"method\":\"google.ai.generativelanguage.v1beta.PredictionService.PredictLongRunning\",\"service\":\"generativelanguage.googleapis.com\"}}]}}"
+    },
+    {
+      "sceneId": "929af66b-42f9-49e5-8052-c29bc83ffca2",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":401,\"message\":\"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\"status\":\"UNAUTHENTICATED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"CREDENTIALS_MISSING\",\"domain\":\"googleapis.com\",\"metadata\":{\"method\":\"google.ai.generativelanguage.v1beta.PredictionService.PredictLongRunning\",\"service\":\"generativelanguage.googleapis.com\"}}]}}"
+    },
+    {
+      "sceneId": "99698a75-d453-4ee2-89be-9d497f47cb15",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":401,\"message\":\"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\"status\":\"UNAUTHENTICATED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"CREDENTIALS_MISSING\",\"domain\":\"googleapis.com\",\"metadata\":{\"method\":\"google.ai.generativelanguage.v1beta.PredictionService.PredictLongRunning\",\"service\":\"generativelanguage.googleapis.com\"}}]}}"
+    },
+    {
+      "sceneId": "643a56dd-e5c2-47ee-8f7f-e5cec93bd8c3",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":401,\"message\":\"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\"status\":\"UNAUTHENTICATED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"CREDENTIALS_MISSING\",\"domain\":\"googleapis.com\",\"metadata\":{\"method\":\"google.ai.generativelanguage.v1beta.PredictionService.PredictLongRunning\",\"service\":\"generativelanguage.googleapis.com\"}}]}}"
+    }
+  ]
+}

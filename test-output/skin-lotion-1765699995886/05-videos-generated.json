@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "sceneId": "f657b35a-3fc7-4719-a33d-1443591c203e",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":403,\"message\":\"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.\",\"status\":\"PERMISSION_DENIED\"}}"
+    },
+    {
+      "sceneId": "b967326d-882c-4e4f-971f-f4470311d2c9",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":403,\"message\":\"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.\",\"status\":\"PERMISSION_DENIED\"}}"
+    },
+    {
+      "sceneId": "a0aa9e78-cf58-47ec-83fe-86fb7cb751b2",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":403,\"message\":\"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.\",\"status\":\"PERMISSION_DENIED\"}}"
+    },
+    {
+      "sceneId": "ea02d4a9-8d55-4232-945f-50110e9f3aad",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":403,\"message\":\"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.\",\"status\":\"PERMISSION_DENIED\"}}"
+    },
+    {
+      "sceneId": "732235f3-b20a-4109-a71e-7e231a13a299",
+      "videoUrl": null,
+      "error": "API 호출 실패: 500 - {\"error\":{\"code\":403,\"message\":\"Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.\",\"status\":\"PERMISSION_DENIED\"}}"
+    }
+  ]
+}

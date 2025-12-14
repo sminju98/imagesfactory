@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "script": "하루 종일 이어지는 건조함이 고민이라면, 지금 피부가 필요로 하는 건 과한 커버가 아닌 깊고 순한 수분 숨결입니다. 가볍게 스며들지만 오래 머무는 보습으로, 매 순간 내 피부의 결과 윤기를 편안하게 깨워 보세요.\n깨끗한 흰 배경 위에 놓인 한 병의 로션처럼, 스킨케어가 단순해질수록 피부는 더 편안해집니다. 군더더기 없는 텍스처와 부드러운 펌핑 사용감으로, 매일 손이 가는 데일리 보습 루틴을 완성해 보세요.\n손등 위에 떨어진 한 방울의 크리미한 로션이 천천히 펼쳐지며, 건조해 보이던 피부 결을 매끄럽고 촉촉하게 덮어 줍니다. 묵직하지 않게 윤기가 감도는 마무리로, 바로 메이크업을 올려도 부담 없는 편안함을 선사합니다.\n아침 세안 후, 모델의 손끝에서 소량의 로션이 펌프로 깔끔하게 덜려 나오고, 위로 끌어 올리는 둥근 마사지 동작과 함께 얼굴 전체로 고르게 스며듭니다. 부드러운 손목의 리듬을 따라 피부는 점점 더 차분하고 빛나는 결로 정리됩니다.\n동일한 조명 아래에서 비교해 보면, 사용 전에는 미세한 건조 결과 매트한 표면이 눈에 띄지만, 사용 직후에는 은은한 광택과 촉촉한 반사빛이 피부 위에 가볍게 번져 보입니다. 과한 광이 아닌 자연스러운 윤기로, 가까이서 볼수록 더 건강해 보이는 피부를 보여 줍니다.\n마지막으로 모델이 제품을 한 손에 편안히 쥔 채, 부드럽게 미소 짓는 전신 샷이 펼쳐집니다. 자연스럽게 빛나는 목선과 얼굴의 윤곽, 차분한 컬러의 의상과 어우러진 분위기 속에서, 오늘 하루의 보습 루틴을 이 한 병으로 단순하게 완성하고 싶은 마음이 들게 만듭니다.",
+  "scenes": [
+    {
+      "id": "136d0624-8e15-4906-a9cc-351021b60e5d",
+      "index": 0,
+      "prompt": "Vertical 9:16 4K shot of a single skin lotion bottle on a rotating display pedestal, pure laboratory-like white background, soft beige and pearl pink accents in small props, high-key lighting, two softboxes with gentle highlights, subtle rim light outlining the bottle, shallow depth of field focusing on the pump and creamy texture reflections instead of logo, slow 360-degree rotation of the product, camera performing a slow cinematic zoom-in, smooth gimbal movement, no text or labels visible anywhere, warm soft highlights on glossy surface, minimalistic premium skincare aesthetic",
+      "narration": "하루 종일 이어지는 건조함이 고민이라면, 지금 피부가 필요로 하는 건 과한 커버가 아닌 깊고 순한 수분 숨결입니다. 가볍게 스며들지만 오래 머무는 보습으로, 매 순간 내 피부의 결과 윤기를 편안하게 깨워 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "df35c414-cb4c-438f-a5fc-6f15b6fbb276",
+      "index": 1,
+      "prompt": "Vertical 9:16 extreme macro shot of a young adult woman’s hand, close-up of the back of the hand, a pump dispensing a single drop of creamy lotion onto the skin, soft white background completely blown out, high-key lighting around 5600K, shallow depth of field with smooth bokeh, the droplet glistening and slowly spreading in slow motion as fingers gently glide to smear it, texture of the lotion catching warm highlights, no text or symbols in frame, premium clean skincare mood",
+      "narration": "깨끗한 흰 배경 위에 놓인 한 병의 로션처럼, 스킨케어가 단순해질수록 피부는 더 편안해집니다. 군더더기 없는 텍스처와 부드러운 펌핑 사용감으로, 매일 손이 가는 데일리 보습 루틴을 완성해 보세요.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "641edd6d-6060-436e-a6bc-00c5b2631efd",
+      "index": 2,
+      "prompt": "Vertical 9:16 macro close-up of lotion texture on the back of a hand, creamy drop of product slowly spreading in slow motion, warm soft high-key illumination, shallow depth of field at f/2.8, skin pores softly visible but smoothed by light, reflections shimmering on the moist surface, camera gently dolly-in as the lotion absorbs, soft beige and pearl pink color hints reflected in highlights, no typography or written elements, cinematic 4K clarity emphasizing moisture and smoothness",
+      "narration": "손등 위에 떨어진 한 방울의 크리미한 로션이 천천히 펼쳐지며, 건조해 보이던 피부 결을 매끄럽고 촉촉하게 덮어 줍니다. 묵직하지 않게 윤기가 감도는 마무리로, 바로 메이크업을 올려도 부담 없는 편안함을 선사합니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "a5e9a1c1-c864-49b0-9de0-ed6d999d4d88",
+      "index": 3,
+      "prompt": "Vertical 9:16 4K close-up of an Asian woman in her late twenties with natural makeup, wearing a cream-colored knit top, standing against a pure white background, warm high-key lighting with soft shadows, she pumps a small amount of lotion onto her fingertips and gently massages it into her face using upward and outward circular strokes, slow graceful wrist movements emphasized, camera moves from low angle dolly-in toward ear-to-eye level capturing changing skin texture, shallow depth of field separating her from the background, no text or logos on screen",
+      "narration": "아침 세안 후, 모델의 손끝에서 소량의 로션이 펌프로 깔끔하게 덜려 나오고, 위로 끌어 올리는 둥근 마사지 동작과 함께 얼굴 전체로 고르게 스며듭니다. 부드러운 손목의 리듬을 따라 피부는 점점 더 차분하고 빛나는 결로 정리됩니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "d0837e64-6228-4ddb-a42e-40758b661be1",
+      "index": 4,
+      "prompt": "Vertical 9:16 matched-angle 4K shot of the same woman’s cheek and jawline, split into a soft visual wipe transition: first frame shows slightly matte skin with visible fine texture, then a gentle horizontal light-like wipe reveals the after state with hydrated, glowing, dewy skin, same lighting and camera position, warm highlights and low contrast grading, subtle reflections on the moisturized surface, minimalist premium look, no written text in the image, only pure visuals of before and after comparison",
+      "narration": "동일한 조명 아래에서 비교해 보면, 사용 전에는 미세한 건조 결과 매트한 표면이 눈에 띄지만, 사용 직후에는 은은한 광택과 촉촉한 반사빛이 피부 위에 가볍게 번져 보입니다. 과한 광이 아닌 자연스러운 윤기로, 가까이서 볼수록 더 건강해 보이는 피부를 보여 줍니다.",
+      "duration": 8,
+      "approved": false
+    },
+    {
+      "id": "3f2dfecb-ba83-4b11-9f97-4b0a0fcd90cc",
+      "index": 5,
+      "prompt": "Vertical 9:16 full-body 4K shot of the same Asian woman standing in front of a seamless white backdrop, holding the lotion bottle gently in one hand at waist level, the other hand relaxed, soft high-key studio lighting with gentle rim light outlining her silhouette, warm highlights on her face and collarbone, she gives a calm, satisfied smile, camera performs a smooth slow pan-out revealing more negative white space, shallow depth of field slightly blurring the background, no on-screen text or brands, elegant, premium skincare mood shot",
+      "narration": "마지막으로 모델이 제품을 한 손에 편안히 쥔 채, 부드럽게 미소 짓는 전신 샷이 펼쳐집니다. 자연스럽게 빛나는 목선과 얼굴의 윤곽, 차분한 컬러의 의상과 어우러진 분위기 속에서, 오늘 하루의 보습 루틴을 이 한 병으로 단순하게 완성하고 싶은 마음이 들게 만듭니다.",
+      "duration": 8,
+      "approved": false
+    }
+  ],
+  "subtitleStyle": {
+    "fontName": "Noto Sans CJK KR",
+    "fontSize": 50,
+    "primaryColor": "&H00FFFFFF",
+    "outlineColor": "&H00000000",
+    "backColor": "&H80000000",
+    "bold": true,
+    "outline": 2,
+    "shadow": 1,
+    "alignment": 2,
+    "marginV": 110,
+    "styleName": "하이엔드 스킨케어",
+    "styleDescription": "고급 스킨케어 광고에 어울리는 미니멀하면서도 세련된 자막 스타일. 깨끗한 흰색 글자와 부드러운 반투명 배경으로 하이키 톤 화면에서도 높은 가독성을 유지하며, 문구는 한 줄 최대 세 단어의 짧은 카피에 최적화.",
+    "mood": "프리미엄, 차분함, 세련된"
+  }
+}

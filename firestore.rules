@@ -154,5 +154,22 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
     }
+    
+    // ========================================
+    // reelsProjects 컬렉션 (릴스 팩토리)
+    // ========================================
+    match /reelsProjects/{projectId} {
+      // 본인 프로젝트만 읽기
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // 생성: 인증된 사용자
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // 수정: 본인 프로젝트만
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // 삭제: 본인 프로젝트만
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
   }
 }
