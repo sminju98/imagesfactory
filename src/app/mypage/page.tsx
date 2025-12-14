@@ -372,7 +372,7 @@ export default function MyPage() {
             {/* Gallery Tab */}
             {activeTab === 'gallery' && (
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-                <GalleryTab userId={user.uid} />
+                <GalleryTab />
               </div>
             )}
 
@@ -475,14 +475,26 @@ export default function MyPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.name')}</label>
                       <div className="relative">
                         <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="text" value={user.displayName} readOnly className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" />
+                        <input 
+                          type="text" 
+                          value={user.displayName} 
+                          readOnly 
+                          title={t('common.name')}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" 
+                        />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.email')}</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="email" value={user.email} readOnly className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" />
+                        <input 
+                          type="email" 
+                          value={user.email} 
+                          readOnly 
+                          title={t('common.email')}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" 
+                        />
                       </div>
                       {!user.emailVerified && <p className="mt-2 text-sm text-yellow-600 flex items-center"><AlertCircle className="w-4 h-4 mr-1" />{t('mypage.emailNotVerified')}</p>}
                     </div>
@@ -490,7 +502,13 @@ export default function MyPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">{t('mypage.joinDate')}</label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="text" value={new Date(user.createdAt.toDate()).toLocaleDateString()} readOnly className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" />
+                        <input 
+                          type="text" 
+                          value={new Date(user.createdAt.toDate()).toLocaleDateString()} 
+                          readOnly 
+                          title={t('mypage.joinDate')}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50" 
+                        />
                       </div>
                     </div>
                     <div>

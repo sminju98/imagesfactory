@@ -134,8 +134,15 @@ export interface FinalClip {
   videoIndex: number;
   url: string;
   audioUrl: string;
-  subtitleUrl: string;    // SRT/VTT 파일
+  subtitleUrl?: string;    // SRT/VTT 파일
+  subtitle?: {
+    srt: string;
+    vtt: string;
+  };
+  audioDuration?: number;
   duration: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error?: string;
 }
 
 // ==================== API 응답 타입 ====================

@@ -681,6 +681,7 @@ export default function Home() {
                   </div>
                   <button
                     onClick={removeReferenceImage}
+                    title={t('home.removeReferenceImage') || '참고 이미지 제거'}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -773,6 +774,7 @@ export default function Home() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleModel(model.id)}
+                          title={model.name}
                           className="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -808,6 +810,7 @@ export default function Home() {
                               value={count}
                               onChange={(e) => updateModelCount(model.id, parseInt(e.target.value) || (model.step || 1))}
                               onClick={(e) => e.stopPropagation()}
+                              title={`${model.name} 수량`}
                               className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-bold"
                               min={model.step || 1}
                               max={model.maxCount || 100}

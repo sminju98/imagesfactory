@@ -154,6 +154,7 @@ export default function Step4Result({ project, onRefresh }: Step4ResultProps) {
                 <a
                   href={clip.url}
                   download
+                  title="영상 다운로드"
                   className="absolute bottom-2 right-2 p-1.5 bg-black/60 backdrop-blur-sm rounded hover:bg-black/80 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >

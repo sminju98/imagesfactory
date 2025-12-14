@@ -298,7 +298,7 @@ export default function StepResultPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
               >
                 <RefreshCw className="w-4 h-4" />
-                재생성 ({stepInfo?.points}pt)
+                재생성 ({stepInfo?.credits}pt)
               </button>
             )}
           </div>
@@ -306,7 +306,7 @@ export default function StepResultPage() {
           {/* 포인트 비용 및 소요 시간 안내 */}
           <div className="mt-3 flex items-center flex-wrap gap-2 text-xs">
             <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full">
-              💰 {stepInfo?.perItem ? `${stepInfo?.points}pt × 영상 수` : `${stepInfo?.points}pt`}
+              💰 {stepInfo?.perItem ? `${stepInfo?.credits}pt × 영상 수` : `${stepInfo?.credits}pt`}
             </span>
             <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">
               ⏱️ {stepInfo?.time}

@@ -270,6 +270,11 @@ export async function checkVideoOperationStatus(operationId: string): Promise<{
 }
 
 /**
+ * Veo3 작업 상태 확인 (별칭)
+ */
+export const checkVeo3Operation = checkVideoOperationStatus;
+
+/**
  * 영상 생성 작업 취소
  */
 export async function cancelVideoOperation(operationId: string): Promise<boolean> {
