@@ -69,6 +69,23 @@ export interface Subtitle {
   totalDuration: number;
 }
 
+// GPT가 생성한 자막 스타일
+export interface GeneratedSubtitleStyle {
+  fontName: string;
+  fontSize: number;
+  primaryColor: string;
+  outlineColor: string;
+  backColor: string;
+  bold: boolean;
+  outline: number;
+  shadow: number;
+  alignment: 2 | 5 | 8;
+  marginV: number;
+  styleName: string;
+  styleDescription: string;
+  mood: string;
+}
+
 // ============ 메인 프로젝트 ============
 
 export interface AIContentProject {
@@ -88,6 +105,7 @@ export interface AIContentProject {
   scenes: Scene[];
   scriptFinal?: string;
   scenesFinal: Scene[];
+  subtitleStyle?: GeneratedSubtitleStyle;  // GPT가 생성한 자막 스타일
   
   // Step 4: 비디오
   videoClips: VideoClip[];
@@ -157,6 +175,7 @@ export interface GenerateScriptResponse {
   success: boolean;
   script?: string;
   scenes?: Scene[];
+  subtitleStyle?: GeneratedSubtitleStyle;  // GPT가 생성한 자막 스타일
   error?: string;
 }
 

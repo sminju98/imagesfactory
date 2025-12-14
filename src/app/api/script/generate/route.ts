@@ -1,14 +1,16 @@
 /**
- * Step 3: 스크립트 및 씬 생성 API (Grok)
+ * Step 3: 스크립트 및 씬 생성 API (GPT-5.2)
  * POST /api/script/generate
+ * 스크립트, 씬, 자막 스타일을 함께 생성합니다.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/firebase-admin';
+import { auth, db } from '@/lib/firebase-admin';
 import { GenerateScriptRequest, GenerateScriptResponse } from '@/types/project.types';
 import { validateProjectState } from '@/lib/project/project-state-manager';
 import { generateScriptScenesWithGPT } from '@/lib/project/gpt-script-scene-generator';
 import { v4 as uuidv4 } from 'uuid';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // GPT-5.2를 사용하여 스크립트와 씬 생성 (제안서 권장: 한국어 문장 품질 최고)
+    // GPT-5.2를 사용하여 스크립트, 씬, 자막 스타일 생성
     const result = await generateScriptScenesWithGPT(confirmedPrompt);
 
     // 씬에 ID 추가
@@ -56,10 +58,24 @@ export async function POST(request: NextRequest) {
       approved: false,
     }));
 
+    // 프로젝트에 자막 스타일 저장
+    const projectRef = db.collection('aiContentProjects').doc(projectId);
+    await projectRef.update({
+      script: result.script,
+      scenes,
+      subtitleStyle: result.subtitleStyle,
+      status: 'script',
+      currentStep: 3,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    console.log(`✅ 스크립트 생성 완료 - 자막 스타일: ${result.subtitleStyle.styleName}`);
+
     return NextResponse.json<GenerateScriptResponse>({
       success: true,
       script: result.script,
       scenes,
+      subtitleStyle: result.subtitleStyle,
     });
   } catch (error: any) {
     console.error('스크립트 생성 오류:', error);

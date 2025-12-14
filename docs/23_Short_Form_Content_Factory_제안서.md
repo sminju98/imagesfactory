@@ -33,10 +33,11 @@ AI 기반 숏폼 콘텐츠(릴스/쇼츠) 자동 생성 시스템입니다.
 - 사용자가 교정된 프롬프트 확인/수정
 - **확인 후 다음 단계 진행**
 
-### STEP 3: 스크립트 + 씬 생성 (GPT-5.2)
+### STEP 3: 스크립트 + 씬 + 자막 스타일 생성 (GPT-5.2)
 - 전체 스크립트 작성 (모든 내레이션 연결)
 - 3-7개 씬 생성 (각 8초)
 - 각 씬: 비주얼 프롬프트(영어) + 내레이션(한국어/영어)
+- **콘텐츠 무드에 맞는 자막 스타일 자동 생성**
 - **사용자가 씬별로 수정/확인**
 
 ### STEP 4: 비디오 생성 (Gemini Veo3)
@@ -272,12 +273,36 @@ interface SubtitleEntry {
 
 ### 지원 형식
 - **SRT**: 기본 형식
-- **ASS**: 스타일 포함 (폰트, 색상, 위치)
+- **ASS**: GPT가 생성한 스타일 적용 (폰트, 색상, 위치)
 
-### ASS 스타일 기본값
-```ass
-Style: Default,AppleSDGothicNeo-Bold,48,&H00FFFFFF,&H000000FF,&H00000000,&HFF000000,-1,0,0,0,100,100,0,0,1,3,0,2,20,20,40,1
+### GPT 자막 스타일 생성
+Step 3에서 GPT-5.2가 콘텐츠에 맞는 자막 스타일을 자동 생성합니다:
+
+```typescript
+interface GeneratedSubtitleStyle {
+  fontName: string;       // 폰트 (AppleSDGothicNeo, Noto Sans 등)
+  fontSize: number;       // 크기 (32-72)
+  primaryColor: string;   // 메인 색상
+  outlineColor: string;   // 테두리 색상
+  backColor: string;      // 배경 색상
+  bold: boolean;
+  outline: number;        // 테두리 두께
+  shadow: number;         // 그림자
+  alignment: 2 | 5 | 8;   // 위치
+  marginV: number;        // 여백
+  styleName: string;      // "에너지틱", "프리미엄" 등
+  mood: string;           // "활기찬", "전문적인" 등
+}
 ```
+
+### 스타일 예시
+| 스타일 | 설명 | 추천 콘텐츠 |
+|--------|------|------------|
+| 에너지틱 | 노란색, 굵은 테두리, 큰 글씨 | 홍보, 이벤트 |
+| 프리미엄 | 흰색, 얇은 테두리, 중간 글씨 | 브랜드, 제품 |
+| 미니멀 | 흰색, 테두리 없음, 반투명 배경 | 차분한 설명 |
+| 유튜브 | 흰색, 두꺼운 검정 테두리 | 일반 콘텐츠 |
+| 시네마틱 | 흰색, 그림자 효과 | 영화/드라마 |
 
 ### 폰트 우선순위
 1. AppleSDGothicNeo (macOS)
